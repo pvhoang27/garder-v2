@@ -1,0 +1,19 @@
+const mysql = require('mysql2');
+require('dotenv').config();
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+// Chuyển sang promise để dùng async/await cho gọn
+const promisePool = pool.promise();
+
+console.log("Database Connection Pool Created...");
+
+module.exports = promisePool;

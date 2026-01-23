@@ -1,0 +1,405 @@
+{
+  "info": {
+    "_postman_id": "b016bb75-8235-4290-8351-b5228d47361d",
+    "name": "garden",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "39516604"
+  },
+  "item": [
+    {
+      "name": "1.đăng kí admin",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"123\",\r\n    \"full_name\": \"Admin Vuon Cay\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.đăng nhập admin",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"admin\", \"password\": \"123\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3.thêm danh mục cây",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc2OTEzNzcxMSwiZXhwIjoxNzY5MjI0MTExfQ.E9Bf4TbVwBqTfwUVS1WM6GTgVtZ5Qd7bptChzJIlIzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Cây Phong Thủy\",\r\n    \"slug\": \"cay-phong-thuy\",\r\n    \"description\": \"Cây mang lại tài lộc\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/categories",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "categories"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4.xem danh sách danh mục",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/categories",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "categories"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5.sửa danh mục",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc2OTEzNzcxMSwiZXhwIjoxNzY5MjI0MTExfQ.E9Bf4TbVwBqTfwUVS1WM6GTgVtZ5Qd7bptChzJIlIzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Cây Cổ Thụ\",\r\n    \"slug\": \"cay-co-thu\",\r\n    \"description\": \"Sửa mô tả danh mục\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/categories/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "categories",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6.xóa danh mục",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc2OTEzNzcxMSwiZXhwIjoxNzY5MjI0MTExfQ.E9Bf4TbVwBqTfwUVS1WM6GTgVtZ5Qd7bptChzJIlIzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/categories/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "categories",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7.thêm mới cây",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc2OTEzOTQzOCwiZXhwIjoxNzY5MjI1ODM4fQ.HL983I6MTBxsI5zQ4NzbDY68o6bLp66dXdre2ek59To",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Cây Sanh Cổ",
+              "type": "text",
+              "uuid": "ec2b4157-1caf-4fa2-821e-349aba7ae622"
+            },
+            {
+              "key": "category_id",
+              "value": "2",
+              "type": "text",
+              "uuid": "014d5267-efa3-4b21-8970-da7d8287fee7"
+            },
+            {
+              "key": "description",
+              "value": "Cây khế ngọt quê hương",
+              "type": "text",
+              "uuid": "fef11f55-1500-4476-b7b4-1e1cb3107b1e"
+            },
+            {
+              "key": "image",
+              "type": "file",
+              "uuid": "6d677265-0eb7-4ab7-a8d2-2d0a0f58546f",
+              "src": "/D:/Downloads/bg2.jpg"
+            },
+            {
+              "key": "age",
+              "value": "30",
+              "type": "text",
+              "uuid": "4e920676-836d-4b20-a346-79b1c588d12f"
+            },
+            {
+              "key": "is_featured",
+              "value": "true",
+              "type": "text",
+              "uuid": "0b76b6bc-1149-4e18-8bf3-9089d7f1b872"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/plants",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "plants"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8.lấy danh sách cây",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/plants",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "plants"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9.xem chi tiết 1 cây",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/plants/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "plants",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10.xóa cây",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc2OTEzNzcxMSwiZXhwIjoxNzY5MjI0MTExfQ.E9Bf4TbVwBqTfwUVS1WM6GTgVtZ5Qd7bptChzJIlIzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/plants/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "plants",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11. sửa cây",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc2OTEzNzcxMSwiZXhwIjoxNzY5MjI0MTExfQ.E9Bf4TbVwBqTfwUVS1WM6GTgVtZ5Qd7bptChzJIlIzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Cây Kim Tiền (Đã sửa)",
+              "type": "text",
+              "uuid": "0368750c-8bac-49cf-ba6d-2720637c6d93"
+            },
+            {
+              "key": "category_id",
+              "value": "1",
+              "type": "text",
+              "uuid": "769b9bae-bc9f-4aba-8d14-e6ace8751579"
+            },
+            {
+              "key": "description",
+              "value": "Mô tả mới toanh",
+              "type": "text",
+              "uuid": "78477a52-9f49-4f80-8583-79158ccea3d4"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/plants/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "plants",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "12. tìm kiếm và lọc",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ]
+}
