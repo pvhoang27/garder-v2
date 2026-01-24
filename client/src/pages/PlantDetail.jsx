@@ -10,60 +10,110 @@ import { Navigation, Pagination } from "swiper/modules";
 const PlantDetail = () => {
   const { id } = useParams();
   const [plant, setPlant] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    axiosClient.get(`/plants/${id}`).then((res) => setPlant(res.data));
+    setLoading(true);
+    axiosClient
+      .get(`/plants/${id}`)
+      .then((res) => {
+        setPlant(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi tải chi tiết cây:", err);
+        setError(true);
+        setLoading(false);
+      });
   }, [id]);
 
-  if (!plant) return <div className="container">Đang tải...</div>;
+  if (loading)
+    return (
+      <div className="container" style={{ marginTop: "30px" }}>
+        Đang tải dữ liệu...
+      </div>
+    );
+  if (error || !plant)
+    return (
+      <div className="container" style={{ marginTop: "30px", color: "red" }}>
+        Không tìm thấy sản phẩm hoặc lỗi kết nối!
+      </div>
+    );
 
   // TÁCH RIÊNG ẢNH VÀ VIDEO
   const isVideo = (url) => {
     if (!url) return false;
-    return ["mp4", "mov", "avi", "webm"].includes(
+    // Kiểm tra đuôi file video phổ biến
+    return ["mp4", "mov", "avi", "webm", "mkv"].includes(
       url.split(".").pop().toLowerCase(),
     );
   };
 
   // Danh sách ảnh (Gộp Thumbnail + Ảnh trong Album)
   const images = [];
-  if (plant.thumbnail) images.push({ image_url: plant.thumbnail });
-  if (plant.media) {
-    const albumImages = plant.media.filter((item) => !isVideo(item.image_url));
+  // Ưu tiên ảnh thumbnail đưa lên đầu
+  if (plant.thumbnail) {
+    images.push({ image_url: plant.thumbnail });
+  }
+
+  // Lọc ảnh từ album
+  if (plant.media && Array.isArray(plant.media)) {
+    const albumImages = plant.media.filter(
+      (item) => item.image_url && !isVideo(item.image_url),
+    );
     images.push(...albumImages);
   }
 
   // Danh sách Video (Lọc từ album)
-  const videos = plant.media
-    ? plant.media.filter((item) => isVideo(item.image_url))
-    : [];
+  const videos =
+    plant.media && Array.isArray(plant.media)
+      ? plant.media.filter((item) => item.image_url && isVideo(item.image_url))
+      : [];
+
+  // Base URL của server (để load ảnh)
+  const BE_URL = "http://localhost:3000";
 
   return (
-    <div className="container" style={{ marginTop: "30px" }}>
-      <Link to="/" style={{ color: "#666" }}>
-        &larr; Quay lại
+    <div
+      className="container"
+      style={{ marginTop: "30px", paddingBottom: "50px" }}
+    >
+      <Link
+        to="/"
+        style={{ color: "#666", display: "inline-block", marginBottom: "15px" }}
+      >
+        &larr; Quay lại trang chủ
       </Link>
 
       <div className="detail-container">
         {/* CỘT TRÁI: CHỈ HIỆN ẢNH (SLIDER) */}
-        <div className="detail-left">
+        <div className="detail-left" style={{ minWidth: 0 }}>
+          {" "}
+          {/* Fix lỗi Swiper bị tràn trên flexbox */}
           {images.length > 0 ? (
             <Swiper
               modules={[Navigation, Pagination]}
               navigation
               pagination={{ clickable: true }}
-              style={{ borderRadius: "10px" }}
+              style={{ borderRadius: "10px", overflow: "hidden" }}
+              spaceBetween={10}
             >
               {images.map((img, index) => (
                 <SwiperSlide key={index}>
                   <img
-                    src={`http://localhost:3000${img.image_url}`}
+                    src={`${BE_URL}${img.image_url}`}
                     style={{
                       width: "100%",
                       height: "450px",
                       objectFit: "cover",
+                      display: "block",
                     }}
-                    alt="Plant"
+                    alt={plant.name}
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/450?text=No+Image";
+                    }} // Fallback nếu ảnh lỗi
                   />
                 </SwiperSlide>
               ))}
@@ -72,42 +122,60 @@ const PlantDetail = () => {
             <div
               style={{
                 height: "450px",
-                background: "#eee",
+                background: "#f0f0f0",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                borderRadius: "10px",
+                color: "#888",
               }}
             >
-              Chưa có ảnh
+              Chưa có hình ảnh
             </div>
           )}
         </div>
 
         {/* CỘT PHẢI: THÔNG TIN */}
         <div className="detail-right">
-          <span className="badge">{plant.category_name}</span>
+          {plant.category_name && (
+            <span className="badge">{plant.category_name}</span>
+          )}
+
           <h1 className="detail-title">{plant.name}</h1>
-          <p>
-            <strong>Khoa học:</strong> {plant.scientific_name}
-          </p>
-          <p>
-            <strong>Tuổi đời:</strong> {plant.age}
-          </p>
+
+          <div style={{ marginBottom: "15px", color: "#555" }}>
+            <p style={{ marginBottom: "5px" }}>
+              <strong>Tên khoa học:</strong>{" "}
+              {plant.scientific_name || "Đang cập nhật"}
+            </p>
+            <p>
+              <strong>Tuổi đời:</strong>{" "}
+              {plant.age ? `${plant.age} năm` : "Chưa rõ"}
+            </p>
+          </div>
 
           <div className="section-title">📖 Giới thiệu</div>
-          <div dangerouslySetInnerHTML={{ __html: plant.description }} />
+          <div
+            style={{ lineHeight: "1.6", color: "#444" }}
+            dangerouslySetInnerHTML={{
+              __html: plant.description || "<p>Chưa có mô tả.</p>",
+            }}
+          />
 
-          <div className="section-title" style={{ marginTop: "20px" }}>
+          <div className="section-title" style={{ marginTop: "25px" }}>
             💧 Cách chăm sóc
           </div>
           <div
             style={{
               background: "#f9f9f9",
-              padding: "15px",
-              borderLeft: "4px solid #2e7d32",
+              padding: "20px",
+              borderRadius: "8px",
+              borderLeft: "5px solid #2e7d32",
+              fontStyle: "italic",
+              color: "#333",
             }}
           >
-            {plant.care_instruction}
+            {plant.care_instruction || "Chưa có hướng dẫn chăm sóc."}
           </div>
         </div>
       </div>
@@ -126,47 +194,49 @@ const PlantDetail = () => {
               color: "#2e7d32",
               textAlign: "center",
               marginBottom: "30px",
+              textTransform: "uppercase",
             }}
           >
-            🎬 VIDEO THỰC TẾ TẠI VƯỜN
+            🎬 Video thực tế tại vườn
           </h2>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "20px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "25px",
             }}
           >
             {videos.map((vid, index) => (
               <div
                 key={index}
                 style={{
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                  borderRadius: "10px",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                  borderRadius: "12px",
                   overflow: "hidden",
+                  background: "#000",
                 }}
               >
                 <video
                   controls
+                  preload="metadata"
                   style={{
                     width: "100%",
                     height: "250px",
-                    objectFit: "cover",
-                    background: "black",
+                    objectFit: "contain", // Dùng contain để video không bị cắt
+                    display: "block",
                   }}
                 >
-                  <source
-                    src={`http://localhost:3000${vid.image_url}`}
-                    type="video/mp4"
-                  />
+                  <source src={`${BE_URL}${vid.image_url}`} />
+                  Trình duyệt của bạn không hỗ trợ thẻ video.
                 </video>
                 <div
                   style={{
-                    padding: "10px",
+                    padding: "12px",
                     textAlign: "center",
                     fontWeight: "bold",
-                    color: "#555",
+                    color: "#fff",
+                    background: "#222",
                   }}
                 >
                   Video #{index + 1}

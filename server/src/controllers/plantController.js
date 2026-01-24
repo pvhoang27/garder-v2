@@ -34,23 +34,30 @@ exports.getAllPlants = async (req, res) => {
   }
 };
 
-// 2. Chi tiết
+// 2. Chi tiết (ĐÃ SỬA: JOIN để lấy category_name)
 exports.getPlantById = async (req, res) => {
   try {
     const plantId = req.params.id;
-    const [plantRows] = await db.query("SELECT * FROM plants WHERE id = ?", [
-      plantId,
-    ]);
+    // SỬA Ở ĐÂY: Thêm JOIN với bảng categories
+    const sql = `
+      SELECT p.*, c.name as category_name 
+      FROM plants p 
+      LEFT JOIN categories c ON p.category_id = c.id 
+      WHERE p.id = ?
+    `;
+    const [plantRows] = await db.query(sql, [plantId]);
+
     if (plantRows.length === 0)
       return res.status(404).json({ message: "Không tìm thấy cây" });
 
     const plant = plantRows[0];
+
     // Lấy album (bao gồm cả ảnh và video phụ)
     const [imageRows] = await db.query(
       "SELECT * FROM plant_images WHERE plant_id = ?",
       [plantId],
     );
-    plant.media = imageRows; // Đặt tên là media cho dễ hiểu
+    plant.media = imageRows;
     res.json(plant);
   } catch (error) {
     console.error(error);
