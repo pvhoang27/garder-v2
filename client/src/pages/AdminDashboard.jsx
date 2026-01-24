@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import axiosClient from '../api/axiosClient';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa'; // Icon cho đẹp
+import { FaEdit, FaTrash, FaPlus, FaBullhorn } from 'react-icons/fa'; // Import thêm icon FaBullhorn
 
 const AdminDashboard = () => {
     const [plants, setPlants] = useState([]);
     const navigate = useNavigate();
 
-    // Kiểm tra login
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) navigate('/login');
@@ -28,7 +27,7 @@ const AdminDashboard = () => {
             try {
                 await axiosClient.delete(`/plants/${id}`);
                 alert('Đã xóa!');
-                fetchPlants(); // Load lại danh sách
+                fetchPlants();
             } catch (error) {
                 alert('Lỗi xóa cây');
             }
@@ -37,11 +36,19 @@ const AdminDashboard = () => {
 
     return (
         <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0', flexWrap: 'wrap', gap: '10px' }}>
                 <h1>Quản Lý Vườn Cây</h1>
-                <Link to="/admin/add" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', borderRadius: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <FaPlus /> Thêm Cây Mới
-                </Link>
+                
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {/* Nút Cấu hình Popup Mới */}
+                    <Link to="/admin/popup" style={{ background: '#f39c12', color: 'white', padding: '10px 20px', borderRadius: '5px', display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
+                        <FaBullhorn /> Cấu Hình Popup
+                    </Link>
+
+                    <Link to="/admin/add" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', borderRadius: '5px', display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none', fontWeight: 'bold' }}>
+                        <FaPlus /> Thêm Cây Mới
+                    </Link>
+                </div>
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>

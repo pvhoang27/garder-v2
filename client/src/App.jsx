@@ -7,38 +7,35 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminPlantForm from './components/AdminPlantForm';
 import ContactPage from './pages/ContactPage';
 import CategoryPage from './pages/CategoryPage';
-import { FaUserCircle, FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from 'react-icons/fa'; // Thêm FaBars (Menu), FaTimes (Đóng)
+import AdminPopupConfig from './pages/AdminPopupConfig'; // <--- Import trang cấu hình
+import PopupBanner from './components/PopupBanner';     // <--- Import Component Popup
+import { FaUserCircle, FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from 'react-icons/fa';
 
-// Component Navigation đã được nâng cấp Responsive
+// ... (Giữ nguyên phần component Navigation như code trước) ...
 const Navigation = ({ isLoggedIn, onLogout }) => {
     const navigate = useNavigate();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State quản lý menu mobile
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogoutClick = () => {
         onLogout();
         navigate('/');
-        setIsMobileMenuOpen(false); // Đóng menu khi logout
+        setIsMobileMenuOpen(false);
         alert('Đã đăng xuất thành công!');
     };
 
-    // Hàm đóng menu khi click vào link (trên mobile)
     const closeMenu = () => setIsMobileMenuOpen(false);
 
     return (
         <nav className="navbar">
             <div className="container navbar-container">
-                
-                {/* Logo */}
                 <Link to="/" className="nav-logo" onClick={closeMenu}>
                     🌿 Green Garden
                 </Link>
 
-                {/* Nút Hamburger (Chỉ hiện trên Mobile) */}
                 <div className="mobile-icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                     {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
                 </div>
 
-                {/* Menu Links - Thêm class 'active' nếu đang mở trên mobile */}
                 <div className={isMobileMenuOpen ? "nav-menu active" : "nav-menu"}>
                     <Link to="/" className="nav-link" onClick={closeMenu}>Trang Chủ</Link>
                     <Link to="/categories" className="nav-link" onClick={closeMenu}>Danh Mục</Link>
@@ -49,10 +46,7 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
                             <Link to="/admin" className="nav-link nav-btn-admin" onClick={closeMenu}>
                                 Quản Trị
                             </Link>
-                            <button 
-                                onClick={handleLogoutClick}
-                                className="nav-link nav-btn-logout"
-                            >
+                            <button onClick={handleLogoutClick} className="nav-link nav-btn-logout">
                                 <FaSignOutAlt /> Thoát
                             </button>
                         </>
@@ -76,7 +70,7 @@ function App() {
     }, []);
 
     const handleLoginSuccess = () => setIsLoggedIn(true);
-    
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         setIsLoggedIn(false);
@@ -85,6 +79,9 @@ function App() {
     return (
         <BrowserRouter>
             <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+            
+            {/* Hiển thị Popup ở mọi nơi (nó sẽ tự ẩn nếu không active) */}
+            <PopupBanner /> 
 
             <div style={{ minHeight: '80vh', paddingBottom: '50px' }}>
                 <Routes>
@@ -94,10 +91,13 @@ function App() {
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
                     
-                    {/* Protected Routes */}
+                    {/* Routes Admin */}
                     <Route path="/admin" element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/login" />} />
                     <Route path="/admin/add" element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />} />
                     <Route path="/admin/edit/:id" element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />} />
+                    
+                    {/* Route mới: Cấu hình Popup */}
+                    <Route path="/admin/popup" element={isLoggedIn ? <AdminPopupConfig /> : <Navigate to="/login" />} />
                 </Routes>
             </div>
 
