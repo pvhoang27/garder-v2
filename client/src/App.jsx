@@ -7,50 +7,57 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminPlantForm from './components/AdminPlantForm';
 import ContactPage from './pages/ContactPage';
 import CategoryPage from './pages/CategoryPage';
-import { FaUserCircle, FaSignOutAlt, FaSignInAlt } from 'react-icons/fa'; // Thêm icon cho đẹp
+import { FaUserCircle, FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from 'react-icons/fa'; // Thêm FaBars (Menu), FaTimes (Đóng)
 
-// Tạo một Component con cho Menu để dùng được useNavigate (vì useNavigate phải nằm trong BrowserRouter)
+// Component Navigation đã được nâng cấp Responsive
 const Navigation = ({ isLoggedIn, onLogout }) => {
     const navigate = useNavigate();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State quản lý menu mobile
 
     const handleLogoutClick = () => {
-        onLogout(); // Gọi hàm xóa token bên App
-        navigate('/'); // Chuyển về trang chủ
+        onLogout();
+        navigate('/');
+        setIsMobileMenuOpen(false); // Đóng menu khi logout
         alert('Đã đăng xuất thành công!');
     };
 
+    // Hàm đóng menu khi click vào link (trên mobile)
+    const closeMenu = () => setIsMobileMenuOpen(false);
+
     return (
-        <nav style={{ background: '#2e7d32', padding: '15px 0', color: 'white', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <nav className="navbar">
+            <div className="container navbar-container">
                 
                 {/* Logo */}
-                <Link to="/" style={{ fontSize: '1.6rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Link to="/" className="nav-logo" onClick={closeMenu}>
                     🌿 Green Garden
                 </Link>
 
-                {/* Menu Links */}
-                <div style={{ display: 'flex', gap: '20px', fontSize: '1rem', alignItems: 'center' }}>
-                    <Link to="/" className="nav-link">Trang Chủ</Link>
-                    <Link to="/categories" className="nav-link">Danh Mục</Link>
-                    <Link to="/contact" className="nav-link">Liên Hệ</Link>
+                {/* Nút Hamburger (Chỉ hiện trên Mobile) */}
+                <div className="mobile-icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+                </div>
 
-                    {/* LOGIC ĐỔI NÚT ĐĂNG NHẬP / ĐĂNG XUẤT */}
+                {/* Menu Links - Thêm class 'active' nếu đang mở trên mobile */}
+                <div className={isMobileMenuOpen ? "nav-menu active" : "nav-menu"}>
+                    <Link to="/" className="nav-link" onClick={closeMenu}>Trang Chủ</Link>
+                    <Link to="/categories" className="nav-link" onClick={closeMenu}>Danh Mục</Link>
+                    <Link to="/contact" className="nav-link" onClick={closeMenu}>Liên Hệ</Link>
+
                     {isLoggedIn ? (
                         <>
-                            {/* Nếu ĐÃ đăng nhập -> Hiện nút Quản Trị & Đăng Xuất */}
-                            <Link to="/admin" style={{ background: 'white', color: '#2e7d32', padding: '5px 15px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                            <Link to="/admin" className="nav-link nav-btn-admin" onClick={closeMenu}>
                                 Quản Trị
                             </Link>
                             <button 
                                 onClick={handleLogoutClick}
-                                style={{ background: 'transparent', border: 'none', color: '#ffeba7', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '5px' }}
+                                className="nav-link nav-btn-logout"
                             >
                                 <FaSignOutAlt /> Thoát
                             </button>
                         </>
                     ) : (
-                        /* Nếu CHƯA đăng nhập -> Hiện nút Đăng Nhập */
-                        <Link to="/login" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#fff' }}>
+                        <Link to="/login" className="nav-link nav-btn-login" onClick={closeMenu}>
                             <FaSignInAlt /> Đăng Nhập
                         </Link>
                     )}
@@ -61,31 +68,22 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
 };
 
 function App() {
-    // State kiểm tra trạng thái đăng nhập (Kiểm tra xem có token trong kho không)
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    // Chạy 1 lần khi web tải để kiểm tra token cũ
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (token) {
-            setIsLoggedIn(true);
-        }
+        if (token) setIsLoggedIn(true);
     }, []);
 
-    // Hàm Đăng nhập (Truyền xuống trang Login để gọi khi đăng nhập thành công)
-    const handleLoginSuccess = () => {
-        setIsLoggedIn(true);
-    };
-
-    // Hàm Đăng xuất
+    const handleLoginSuccess = () => setIsLoggedIn(true);
+    
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Xóa token
-        setIsLoggedIn(false); // Cập nhật giao diện
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
     };
 
     return (
         <BrowserRouter>
-            {/* Truyền trạng thái và hàm Đăng xuất vào Menu */}
             <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} />
 
             <div style={{ minHeight: '80vh', paddingBottom: '50px' }}>
@@ -94,11 +92,9 @@ function App() {
                     <Route path="/categories" element={<CategoryPage />} />
                     <Route path="/plant/:id" element={<PlantDetail />} />
                     <Route path="/contact" element={<ContactPage />} />
-                    
-                    {/* Truyền hàm handleLoginSuccess xuống trang Login */}
                     <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
                     
-                    {/* Bảo vệ route Admin (Nếu chưa login thì đá về Login) */}
+                    {/* Protected Routes */}
                     <Route path="/admin" element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/login" />} />
                     <Route path="/admin/add" element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />} />
                     <Route path="/admin/edit/:id" element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />} />
