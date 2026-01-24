@@ -9,5 +9,5 @@ router.get('/', popupController.getPopup);
 
 // Admin: Cập nhật cấu hình (Cần login + upload ảnh)
 router.post('/', authMiddleware, upload.single('image'), popupController.updatePopup);
-
+// router.delete('/images/:id', authMiddleware, popupController.deletePopupImage);
 module.exports = router;
