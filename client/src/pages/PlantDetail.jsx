@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import { Swiper, SwiperSlide } from "swiper/react";
+
+// Import các file CSS của Swiper
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css/effect-fade"; // <-- Thêm CSS hiệu ứng Fade
+
+// Import các modules cần thiết
+import { Navigation, Pagination, EffectFade, Autoplay } from "swiper/modules"; // <-- Thêm EffectFade và Autoplay
 
 const PlantDetail = () => {
   const { id } = useParams();
@@ -93,9 +98,18 @@ const PlantDetail = () => {
           {/* Fix lỗi Swiper bị tràn trên flexbox */}
           {images.length > 0 ? (
             <Swiper
-              modules={[Navigation, Pagination]}
+              // Cấu hình các modules sử dụng
+              modules={[Navigation, Pagination, EffectFade, Autoplay]}
               navigation
               pagination={{ clickable: true }}
+              // Thêm hiệu ứng Fade
+              effect={"fade"}
+              fadeEffect={{ crossFade: true }} // Giúp ảnh không bị chồng chéo
+              speed={600} // Tốc độ chuyển ảnh (ms)
+              autoplay={{
+                delay: 3000, // Tự động chuyển sau 3 giây
+                disableOnInteraction: false,
+              }}
               style={{ borderRadius: "10px", overflow: "hidden" }}
               spaceBetween={10}
             >
