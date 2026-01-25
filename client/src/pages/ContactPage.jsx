@@ -50,43 +50,67 @@ const ContactPage = () => {
         >
           <h3 style={{ marginBottom: "20px" }}>Thông Tin Liên Lạc</h3>
 
-          {/* Phần Địa Chỉ đã được làm nổi bật */}
-          <p
-            style={{
-              marginBottom: "15px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-            <FaMapMarkerAlt color="#2e7d32" size={20} />
-            <a
-              href="https://www.google.com/maps/place/H%E1%BB%93+Ho%C3%A0n+Ki%E1%BA%BFm/@21.0287747,105.8497898,17z/data=!3m1!4b1!4m6!3m5!1s0x3135ab953357c995:0x1babf6bb4f9a20e!8m2!3d21.0286669!4d105.8521484!16zL20vMGdwNjV3?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
-              target="_blank"
-              rel="noopener noreferrer"
+          {/* Phần Địa Chỉ & Link chỉ đường */}
+          <div style={{ marginBottom: "20px" }}>
+            <p
               style={{
-                color: "#2e7d32",
-                textDecoration: "underline",
-                fontWeight: "bold",
-                cursor: "pointer",
+                marginBottom: "10px",
                 display: "flex",
                 alignItems: "center",
-                gap: "5px",
+                gap: "10px",
               }}
-              title="Bấm để mở bản đồ chỉ đường"
             >
-              Số 1, Đường Cây Cảnh, Khu Vườn Xanh
-              <span
+              <FaMapMarkerAlt color="#2e7d32" size={20} />
+              <a
+                href="https://www.google.com/maps"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  fontSize: "0.85em",
-                  color: "#d32f2f",
-                  fontWeight: "normal",
+                  color: "#2e7d32",
+                  textDecoration: "underline",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
                 }}
+                title="Bấm để mở bản đồ lớn"
               >
-                (Xem chỉ đường <FaExternalLinkAlt size={12} />)
-              </span>
-            </a>
-          </p>
+                Số 1, Đường Cây Cảnh, Khu Vườn Xanh
+                <span
+                  style={{
+                    fontSize: "0.85em",
+                    color: "#d32f2f",
+                    fontWeight: "normal",
+                  }}
+                >
+                  (Xem chỉ đường <FaExternalLinkAlt size={12} />)
+                </span>
+              </a>
+            </p>
+
+            {/* --- BẢN ĐỒ NHỎ (IFRAME) --- */}
+            <div
+              style={{
+                borderRadius: "10px",
+                overflow: "hidden",
+                border: "2px solid #fff",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            >
+              <iframe
+                title="Small Map"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.292513285882!2d105.78792341540212!3d20.983916994784964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135accdd8a1ad71%3A0xa2f9b16036648187!2zSOG7YyB2aeG7h2uCBDDtG5nIG5naOG7hyBCxrB1IGNow61uaCBWaeG7hW4gdGjDtG5n!5e0!3m2!1svi!2s!4v1689651234567!5m2!1svi!2s"
+                width="100%"
+                height="200" // Chiều cao nhỏ vừa phải
+                style={{ border: 0, display: "block" }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+            {/* --------------------------- */}
+          </div>
 
           <p
             style={{
