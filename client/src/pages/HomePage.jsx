@@ -16,20 +16,17 @@ const DynamicSection = ({ id, title, type, paramValue }) => {
       return;
     }
 
-    // 2. Nếu là Tự động -> Gọi API lấy tất cả rồi lọc (hoặc gọi API filter từ backend)
-    axiosClient.get("/plants").then((res) => {
-      let data = res.data;
-
-      if (type === "category" && paramValue) {
-        data = data.filter((p) => p.category_id == paramValue);
-      } else if (type === "new") {
-        data = data.sort((a, b) => b.id - a.id).slice(0, 4);
-      } else if (type === "best_selling") {
-        data = data.slice(0, 4);
-      }
-
-      setPlants(data);
-    });
+    // 2. Nếu là Category -> Lấy tất cả rồi lọc
+    if (type === "category") {
+      axiosClient.get("/plants").then((res) => {
+        let data = res.data;
+        if (paramValue) {
+          data = data.filter((p) => p.category_id == paramValue);
+        }
+        // Giới hạn hiển thị 8 cây cho đẹp
+        setPlants(data.slice(0, 8));
+      });
+    }
   }, [id, type, paramValue]);
 
   if (plants.length === 0) return null;
@@ -179,7 +176,7 @@ const HomePage = () => {
         {layoutConfig.map((section) => (
           <DynamicSection
             key={section.id}
-            id={section.id} // Quan trọng: Truyền ID để lấy danh sách cây manual
+            id={section.id}
             title={section.title}
             type={section.type}
             paramValue={section.param_value}
