@@ -7,16 +7,19 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import "swiper/css/effect-fade"; // <-- Thêm CSS hiệu ứng Fade
+import "swiper/css/effect-fade";
 
 // Import các modules cần thiết
-import { Navigation, Pagination, EffectFade, Autoplay } from "swiper/modules"; // <-- Thêm EffectFade và Autoplay
+import { Navigation, Pagination, EffectFade, Autoplay } from "swiper/modules";
 
 const PlantDetail = () => {
   const { id } = useParams();
   const [plant, setPlant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Base URL của server (để load ảnh/video)
+  const BE_URL = "http://localhost:3000";
 
   useEffect(() => {
     setLoading(true);
@@ -46,38 +49,34 @@ const PlantDetail = () => {
       </div>
     );
 
-  // TÁCH RIÊNG ẢNH VÀ VIDEO
+  // Hàm kiểm tra định dạng video
   const isVideo = (url) => {
     if (!url) return false;
-    // Kiểm tra đuôi file video phổ biến
     return ["mp4", "mov", "avi", "webm", "mkv"].includes(
       url.split(".").pop().toLowerCase(),
     );
   };
 
-  // Danh sách ảnh (Gộp Thumbnail + Ảnh trong Album)
-  const images = [];
-  // Ưu tiên ảnh thumbnail đưa lên đầu
+  // GỘP CHUNG ẢNH VÀ VIDEO VÀO MỘT DANH SÁCH SLIDES
+  const slides = [];
+
+  // 1. Ưu tiên ảnh thumbnail đưa lên đầu
   if (plant.thumbnail) {
-    images.push({ image_url: plant.thumbnail });
+    slides.push({ type: "image", url: plant.thumbnail });
   }
 
-  // Lọc ảnh từ album
+  // 2. Lấy dữ liệu từ album (cả ảnh và video)
   if (plant.media && Array.isArray(plant.media)) {
-    const albumImages = plant.media.filter(
-      (item) => item.image_url && !isVideo(item.image_url),
-    );
-    images.push(...albumImages);
+    plant.media.forEach((item) => {
+      if (item.image_url) {
+        if (isVideo(item.image_url)) {
+          slides.push({ type: "video", url: item.image_url });
+        } else {
+          slides.push({ type: "image", url: item.image_url });
+        }
+      }
+    });
   }
-
-  // Danh sách Video (Lọc từ album)
-  const videos =
-    plant.media && Array.isArray(plant.media)
-      ? plant.media.filter((item) => item.image_url && isVideo(item.image_url))
-      : [];
-
-  // Base URL của server (để load ảnh)
-  const BE_URL = "http://localhost:3000";
 
   return (
     <div
@@ -92,43 +91,57 @@ const PlantDetail = () => {
       </Link>
 
       <div className="detail-container">
-        {/* CỘT TRÁI: CHỈ HIỆN ẢNH (SLIDER) */}
+        {/* CỘT TRÁI: SLIDER CHỨA CẢ ẢNH VÀ VIDEO */}
         <div className="detail-left" style={{ minWidth: 0 }}>
-          {" "}
-          {/* Fix lỗi Swiper bị tràn trên flexbox */}
-          {images.length > 0 ? (
+          {slides.length > 0 ? (
             <Swiper
-              // Cấu hình các modules sử dụng
               modules={[Navigation, Pagination, EffectFade, Autoplay]}
               navigation
               pagination={{ clickable: true }}
-              // Thêm hiệu ứng Fade
               effect={"fade"}
-              fadeEffect={{ crossFade: true }} // Giúp ảnh không bị chồng chéo
-              speed={600} // Tốc độ chuyển ảnh (ms)
+              fadeEffect={{ crossFade: true }}
+              speed={600}
               autoplay={{
-                delay: 3000, // Tự động chuyển sau 3 giây
-                disableOnInteraction: false,
+                delay: 5000, // Tăng thời gian delay lên xíu để người dùng kịp xem nếu là video
+                disableOnInteraction: true, // Nên để true để khi user click xem video thì không tự trượt đi nữa
               }}
               style={{ borderRadius: "10px", overflow: "hidden" }}
               spaceBetween={10}
             >
-              {images.map((img, index) => (
+              {slides.map((slide, index) => (
                 <SwiperSlide key={index}>
-                  <img
-                    src={`${BE_URL}${img.image_url}`}
-                    style={{
-                      width: "100%",
-                      height: "450px",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                    alt={plant.name}
-                    onError={(e) => {
-                      e.target.src =
-                        "https://via.placeholder.com/450?text=No+Image";
-                    }} // Fallback nếu ảnh lỗi
-                  />
+                  {slide.type === "video" ? (
+                    // RENDER VIDEO
+                    <video
+                      controls
+                      style={{
+                        width: "100%",
+                        height: "450px", // Chiều cao cố định giống ảnh
+                        objectFit: "contain", // Giữ tỉ lệ video, phần dư sẽ đen
+                        display: "block",
+                        backgroundColor: "#000",
+                      }}
+                    >
+                      <source src={`${BE_URL}${slide.url}`} />
+                      Trình duyệt không hỗ trợ thẻ video.
+                    </video>
+                  ) : (
+                    // RENDER ẢNH
+                    <img
+                      src={`${BE_URL}${slide.url}`}
+                      style={{
+                        width: "100%",
+                        height: "450px",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                      alt={plant.name}
+                      onError={(e) => {
+                        e.target.src =
+                          "https://via.placeholder.com/450?text=No+Image";
+                      }}
+                    />
+                  )}
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -144,7 +157,7 @@ const PlantDetail = () => {
                 color: "#888",
               }}
             >
-              Chưa có hình ảnh
+              Chưa có hình ảnh/video
             </div>
           )}
         </div>
@@ -193,73 +206,6 @@ const PlantDetail = () => {
           </div>
         </div>
       </div>
-
-      {/* PHẦN DƯỚI: KHU VỰC VIDEO RIÊNG BIỆT */}
-      {videos.length > 0 && (
-        <div
-          style={{
-            marginTop: "50px",
-            borderTop: "1px solid #eee",
-            paddingTop: "30px",
-          }}
-        >
-          <h2
-            style={{
-              color: "#2e7d32",
-              textAlign: "center",
-              marginBottom: "30px",
-              textTransform: "uppercase",
-            }}
-          >
-            🎬 Video thực tế tại vườn
-          </h2>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: "25px",
-            }}
-          >
-            {videos.map((vid, index) => (
-              <div
-                key={index}
-                style={{
-                  boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  background: "#000",
-                }}
-              >
-                <video
-                  controls
-                  preload="metadata"
-                  style={{
-                    width: "100%",
-                    height: "250px",
-                    objectFit: "contain", // Dùng contain để video không bị cắt
-                    display: "block",
-                  }}
-                >
-                  <source src={`${BE_URL}${vid.image_url}`} />
-                  Trình duyệt của bạn không hỗ trợ thẻ video.
-                </video>
-                <div
-                  style={{
-                    padding: "12px",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    color: "#fff",
-                    background: "#222",
-                  }}
-                >
-                  Video #{index + 1}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
