@@ -12,6 +12,7 @@ import {
   FaEdit,
   FaPlus,
   FaSignOutAlt,
+  FaLayerGroup // Icon cho Layout
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -62,7 +63,6 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      // Lưu ý: Cần đảm bảo Backend có route GET /users
       const res = await axiosClient.get("/users");
       setUsers(res.data);
     } catch (error) {
@@ -94,7 +94,7 @@ const AdminDashboard = () => {
     const matchCategory =
       filterCategory === "all" ||
       p.category_id === parseInt(filterCategory) ||
-      p.category_name === filterCategory; // Tuỳ API trả về ID hay Name
+      p.category_name === filterCategory; 
     return matchSearch && matchCategory;
   });
 
@@ -161,6 +161,7 @@ const AdminDashboard = () => {
           flexDirection: "column",
           position: "fixed",
           height: "100%",
+          zIndex: 100
         }}
       >
         <div
@@ -193,17 +194,17 @@ const AdminDashboard = () => {
             icon={<FaUsers />}
             label="Quản lý Users"
           />
-          <div style={{ padding: "10px 20px" }}>
-            <Link
-              to="/admin/popup-config"
+          
+          <div style={{borderTop: '1px solid #333', marginTop: '10px', paddingTop: '10px'}}>
+             <Link
+              to="/admin/popup"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
                 color: "#ccc",
                 textDecoration: "none",
-                padding: "12px",
-                borderRadius: "5px",
+                padding: "12px 20px",
                 transition: "0.3s",
               }}
               onMouseEnter={(e) => (e.target.style.background = "#333")}
@@ -211,7 +212,25 @@ const AdminDashboard = () => {
             >
               <FaCog /> Cấu hình Popup
             </Link>
+
+            <Link
+              to="/admin/layout"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                color: "#ccc",
+                textDecoration: "none",
+                padding: "12px 20px",
+                transition: "0.3s",
+              }}
+              onMouseEnter={(e) => (e.target.style.background = "#333")}
+              onMouseLeave={(e) => (e.target.style.background = "transparent")}
+            >
+              <FaLayerGroup /> Bố cục Trang chủ
+            </Link>
           </div>
+
         </nav>
         <div style={{ padding: "20px", borderTop: "1px solid #333" }}>
           <button
@@ -270,7 +289,7 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            {/* FORM THÊM/SỬA (HIỆN POPUP HOẶC INLINE) */}
+            {/* FORM THÊM/SỬA */}
             {showForm && (
               <div
                 style={{
@@ -308,7 +327,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* TOOLBAR: SEARCH & FILTER */}
+            {/* TOOLBAR */}
             <div
               style={{
                 display: "flex",
@@ -360,7 +379,7 @@ const AdminDashboard = () => {
               </select>
             </div>
 
-            {/* TABLE LIST PLANTS */}
+            {/* TABLE */}
             <div
               style={{
                 background: "white",
@@ -637,7 +656,7 @@ const AdminDashboard = () => {
   );
 };
 
-// --- STYLES COMPONENT CON (Để code gọn gàng) ---
+// --- STYLES COMPONENT CON ---
 const MenuButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
@@ -700,4 +719,3 @@ const btnPageStyle = {
 };
 
 export default AdminDashboard;
-    

@@ -14,17 +14,17 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
 import CategoryPage from "./pages/CategoryPage";
-import AdminPopupConfig from "./pages/AdminPopupConfig"; // <--- Import trang cấu hình
-import PopupBanner from "./components/PopupBanner"; // <--- Import Component Popup
+import AdminPopupConfig from "./pages/AdminPopupConfig"; 
+import AdminLayoutConfig from "./pages/AdminLayoutConfig"; // <--- Import trang Layout mới
+import PopupBanner from "./components/PopupBanner"; 
 import {
-  FaUserCircle,
   FaSignOutAlt,
   FaSignInAlt,
   FaBars,
   FaTimes,
 } from "react-icons/fa";
 
-// ... (Giữ nguyên phần component Navigation như code trước) ...
+// Component Navigation
 const Navigation = ({ isLoggedIn, onLogout }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,11 +113,12 @@ function App() {
     <BrowserRouter>
       <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} />
 
-      {/* Hiển thị Popup ở mọi nơi (nó sẽ tự ẩn nếu không active) */}
+      {/* Popup hiển thị toàn trang */}
       <PopupBanner />
 
       <div style={{ minHeight: "80vh", paddingBottom: "50px" }}>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/categories" element={<CategoryPage />} />
           <Route path="/plant/:id" element={<PlantDetail />} />
@@ -127,7 +128,7 @@ function App() {
             element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
           />
 
-          {/* Routes Admin */}
+          {/* Admin Routes */}
           <Route
             path="/admin"
             element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/login" />}
@@ -141,11 +142,19 @@ function App() {
             element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />}
           />
 
-          {/* Route mới: Cấu hình Popup */}
+          {/* Cấu hình Popup */}
           <Route
             path="/admin/popup"
             element={
               isLoggedIn ? <AdminPopupConfig /> : <Navigate to="/login" />
+            }
+          />
+
+          {/* Cấu hình Layout Trang Chủ (Mới) */}
+          <Route
+            path="/admin/layout"
+            element={
+              isLoggedIn ? <AdminLayoutConfig /> : <Navigate to="/login" />
             }
           />
         </Routes>
