@@ -292,3 +292,51 @@ nav a:hover {
     grid-template-columns: 1fr !important; /* 1 cột trên mobile */
   }
 }
+/* ... Giữ nguyên các code cũ ... */
+
+/* --- POPUP STYLES --- */
+.popup-banner {
+  position: fixed;
+  z-index: 9999;
+  width: 90%;
+  max-width: 320px; /* Popup nhỏ gọn hơn (cũ là 400px) */
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out;
+  transition: all 0.3s ease;
+}
+
+/* Các vị trí trên Desktop */
+.popup-pos-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.popup-pos-bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+.popup-pos-bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+/* RESPONSIVE: Trên điện thoại luôn ra giữa */
+@media (max-width: 768px) {
+  .popup-banner {
+    top: 50% !important;
+    left: 50% !important;
+    bottom: auto !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); } /* Hiệu ứng trượt nhẹ */
+  to { opacity: 1; }
+}

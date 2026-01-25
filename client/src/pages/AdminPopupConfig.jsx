@@ -1,30 +1,70 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
-import { FaSave, FaEye } from 'react-icons/fa';
+import { FaSave, FaPlus, FaTrash, FaEdit, FaTimes } from 'react-icons/fa';
 
 const AdminPopupConfig = () => {
-    const [config, setConfig] = useState({
-        title: '',
-        content: '',
-        link_url: '',
-        position: 'center',
-        is_active: false,
-        image_url: '' // Link ảnh cũ
-    });
-    const [file, setFile] = useState(null); // File ảnh mới
+    const [popups, setPopups] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
+    
+    // State form
+    const [config, setConfig] = useState(initialState());
+    const [file, setFile] = useState(null);
     const [preview, setPreview] = useState(null);
 
+    function initialState() {
+        return {
+            id: null,
+            title: '',
+            content: '',
+            link_url: '',
+            position: 'center',
+            is_active: true,
+            image_url: ''
+        };
+    }
+
+    // Load danh sách
     useEffect(() => {
-        // Load cấu hình hiện tại
-        axiosClient.get('/popup').then(res => {
-            if (res.data) {
-                setConfig({
-                    ...res.data,
-                    is_active: res.data.is_active === 1 // Convert number to boolean
-                });
-            }
-        });
+        fetchPopups();
     }, []);
+
+    const fetchPopups = () => {
+        axiosClient.get('/popup/all').then(res => {
+            setPopups(res.data);
+        }).catch(err => console.error(err));
+    };
+
+    const handleEdit = (popup) => {
+        setConfig({ ...popup, is_active: popup.is_active === 1 });
+        setFile(null);
+        setPreview(null);
+        setIsEditing(true);
+        // Scroll lên đầu trang
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleAddNew = () => {
+        setConfig(initialState());
+        setFile(null);
+        setPreview(null);
+        setIsEditing(true);
+    };
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        setConfig(initialState());
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm("Bạn có chắc chắn muốn xóa popup này?")) {
+            try {
+                await axiosClient.delete(`/popup/${id}`);
+                fetchPopups();
+            } catch (error) {
+                alert("Lỗi khi xóa");
+            }
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -37,101 +77,126 @@ const AdminPopupConfig = () => {
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
-        setPreview(URL.createObjectURL(selectedFile));
+        if (selectedFile) setPreview(URL.createObjectURL(selectedFile));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
         const formData = new FormData();
         formData.append('title', config.title);
         formData.append('content', config.content);
         formData.append('link_url', config.link_url);
         formData.append('position', config.position);
         formData.append('is_active', config.is_active);
-        formData.append('old_image_url', config.image_url); // Gửi link ảnh cũ để nếu ko up ảnh mới thì dùng lại
         
-        if (file) {
-            formData.append('image', file);
-        }
+        if (file) formData.append('image', file);
+        else formData.append('old_image_url', config.image_url);
 
         try {
-            await axiosClient.post('/popup', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            alert('Đã lưu cấu hình Popup!');
+            if (config.id) {
+                // Update
+                await axiosClient.put(`/popup/${config.id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            } else {
+                // Create
+                await axiosClient.post('/popup', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
+            alert('Lưu thành công!');
+            setIsEditing(false);
+            fetchPopups();
         } catch (error) {
             console.error(error);
-            alert('Lỗi khi lưu cấu hình');
+            alert('Lỗi khi lưu');
         }
     };
 
     return (
-        <div className="container" style={{ maxWidth: '600px', marginTop: '30px', paddingBottom: '50px' }}>
-            <h2 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '30px' }}>⚙️ Cấu Hình Popup Quảng Cáo</h2>
+        <div className="container" style={{ marginTop: '30px', paddingBottom: '50px' }}>
+            <h2 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '30px' }}>⚙️ Quản Lý Popup Quảng Cáo</h2>
             
-            <form onSubmit={handleSubmit} style={{ background: 'white', padding: '30px', borderRadius: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}>
-                
-                {/* Switch Bật/Tắt */}
-                <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <label className="switch">
-                        <input 
-                            type="checkbox" 
-                            name="is_active" 
-                            checked={config.is_active} 
-                            onChange={handleChange} 
-                            style={{ transform: 'scale(1.5)', marginRight: '10px' }}
-                        />
-                        <span style={{ fontWeight: 'bold' }}>Kích hoạt Popup này</span>
-                    </label>
+            {/* Nếu đang không sửa thì hiện nút Thêm mới */}
+            {!isEditing && (
+                <div style={{ marginBottom: '20px', textAlign: 'right' }}>
+                    <button onClick={handleAddNew} style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <FaPlus /> Thêm Popup Mới
+                    </button>
                 </div>
+            )}
 
-                <div style={{ marginBottom: '15px' }}>
-                    <label>Tiêu đề:</label>
-                    <input type="text" name="title" value={config.title} onChange={handleChange} style={{ width: '100%', padding: '10px', marginTop: '5px' }} placeholder="VD: Khuyến mãi mùa hè" />
+            {/* FORM THÊM / SỬA */}
+            {isEditing && (
+                <div style={{ background: 'white', padding: '30px', borderRadius: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+                    <h3 style={{ marginBottom: '20px' }}>{config.id ? 'Sửa Popup' : 'Thêm Popup Mới'}</h3>
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ marginBottom: '15px' }}>
+                            <label className="switch">
+                                <input type="checkbox" name="is_active" checked={config.is_active} onChange={handleChange} style={{ marginRight: '10px' }} />
+                                <b>Kích hoạt hiển thị</b>
+                            </label>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div>
+                                <label>Tiêu đề:</label>
+                                <input type="text" name="title" value={config.title} onChange={handleChange} style={{ width: '100%', padding: '8px', marginTop: '5px' }} />
+                            </div>
+                            <div>
+                                <label>Link liên kết:</label>
+                                <input type="text" name="link_url" value={config.link_url} onChange={handleChange} style={{ width: '100%', padding: '8px', marginTop: '5px' }} />
+                            </div>
+                        </div>
+                        <div style={{ marginTop: '15px' }}>
+                            <label>Nội dung:</label>
+                            <textarea name="content" value={config.content} onChange={handleChange} rows="3" style={{ width: '100%', padding: '8px', marginTop: '5px' }}></textarea>
+                        </div>
+                        <div style={{ marginTop: '15px' }}>
+                            <label>Vị trí:</label>
+                            <select name="position" value={config.position} onChange={handleChange} style={{ width: '100%', padding: '8px', marginTop: '5px' }}>
+                                <option value="center">Giữa màn hình</option>
+                                <option value="bottom-right">Góc phải dưới</option>
+                                <option value="bottom-left">Góc trái dưới</option>
+                            </select>
+                        </div>
+                        <div style={{ marginTop: '15px' }}>
+                            <label>Hình ảnh:</label>
+                            <input type="file" onChange={handleFileChange} style={{ display: 'block', marginTop: '5px' }} />
+                            {(preview || config.image_url) && (
+                                <img src={preview || `http://localhost:3000${config.image_url}`} alt="Preview" style={{ height: '80px', marginTop: '10px', borderRadius: '5px' }} />
+                            )}
+                        </div>
+
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                            <button type="submit" style={{ background: '#2e7d32', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <FaSave /> Lưu lại
+                            </button>
+                            <button type="button" onClick={handleCancel} style={{ background: '#666', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <FaTimes /> Hủy
+                            </button>
+                        </div>
+                    </form>
                 </div>
+            )}
 
-                <div style={{ marginBottom: '15px' }}>
-                    <label>Nội dung ngắn:</label>
-                    <textarea name="content" value={config.content} onChange={handleChange} rows="3" style={{ width: '100%', padding: '10px', marginTop: '5px' }} placeholder="VD: Giảm giá 20% cho tất cả các loại cây..."></textarea>
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label>Hình ảnh:</label>
-                    <input type="file" onChange={handleFileChange} style={{ marginTop: '5px', display: 'block' }} />
-                    
-                    {/* Preview ảnh */}
-                    <div style={{ marginTop: '10px', border: '1px dashed #ccc', padding: '10px', textAlign: 'center' }}>
-                        {preview ? (
-                            <img src={preview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
-                        ) : config.image_url ? (
-                            <img src={`http://localhost:3000${config.image_url}`} alt="Current" style={{ maxWidth: '100%', maxHeight: '150px' }} />
-                        ) : (
-                            <span style={{ color: '#999' }}>Chưa có ảnh</span>
-                        )}
+            {/* DANH SÁCH POPUP */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                {popups.map(popup => (
+                    <div key={popup.id} style={{ background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', borderLeft: popup.is_active ? '5px solid #2e7d32' : '5px solid #ccc' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                            <h4 style={{ margin: 0, color: '#333' }}>{popup.title || '(Không tiêu đề)'}</h4>
+                            <span style={{ fontSize: '0.8rem', background: '#eee', padding: '2px 8px', borderRadius: '10px' }}>{popup.position}</span>
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: '#666', margin: '10px 0' }}>{popup.content}</p>
+                        {popup.image_url && <img src={`http://localhost:3000${popup.image_url}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '5px' }} alt="" />}
+                        
+                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <button onClick={() => handleEdit(popup)} style={{ background: '#ff9800', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '3px', cursor: 'pointer' }}><FaEdit /> Sửa</button>
+                            <button onClick={() => handleDelete(popup.id)} style={{ background: '#f44336', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '3px', cursor: 'pointer' }}><FaTrash /> Xóa</button>
+                        </div>
                     </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '15px' }}>
-                    <div>
-                        <label>Đường dẫn khi click (Link):</label>
-                        <input type="text" name="link_url" value={config.link_url} onChange={handleChange} style={{ width: '100%', padding: '10px', marginTop: '5px' }} placeholder="VD: /categories" />
-                    </div>
-                    <div>
-                        <label>Vị trí hiển thị:</label>
-                        <select name="position" value={config.position} onChange={handleChange} style={{ width: '100%', padding: '10px', marginTop: '5px' }}>
-                            <option value="center">Giữa màn hình (Center)</option>
-                            <option value="bottom-right">Góc phải dưới (Bottom Right)</option>
-                            <option value="bottom-left">Góc trái dưới (Bottom Left)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" style={{ width: '100%', background: '#2e7d32', color: 'white', padding: '12px', border: 'none', borderRadius: '5px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                    <FaSave /> Lưu Cấu Hình
-                </button>
-
-            </form>
+                ))}
+            </div>
         </div>
     );
 };
