@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import { FaSave, FaTrash, FaEdit, FaBars } from "react-icons/fa"; // Import FaBars
-import AdminSidebar from "../components/AdminSidebar"; // Import Sidebar
+import {
+  FaSave,
+  FaTrash,
+  FaEdit,
+  FaBars,
+  FaArrowUp,
+  FaArrowDown,
+} from "react-icons/fa";
+import AdminSidebar from "../components/AdminSidebar";
 
 const AdminLayoutConfig = () => {
   const navigate = useNavigate();
   const [layouts, setLayouts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [allPlants, setAllPlants] = useState([]); 
+  const [allPlants, setAllPlants] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
   // --- STATE CHO LAYOUT & SIDEBAR ---
@@ -62,7 +69,18 @@ const AdminLayoutConfig = () => {
   const fetchLayouts = async () => {
     try {
       const res = await axiosClient.get("/layout");
-      setLayouts(res.data);
+      // Sắp xếp theo sort_order để hiển thị đúng thứ tự
+      const sortedData = res.data.sort((a, b) => a.sort_order - b.sort_order);
+      setLayouts(sortedData);
+
+      // Tự động điền sort_order tiếp theo cho form thêm mới
+      if (!isEditing) {
+        const nextOrder =
+          sortedData.length > 0
+            ? sortedData[sortedData.length - 1].sort_order + 1
+            : 1;
+        setConfig((prev) => ({ ...prev, sort_order: nextOrder }));
+      }
     } catch (error) {
       console.error(error);
     }
@@ -112,6 +130,44 @@ const AdminLayoutConfig = () => {
     }
   };
 
+  // --- LOGIC ĐỔI VỊ TRÍ (LÊN/XUỐNG) ---
+  const handleMoveSection = async (index, direction) => {
+    // direction: -1 (Lên), 1 (Xuống)
+    const currentItem = layouts[index];
+    const targetItem = layouts[index + direction];
+
+    if (!currentItem || !targetItem) return;
+
+    // Hoán đổi giá trị sort_order
+    const currentOrder = currentItem.sort_order;
+    const targetOrder = targetItem.sort_order;
+
+    // Cập nhật giao diện ngay lập tức (Optimistic UI)
+    const newLayouts = [...layouts];
+    newLayouts[index] = { ...currentItem, sort_order: targetOrder };
+    newLayouts[index + direction] = { ...targetItem, sort_order: currentOrder };
+    newLayouts.sort((a, b) => a.sort_order - b.sort_order);
+    setLayouts(newLayouts);
+
+    try {
+      // Gọi API cập nhật (Chỉ gửi thông tin cơ bản, KHÔNG gửi plant_ids nên server sẽ giữ nguyên cây)
+      await Promise.all([
+        axiosClient.put(`/layout/${currentItem.id}`, {
+          ...currentItem,
+          sort_order: targetOrder,
+        }),
+        axiosClient.put(`/layout/${targetItem.id}`, {
+          ...targetItem,
+          sort_order: currentOrder,
+        }),
+      ]);
+      fetchLayouts(); // Đồng bộ lại với server cho chắc chắn
+    } catch (error) {
+      alert("Lỗi khi thay đổi vị trí!");
+      fetchLayouts(); // Rollback nếu lỗi
+    }
+  };
+
   const togglePlantSelection = (plantId) => {
     setSelectedPlantIds((prev) => {
       if (prev.includes(plantId)) {
@@ -136,13 +192,23 @@ const AdminLayoutConfig = () => {
         await axiosClient.post("/layout", payload);
       }
       setIsEditing(false);
-      setConfig(initialState());
-      setSelectedPlantIds([]);
+      resetForm();
       alert("Lưu thành công!");
       fetchLayouts();
     } catch (error) {
       alert("Lỗi khi lưu");
     }
+  };
+
+  const resetForm = () => {
+    setIsEditing(false);
+    const newInitial = initialState();
+    // Tính toán sort_order cho item mới
+    const maxOrder =
+      layouts.length > 0 ? Math.max(...layouts.map((l) => l.sort_order)) : 0;
+    newInitial.sort_order = maxOrder + 1;
+    setConfig(newInitial);
+    setSelectedPlantIds([]);
   };
 
   const filteredPlantsForSelection = allPlants.filter((p) =>
@@ -170,10 +236,24 @@ const AdminLayoutConfig = () => {
             boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
           }}
         >
-          <div style={{ fontWeight: "bold", fontSize: "18px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              fontWeight: "bold",
+              fontSize: "18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <button
               onClick={() => setIsSidebarOpen(true)}
-              style={{ background: "none", border: "none", color: "white", fontSize: "24px", cursor: "pointer" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "white",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
             >
               <FaBars />
             </button>
@@ -187,8 +267,13 @@ const AdminLayoutConfig = () => {
         <div
           onClick={() => setIsSidebarOpen(false)}
           style={{
-            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-            background: "rgba(0,0,0,0.5)", zIndex: 999,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 999,
           }}
         ></div>
       )}
@@ -204,12 +289,13 @@ const AdminLayoutConfig = () => {
 
       {/* --- MAIN CONTENT --- */}
       <div style={mainContentStyle}>
-        <div
-          className="container"
-          style={{ paddingBottom: "50px" }}
-        >
+        <div className="container" style={{ paddingBottom: "50px" }}>
           <h2
-            style={{ color: "#2e7d32", textAlign: "center", marginBottom: "30px" }}
+            style={{
+              color: "#2e7d32",
+              textAlign: "center",
+              marginBottom: "30px",
+            }}
           >
             🎨 Quản Lý Bố Cục Trang Chủ
           </h2>
@@ -224,7 +310,11 @@ const AdminLayoutConfig = () => {
               marginBottom: "30px",
             }}
           >
-            <h3>{isEditing ? "Chỉnh sửa Section" : "Thêm Section Mới"}</h3>
+            <h3>
+              {isEditing
+                ? `Đang chỉnh sửa: ${config.title}`
+                : "Thêm Section Mới"}
+            </h3>
             <form onSubmit={handleSubmit} style={{ marginTop: "15px" }}>
               <div
                 style={{
@@ -234,7 +324,7 @@ const AdminLayoutConfig = () => {
                 }}
               >
                 <div>
-                  <label>Tiêu đề hiển thị (Ví dụ: Góc làm việc):</label>
+                  <label>Tiêu đề hiển thị:</label>
                   <input
                     type="text"
                     required
@@ -249,16 +339,20 @@ const AdminLayoutConfig = () => {
                   <label>Kiểu nội dung:</label>
                   <select
                     value={config.type}
-                    onChange={(e) => setConfig({ ...config, type: e.target.value })}
+                    onChange={(e) =>
+                      setConfig({ ...config, type: e.target.value })
+                    }
                     style={{ width: "100%", padding: "8px", marginTop: "5px" }}
                   >
                     <option value="manual">Tự chọn từng cây (Thủ công)</option>
-                    <option value="category">Theo Danh Mục Cụ Thể (Tự động)</option>
+                    <option value="category">
+                      Theo Danh Mục Cụ Thể (Tự động)
+                    </option>
                   </select>
                 </div>
               </div>
 
-              {/* CHECKLIST CHỌN CÂY (Chỉ hiện khi type = manual) */}
+              {/* CHECKLIST CHỌN CÂY */}
               {config.type === "manual" && (
                 <div
                   style={{
@@ -281,7 +375,7 @@ const AdminLayoutConfig = () => {
 
                   <input
                     type="text"
-                    placeholder="🔍 Tìm tên cây để chọn nhanh..."
+                    placeholder="🔍 Tìm tên cây..."
                     value={searchPlant}
                     onChange={(e) => setSearchPlant(e.target.value)}
                     style={{
@@ -318,7 +412,10 @@ const AdminLayoutConfig = () => {
                           type="checkbox"
                           checked={selectedPlantIds.includes(plant.id)}
                           onChange={() => togglePlantSelection(plant.id)}
-                          style={{ marginRight: "8px", transform: "scale(1.2)" }}
+                          style={{
+                            marginRight: "8px",
+                            transform: "scale(1.2)",
+                          }}
                         />
                         <div
                           style={{
@@ -338,20 +435,17 @@ const AdminLayoutConfig = () => {
                               }}
                             />
                           )}
-                          <span style={{ fontSize: "0.9rem" }}>{plant.name}</span>
+                          <span style={{ fontSize: "0.9rem" }}>
+                            {plant.name}
+                          </span>
                         </div>
                       </label>
                     ))}
                   </div>
-                  <p
-                    style={{ fontSize: "0.8rem", marginTop: "5px", color: "#666" }}
-                  >
-                    Đã chọn: <b>{selectedPlantIds.length}</b> sản phẩm
-                  </p>
                 </div>
               )}
 
-              {/* DROPDOWN DANH MỤC (Chỉ hiện khi type = category) */}
+              {/* DANH MỤC */}
               {config.type === "category" && (
                 <div style={{ marginTop: "15px" }}>
                   <label>Chọn Danh Mục:</label>
@@ -386,9 +480,16 @@ const AdminLayoutConfig = () => {
                     type="number"
                     value={config.sort_order}
                     onChange={(e) =>
-                      setConfig({ ...config, sort_order: e.target.value })
+                      setConfig({
+                        ...config,
+                        sort_order: parseInt(e.target.value),
+                      })
                     }
-                    style={{ width: "80px", padding: "8px", marginLeft: "10px" }}
+                    style={{
+                      width: "80px",
+                      padding: "8px",
+                      marginLeft: "10px",
+                    }}
                   />
                 </div>
                 <label
@@ -406,7 +507,7 @@ const AdminLayoutConfig = () => {
                     }
                     style={{ marginRight: "5px" }}
                   />
-                  Hiển thị
+                  Hiển thị trên web
                 </label>
               </div>
 
@@ -427,11 +528,7 @@ const AdminLayoutConfig = () => {
                 {isEditing && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setConfig(initialState());
-                      setSelectedPlantIds([]);
-                    }}
+                    onClick={resetForm}
                     style={{
                       background: "#666",
                       color: "white",
@@ -442,16 +539,21 @@ const AdminLayoutConfig = () => {
                       marginLeft: "10px",
                     }}
                   >
-                    Hủy
+                    Hủy / Thêm mới
                   </button>
                 )}
               </div>
             </form>
           </div>
 
-          {/* LIST */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            {layouts.map((item) => (
+          {/* DANH SÁCH HIỂN THỊ */}
+          <h3 style={{ marginBottom: "15px", color: "#333" }}>
+            Danh sách hiển thị trên trang chủ
+          </h3>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+          >
+            {layouts.map((item, index) => (
               <div
                 key={item.id}
                 style={{
@@ -465,49 +567,153 @@ const AdminLayoutConfig = () => {
                     ? "5px solid #2e7d32"
                     : "5px solid #ccc",
                   opacity: item.is_active ? 1 : 0.7,
+                  transition: "all 0.3s ease",
                 }}
               >
-                <div>
-                  <h4 style={{ margin: 0, color: "#333", fontSize: "1.1rem" }}>
-                    {item.title}
-                  </h4>
-                  <p style={{ margin: "5px 0", fontSize: "0.9rem", color: "#666" }}>
-                    Loại:{" "}
-                    <b>
-                      {item.type === "manual"
-                        ? "Thủ công (Tự chọn)"
-                        : item.type === "category"
-                          ? "Theo danh mục"
-                          : item.type}
-                    </b>
-                    {" | "} Thứ tự: {item.sort_order}
-                  </p>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "20px" }}
+                >
+                  {/* SỐ THỨ TỰ RÕ RÀNG */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "50px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "1.5rem",
+                        fontWeight: "bold",
+                        color: "#2e7d32",
+                      }}
+                    >
+                      #{item.sort_order}
+                    </span>
+                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                      Vị trí
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4
+                      style={{ margin: 0, color: "#333", fontSize: "1.2rem" }}
+                    >
+                      {item.title}
+                    </h4>
+                    <p
+                      style={{
+                        margin: "5px 0",
+                        fontSize: "0.9rem",
+                        color: "#666",
+                      }}
+                    >
+                      Loại:{" "}
+                      <span
+                        style={{
+                          background:
+                            item.type === "manual" ? "#e3f2fd" : "#fff3e0",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontWeight: "500",
+                          color: "#333",
+                        }}
+                      >
+                        {item.type === "manual" ? "Thủ công" : "Danh mục"}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  {/* NÚT ĐIỀU HƯỚNG LÊN / XUỐNG */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      marginRight: "15px",
+                    }}
+                  >
+                    <button
+                      onClick={() => handleMoveSection(index, -1)}
+                      disabled={index === 0}
+                      style={{
+                        background: index === 0 ? "#eee" : "#fff",
+                        border: "1px solid #ddd",
+                        color: index === 0 ? "#ccc" : "#2e7d32",
+                        cursor: index === 0 ? "default" : "pointer",
+                        padding: "5px 10px",
+                        borderTopLeftRadius: "4px",
+                        borderTopRightRadius: "4px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Chuyển lên trên"
+                    >
+                      <FaArrowUp />
+                    </button>
+                    <button
+                      onClick={() => handleMoveSection(index, 1)}
+                      disabled={index === layouts.length - 1}
+                      style={{
+                        background:
+                          index === layouts.length - 1 ? "#eee" : "#fff",
+                        border: "1px solid #ddd",
+                        borderTop: "none",
+                        color:
+                          index === layouts.length - 1 ? "#ccc" : "#2e7d32",
+                        cursor:
+                          index === layouts.length - 1 ? "default" : "pointer",
+                        padding: "5px 10px",
+                        borderBottomLeftRadius: "4px",
+                        borderBottomRightRadius: "4px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Chuyển xuống dưới"
+                    >
+                      <FaArrowDown />
+                    </button>
+                  </div>
+
                   <button
                     onClick={() => handleEdit(item)}
                     style={{
-                      marginRight: "10px",
-                      background: "none",
-                      border: "none",
+                      background: "#fff8e1",
+                      border: "1px solid #ffcc80",
                       color: "#f57c00",
                       cursor: "pointer",
-                      fontSize: "1.2rem",
+                      padding: "8px 12px",
+                      borderRadius: "5px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      marginRight: "5px",
                     }}
                   >
-                    <FaEdit />
+                    <FaEdit /> Sửa
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
                     style={{
-                      background: "none",
-                      border: "none",
+                      background: "#ffebee",
+                      border: "1px solid #ef9a9a",
                       color: "#d32f2f",
                       cursor: "pointer",
-                      fontSize: "1.2rem",
+                      padding: "8px 12px",
+                      borderRadius: "5px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
                     }}
                   >
-                    <FaTrash />
+                    <FaTrash /> Xóa
                   </button>
                 </div>
               </div>

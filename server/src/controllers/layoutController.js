@@ -62,14 +62,14 @@ exports.createSection = async (req, res) => {
   }
 };
 
-// Cập nhật section
+// Cập nhật section (ĐÃ FIX LỖI MẤT CÂY KHI SẮP XẾP)
 exports.updateSection = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, type, param_value, sort_order, is_active, plant_ids } =
       req.body;
 
-    // 1. Update thông tin chính
+    // 1. Update thông tin chính (Luôn chạy)
     await db.query(
       `UPDATE homepage_layouts SET 
              title = ?, type = ?, param_value = ?, sort_order = ?, is_active = ?
@@ -77,13 +77,16 @@ exports.updateSection = async (req, res) => {
       [title, type, param_value || null, sort_order, is_active ? 1 : 0, id],
     );
 
-    // 2. Xử lý danh sách cây (Xóa cũ -> Thêm mới) nếu là manual
-    if (type === "manual") {
+    // 2. Xử lý danh sách cây (Xóa cũ -> Thêm mới)
+    // FIX QUAN TRỌNG: Chỉ chạy logic này khi plant_ids THỰC SỰ LÀ MỘT MẢNG (Array)
+    // Khi ấn nút Sắp xếp, plant_ids là undefined -> Bỏ qua đoạn này -> Giữ nguyên cây cũ.
+    if (type === "manual" && Array.isArray(plant_ids)) {
+      
       // Xóa hết liên kết cũ
       await db.query("DELETE FROM layout_items WHERE layout_id = ?", [id]);
 
-      // Thêm mới nếu có chọn cây
-      if (Array.isArray(plant_ids) && plant_ids.length > 0) {
+      // Thêm mới nếu danh sách không rỗng
+      if (plant_ids.length > 0) {
         const values = plant_ids.map((plantId) => [id, plantId]);
         await db.query(
           "INSERT INTO layout_items (layout_id, plant_id) VALUES ?",
