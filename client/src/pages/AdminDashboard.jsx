@@ -15,33 +15,31 @@ import {
   FaLayerGroup,
   FaSortAmountDown,
   FaTimes,
-  FaEye, // <-- Thêm icon Mắt để xem chi tiết
+  FaEye,
+  FaBars, // <-- Icon Menu Mobile
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("plants"); // plants | categories | users
 
-  // =========================================
-  // 1. STATES CHO PLANT (CÂY CẢNH)
-  // =========================================
+  // --- RESPONSIVE STATES ---
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // --- STATES CHO PLANT ---
   const [plants, setPlants] = useState([]);
   const [editingPlant, setEditingPlant] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [viewingPlant, setViewingPlant] = useState(null);
 
-  // STATE CHO XEM CHI TIẾT (NEW)
-  const [viewingPlant, setViewingPlant] = useState(null); // Lưu data cây đang xem
-
-  // -- Bộ lọc & Phân trang Plant --
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
-  // =========================================
-  // 2. STATES CHO CATEGORY (DANH MỤC)
-  // =========================================
+  // --- STATES CHO CATEGORY ---
   const [categories, setCategories] = useState([]);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -51,49 +49,58 @@ const AdminDashboard = () => {
     description: "",
   });
 
-  // =========================================
-  // 3. STATES CHO USER (NGƯỜI DÙNG)
-  // =========================================
+  // --- STATES CHO USER ---
   const [users, setUsers] = useState([]);
 
-  // --- LOAD DATA BAN ĐẦU ---
+  // --- LOAD DATA & RESIZE EVENT ---
   useEffect(() => {
     fetchCategories();
     if (activeTab === "plants") fetchPlants();
     if (activeTab === "users") fetchUsers();
+
+    // Lắng nghe resize màn hình
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth >= 1024) setIsSidebarOpen(false); // Reset khi về PC
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [activeTab]);
 
   // --- API CALLS ---
   const fetchPlants = async () => {
+    /* Giữ nguyên logic cũ */
     try {
       const res = await axiosClient.get("/plants");
       setPlants(res.data);
     } catch (error) {
-      console.error("Lỗi tải plants:", error);
+      console.error(error);
     }
   };
-
   const fetchCategories = async () => {
     try {
       const res = await axiosClient.get("/categories");
       setCategories(res.data);
     } catch (error) {
-      console.error("Lỗi tải categories:", error);
+      console.error(error);
     }
   };
-
   const fetchUsers = async () => {
     try {
       const res = await axiosClient.get("/users");
       setUsers(res.data);
     } catch (error) {
-      console.error("Lỗi tải users:", error);
+      console.error(error);
     }
   };
 
-  // =========================================
-  // XỬ LÝ LOGIC PLANT
-  // =========================================
+  // --- XỬ LÝ CLICK MENU (Mobile: Chọn xong tự đóng sidebar) ---
+  const handleMenuClick = (tab) => {
+    setActiveTab(tab);
+    if (isMobile) setIsSidebarOpen(false);
+  };
+
+  // --- LOGIC XỬ LÝ DỮ LIỆU (Plant/Category/User) - GIỮ NGUYÊN ---
   const handleDeletePlant = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa cây này?")) return;
     try {
@@ -104,27 +111,21 @@ const AdminDashboard = () => {
       alert("Lỗi khi xóa!");
     }
   };
-
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingPlant(null);
     fetchPlants();
   };
 
-  // --- HÀM XEM CHI TIẾT (NEW) ---
   const handleViewDetails = async (id) => {
     try {
-      // Gọi API lấy chi tiết để có đủ thông tin (Attributes, Gallery)
-      //
       const res = await axiosClient.get(`/plants/${id}`);
       setViewingPlant(res.data);
     } catch (error) {
-      console.error("Lỗi lấy chi tiết cây:", error);
       alert("Không tải được chi tiết cây!");
     }
   };
 
-  // Logic Lọc & Sắp xếp Plant
   const processPlants = () => {
     let result = plants.filter((p) => {
       const matchSearch = p.name
@@ -136,7 +137,6 @@ const AdminDashboard = () => {
         p.category_name === filterCategory;
       return matchSearch && matchCategory;
     });
-
     result.sort((a, b) => {
       switch (sortBy) {
         case "newest":
@@ -160,23 +160,17 @@ const AdminDashboard = () => {
 
   const filteredPlants = processPlants();
   const totalPages = Math.ceil(filteredPlants.length / itemsPerPage);
-
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
+    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
   }, [itemsPerPage, totalPages, currentPage]);
-
   const currentPlants = filteredPlants.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
-  // =========================================
-  // XỬ LÝ LOGIC CATEGORY
-  // =========================================
-  const generateSlug = (text) => {
-    return text
+  // Category Logic
+  const generateSlug = (text) =>
+    text
       .toString()
       .toLowerCase()
       .normalize("NFD")
@@ -186,55 +180,35 @@ const AdminDashboard = () => {
       .replace(/\-\-+/g, "-")
       .replace(/^-+/, "")
       .replace(/-+$/, "");
-  };
-
   const handleCatInputChange = (e) => {
     const { name, value } = e.target;
     setCatFormData((prev) => {
       const newData = { ...prev, [name]: value };
-      if (name === "name" && !editingCategory) {
+      if (name === "name" && !editingCategory)
         newData.slug = generateSlug(value);
-      }
       return newData;
     });
   };
-
   const handleSubmitCategory = async (e) => {
     e.preventDefault();
     try {
       if (editingCategory) {
         await axiosClient.put(`/categories/${editingCategory.id}`, catFormData);
-        alert("Cập nhật danh mục thành công!");
+        alert("Cập nhật thành công!");
       } else {
         await axiosClient.post("/categories", catFormData);
-        alert("Thêm danh mục thành công!");
+        alert("Thêm thành công!");
       }
       fetchCategories();
       setShowCategoryForm(false);
       setEditingCategory(null);
       setCatFormData({ name: "", slug: "", description: "" });
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi khi lưu danh mục!");
+      alert(error.response?.data?.message || "Lỗi khi lưu!");
     }
   };
-
-  const handleEditCategoryClick = (cat) => {
-    setEditingCategory(cat);
-    setCatFormData({
-      name: cat.name,
-      slug: cat.slug,
-      description: cat.description || "",
-    });
-    setShowCategoryForm(true);
-  };
-
   const handleDeleteCategory = async (id) => {
-    if (
-      !window.confirm(
-        "CẢNH BÁO: Xóa danh mục sẽ khiến các cây thuộc danh mục này mất liên kết.",
-      )
-    )
-      return;
+    if (!window.confirm("CẢNH BÁO: Xóa danh mục sẽ ảnh hưởng đến cây.")) return;
     try {
       await axiosClient.delete(`/categories/${id}`);
       fetchCategories();
@@ -243,40 +217,112 @@ const AdminDashboard = () => {
     }
   };
 
-  // =========================================
-  // XỬ LÝ LOGIC USER
-  // =========================================
+  // User Logic
   const handleDeleteUser = async (id) => {
-    if (!window.confirm("Bạn chắc chắn muốn xóa người dùng này?")) return;
-    try {
-      await axiosClient.delete(`/users/${id}`);
-      fetchUsers();
-    } catch (error) {
-      alert("Lỗi xóa user!");
+    if (window.confirm("Xóa user này?")) {
+      try {
+        await axiosClient.delete(`/users/${id}`);
+        fetchUsers();
+      } catch {
+        alert("Lỗi xóa user!");
+      }
     }
   };
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   };
 
+  // --- STYLES RESPONSIVE ---
+  const sidebarStyle = {
+    width: "250px",
+    background: "#1a1a1a",
+    color: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    position: "fixed",
+    height: "100%",
+    zIndex: 1000,
+    transition: "0.3s ease-in-out",
+    left: isMobile ? (isSidebarOpen ? "0" : "-260px") : "0", // Ẩn/Hiện Sidebar Mobile
+    top: 0,
+    boxShadow: isSidebarOpen ? "2px 0 10px rgba(0,0,0,0.5)" : "none",
+  };
+
+  const mainContentStyle = {
+    marginLeft: isMobile ? "0" : "250px", // Mobile full width
+    flex: 1,
+    padding: "30px",
+    paddingTop: isMobile ? "80px" : "30px", // Né Mobile Header
+    transition: "0.3s",
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6f8" }}>
-      {/* --- SIDEBAR MENU --- */}
-      <div
-        style={{
-          width: "250px",
-          background: "#1a1a1a",
-          color: "#fff",
-          display: "flex",
-          flexDirection: "column",
-          position: "fixed",
-          height: "100%",
-          zIndex: 100,
-        }}
-      >
+      {/* --- 1. MOBILE HEADER (Chỉ hiện khi isMobile = true) --- */}
+      {isMobile && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "60px",
+            background: "#1a1a1a",
+            color: "white",
+            zIndex: 900,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 20px",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              fontSize: "18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "white",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
+            >
+              <FaBars />
+            </button>
+            Garder Admin
+          </div>
+        </div>
+      )}
+
+      {/* --- 2. OVERLAY (Lớp phủ đen khi mở menu mobile) --- */}
+      {isMobile && isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 999,
+          }}
+        ></div>
+      )}
+
+      {/* --- 3. SIDEBAR MENU --- */}
+      <div style={sidebarStyle}>
         <div
           style={{
             padding: "20px",
@@ -284,26 +330,43 @@ const AdminDashboard = () => {
             fontWeight: "bold",
             borderBottom: "1px solid #333",
             color: "#4caf50",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          Garder Admin
+          <span>Garder Admin</span>
+          {isMobile && (
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#888",
+                fontSize: "20px",
+              }}
+            >
+              <FaTimes />
+            </button>
+          )}
         </div>
-        <nav style={{ flex: 1, padding: "20px 0" }}>
+
+        <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
           <MenuButton
             active={activeTab === "plants"}
-            onClick={() => setActiveTab("plants")}
+            onClick={() => handleMenuClick("plants")}
             icon={<FaLeaf />}
             label="Quản lý Cây"
           />
           <MenuButton
             active={activeTab === "categories"}
-            onClick={() => setActiveTab("categories")}
+            onClick={() => handleMenuClick("categories")}
             icon={<FaList />}
             label="Quản lý Danh mục"
           />
           <MenuButton
             active={activeTab === "users"}
-            onClick={() => setActiveTab("users")}
+            onClick={() => handleMenuClick("users")}
             icon={<FaUsers />}
             label="Quản lý Users"
           />
@@ -315,11 +378,19 @@ const AdminDashboard = () => {
               paddingTop: "10px",
             }}
           >
-            <Link to="/admin/popup" style={linkStyle}>
+            <Link
+              to="/admin/popup"
+              style={linkStyle}
+              onClick={() => isMobile && setIsSidebarOpen(false)}
+            >
               {" "}
               <FaCog /> Cấu hình Popup{" "}
             </Link>
-            <Link to="/admin/layout" style={linkStyle}>
+            <Link
+              to="/admin/layout"
+              style={linkStyle}
+              onClick={() => isMobile && setIsSidebarOpen(false)}
+            >
               {" "}
               <FaLayerGroup /> Bố cục Trang chủ{" "}
             </Link>
@@ -333,19 +404,22 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* --- MAIN CONTENT --- */}
-      <div style={{ marginLeft: "250px", flex: 1, padding: "30px" }}>
-        {/* === TAB 1: QUẢN LÝ CÂY === */}
+      {/* --- 4. MAIN CONTENT --- */}
+      <div style={mainContentStyle}>
+        {/* === TAB PLANTS === */}
         {activeTab === "plants" && (
           <div>
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: "20px",
+                flexWrap: "wrap",
+                gap: "10px",
               }}
             >
-              <h2>🌿 Danh Sách Cây Cảnh</h2>
+              <h2>🌿 Danh Sách Cây</h2>
               <button
                 onClick={() => {
                   setEditingPlant(null);
@@ -354,11 +428,14 @@ const AdminDashboard = () => {
                 className="btn-add"
                 style={btnAddStyle}
               >
-                <FaPlus /> Thêm Cây Mới
+                <FaPlus />{" "}
+                <span style={{ display: isMobile ? "none" : "inline" }}>
+                  Thêm Mới
+                </span>
               </button>
             </div>
 
-            {/* MODAL EDIT/ADD FORM */}
+            {/* FORM MODAL */}
             {showForm && (
               <div style={formContainerStyle}>
                 <div
@@ -368,7 +445,7 @@ const AdminDashboard = () => {
                     marginBottom: "15px",
                   }}
                 >
-                  <h3>{editingPlant ? "Chỉnh Sửa Cây" : "Thêm Cây Mới"}</h3>
+                  <h3>{editingPlant ? "Sửa Cây" : "Thêm Cây"}</h3>
                   <button
                     onClick={() => setShowForm(false)}
                     style={closeBtnStyle}
@@ -383,34 +460,10 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* MODAL VIEW DETAILS (NEW) */}
+            {/* DETAIL MODAL */}
             {viewingPlant && (
-              <div
-                style={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  background: "rgba(0,0,0,0.5)",
-                  zIndex: 1000,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{
-                    background: "white",
-                    width: "800px",
-                    maxWidth: "90%",
-                    maxHeight: "90vh",
-                    overflowY: "auto",
-                    padding: "20px",
-                    borderRadius: "10px",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-                  }}
-                >
+              <div style={modalOverlayStyle}>
+                <div style={modalContentStyle}>
                   <div
                     style={{
                       display: "flex",
@@ -420,9 +473,9 @@ const AdminDashboard = () => {
                       marginBottom: "20px",
                     }}
                   >
-                    <h2 style={{ color: "#2e7d32", margin: 0 }}>
+                    <h3 style={{ color: "#2e7d32", margin: 0 }}>
                       Chi Tiết: {viewingPlant.name}
-                    </h2>
+                    </h3>
                     <button
                       onClick={() => setViewingPlant(null)}
                       style={{
@@ -435,15 +488,13 @@ const AdminDashboard = () => {
                       &times;
                     </button>
                   </div>
-
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 2fr",
+                      gridTemplateColumns: isMobile ? "1fr" : "1fr 2fr",
                       gap: "20px",
                     }}
                   >
-                    {/* Cột trái: Ảnh đại diện */}
                     <div>
                       <img
                         src={`http://localhost:3000${viewingPlant.thumbnail}`}
@@ -452,98 +503,29 @@ const AdminDashboard = () => {
                           width: "100%",
                           borderRadius: "10px",
                           objectFit: "cover",
-                          border: "1px solid #ddd",
                         }}
                       />
-                      <div
-                        style={{
-                          marginTop: "15px",
-                          padding: "10px",
-                          background: "#f9f9f9",
-                          borderRadius: "5px",
-                        }}
-                      >
-                        <p>
-                          <strong>Giá:</strong>{" "}
-                          <span
-                            style={{ color: "#d32f2f", fontWeight: "bold" }}
-                          >
-                            {Number(viewingPlant.price).toLocaleString()} đ
-                          </span>
-                        </p>
-                        <p>
-                          <strong>Danh mục:</strong>{" "}
-                          {viewingPlant.category_name}
-                        </p>
-                        <p>
-                          <strong>Tuổi cây:</strong>{" "}
-                          {viewingPlant.age || "Chưa cập nhật"}
-                        </p>
-                      </div>
                     </div>
-
-                    {/* Cột phải: Thông tin chi tiết */}
                     <div>
-                      <h4
-                        style={{
-                          borderBottom: "2px solid #2e7d32",
-                          display: "inline-block",
-                        }}
-                      >
-                        Thông tin chung
-                      </h4>
                       <p>
-                        <strong>Tên khoa học:</strong>{" "}
-                        <em>{viewingPlant.scientific_name}</em>
+                        <strong>Giá:</strong>{" "}
+                        {Number(viewingPlant.price).toLocaleString()} đ
+                      </p>
+                      <p>
+                        <strong>Danh mục:</strong> {viewingPlant.category_name}
                       </p>
                       <p>
                         <strong>Mô tả:</strong> {viewingPlant.description}
                       </p>
-
-                      {/* Thuộc tính động (Attributes) */}
-                      {viewingPlant.attributes &&
-                        viewingPlant.attributes.length > 0 && (
-                          <div style={{ marginTop: "15px" }}>
-                            <h4
-                              style={{
-                                borderBottom: "2px solid #2e7d32",
-                                display: "inline-block",
-                              }}
-                            >
-                              Đặc điểm chi tiết
-                            </h4>
-                            <ul style={{ listStyle: "none", padding: 0 }}>
-                              {viewingPlant.attributes.map((attr, idx) => (
-                                <li
-                                  key={idx}
-                                  style={{
-                                    marginBottom: "5px",
-                                    paddingLeft: "10px",
-                                    borderLeft: "3px solid #ccc",
-                                  }}
-                                >
-                                  <strong>{attr.attr_key}:</strong>{" "}
-                                  {attr.attr_value}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
                       <div style={{ marginTop: "15px" }}>
-                        <h4
-                          style={{
-                            borderBottom: "2px solid #2e7d32",
-                            display: "inline-block",
-                          }}
-                        >
-                          Hướng dẫn chăm sóc
-                        </h4>
+                        <strong>Hướng dẫn chăm sóc:</strong>
                         <p
                           style={{
                             whiteSpace: "pre-line",
-                            fontSize: "0.95rem",
-                            color: "#555",
+                            fontSize: "0.9rem",
+                            background: "#f9f9f9",
+                            padding: "10px",
+                            borderRadius: "5px",
                           }}
                         >
                           {viewingPlant.care_instruction}
@@ -551,68 +533,11 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Gallery (Album ảnh) */}
-                  {viewingPlant.media && viewingPlant.media.length > 0 && (
-                    <div
-                      style={{
-                        marginTop: "30px",
-                        borderTop: "1px solid #eee",
-                        paddingTop: "20px",
-                      }}
-                    >
-                      <h4>Album ảnh & Video</h4>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          overflowX: "auto",
-                          paddingBottom: "10px",
-                        }}
-                      >
-                        {viewingPlant.media.map((item, idx) => (
-                          <img
-                            key={idx}
-                            src={`http://localhost:3000${item.image_url}`}
-                            alt="media"
-                            style={{
-                              height: "100px",
-                              borderRadius: "5px",
-                              cursor: "pointer",
-                              border: "1px solid #ddd",
-                            }}
-                            onClick={() =>
-                              window.open(
-                                `http://localhost:3000${item.image_url}`,
-                                "_blank",
-                              )
-                            }
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ textAlign: "right", marginTop: "20px" }}>
-                    <button
-                      onClick={() => setViewingPlant(null)}
-                      style={{
-                        padding: "10px 20px",
-                        background: "#555",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Đóng
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* Filter Toolbar */}
+            {/* TOOLBAR */}
             <div style={toolbarStyle}>
               <div style={{ flex: 2, minWidth: "200px", position: "relative" }}>
                 <FaSearch
@@ -625,7 +550,7 @@ const AdminDashboard = () => {
                 />
                 <input
                   type="text"
-                  placeholder="Tìm kiếm tên cây..."
+                  placeholder="Tìm tên cây..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={inputSearchStyle}
@@ -636,7 +561,7 @@ const AdminDashboard = () => {
                 onChange={(e) => setFilterCategory(e.target.value)}
                 style={selectStyle}
               >
-                <option value="all">-- Tất cả danh mục --</option>
+                <option value="all">-- Danh mục --</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {" "}
@@ -644,7 +569,7 @@ const AdminDashboard = () => {
                   </option>
                 ))}
               </select>
-              <div style={{ flex: 1, minWidth: "180px", position: "relative" }}>
+              <div style={{ flex: 1, minWidth: "150px", position: "relative" }}>
                 <FaSortAmountDown
                   style={{
                     position: "absolute",
@@ -658,22 +583,28 @@ const AdminDashboard = () => {
                   onChange={(e) => setSortBy(e.target.value)}
                   style={inputSearchStyle}
                 >
-                  <option value="newest">🕒 Mới nhất</option>
-                  <option value="oldest">🕒 Cũ nhất</option>
-                  <option value="price-asc">💰 Giá tăng dần</option>
-                  <option value="price-desc">💰 Giá giảm dần</option>
-                  <option value="name-asc">🅰️ Tên A-Z</option>
+                  <option value="newest">Mới nhất</option>
+                  <option value="price-asc">Giá tăng</option>
+                  <option value="price-desc">Giá giảm</option>
                 </select>
               </div>
             </div>
 
-            {/* Table Plant */}
-            <div style={tableContainerStyle}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            {/* TABLE (Responsive Scroll) */}
+            <div style={{ ...tableContainerStyle, overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: "600px",
+                }}
+              >
+                {" "}
+                {/* MinWidth để không vỡ table trên mobile */}
                 <thead style={{ background: "#eee" }}>
                   <tr>
                     <th style={thStyle}>Ảnh</th>
-                    <th style={thStyle}>Tên cây</th>
+                    <th style={thStyle}>Tên</th>
                     <th style={thStyle}>Danh mục</th>
                     <th style={thStyle}>Giá</th>
                     <th style={thStyle}>Hành động</th>
@@ -691,8 +622,8 @@ const AdminDashboard = () => {
                             src={`http://localhost:3000${plant.thumbnail}`}
                             alt=""
                             style={{
-                              width: "50px",
-                              height: "50px",
+                              width: "40px",
+                              height: "40px",
                               objectFit: "cover",
                               borderRadius: "4px",
                             }}
@@ -701,51 +632,42 @@ const AdminDashboard = () => {
                       </td>
                       <td style={tdStyle}>
                         <strong>{plant.name}</strong>
-                        <div style={{ fontSize: "0.8rem", color: "#999" }}>
-                          {new Date(plant.created_at).toLocaleDateString()}
-                        </div>
                       </td>
                       <td style={tdStyle}>{plant.category_name}</td>
-                      <td
-                        style={{
-                          ...tdStyle,
-                          color: "#d32f2f",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {" "}
-                        {Number(plant.price).toLocaleString()} đ{" "}
+                      <td style={{ ...tdStyle, color: "#d32f2f" }}>
+                        {Number(plant.price).toLocaleString()}
                       </td>
                       <td style={tdStyle}>
-                        {/* NÚT XEM CHI TIẾT (NEW) */}
-                        <button
-                          onClick={() => handleViewDetails(plant.id)}
-                          style={btnViewStyle}
-                          title="Xem chi tiết"
-                        >
-                          {" "}
-                          <FaEye />{" "}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingPlant(plant);
-                            setShowForm(true);
-                            window.scrollTo(0, 0);
-                          }}
-                          style={btnEditStyle}
-                          title="Sửa"
-                        >
-                          {" "}
-                          <FaEdit />{" "}
-                        </button>
-                        <button
-                          onClick={() => handleDeletePlant(plant.id)}
-                          style={btnDeleteStyle}
-                          title="Xóa"
-                        >
-                          {" "}
-                          <FaTrash />{" "}
-                        </button>
+                        <div style={{ display: "flex", gap: "5px" }}>
+                          <button
+                            onClick={() => handleViewDetails(plant.id)}
+                            style={btnViewStyle}
+                            title="Xem"
+                          >
+                            {" "}
+                            <FaEye />{" "}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingPlant(plant);
+                              setShowForm(true);
+                              window.scrollTo(0, 0);
+                            }}
+                            style={btnEditStyle}
+                            title="Sửa"
+                          >
+                            {" "}
+                            <FaEdit />{" "}
+                          </button>
+                          <button
+                            onClick={() => handleDeletePlant(plant.id)}
+                            style={btnDeleteStyle}
+                            title="Xóa"
+                          >
+                            {" "}
+                            <FaTrash />{" "}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -755,7 +677,7 @@ const AdminDashboard = () => {
                         colSpan="5"
                         style={{ padding: "20px", textAlign: "center" }}
                       >
-                        Không tìm thấy cây nào.
+                        Không có dữ liệu.
                       </td>
                     </tr>
                   )}
@@ -773,7 +695,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* === TAB 2: QUẢN LÝ DANH MỤC === */}
+        {/* === TAB CATEGORIES === */}
         {activeTab === "categories" && (
           <div>
             <div
@@ -783,7 +705,7 @@ const AdminDashboard = () => {
                 marginBottom: "20px",
               }}
             >
-              <h2>📂 Quản Lý Danh Mục</h2>
+              <h2>📂 Danh Mục</h2>
               <button
                 onClick={() => {
                   setEditingCategory(null);
@@ -792,7 +714,8 @@ const AdminDashboard = () => {
                 }}
                 style={btnAddStyle}
               >
-                <FaPlus /> Thêm Danh Mục
+                {" "}
+                <FaPlus />{" "}
               </button>
             </div>
 
@@ -805,11 +728,7 @@ const AdminDashboard = () => {
                     marginBottom: "15px",
                   }}
                 >
-                  <h3>
-                    {editingCategory
-                      ? "Chỉnh Sửa Danh Mục"
-                      : "Thêm Danh Mục Mới"}
-                  </h3>
+                  <h3>{editingCategory ? "Sửa Danh Mục" : "Thêm Danh Mục"}</h3>
                   <button
                     onClick={() => setShowCategoryForm(false)}
                     style={closeBtnStyle}
@@ -819,7 +738,8 @@ const AdminDashboard = () => {
                 </div>
                 <form onSubmit={handleSubmitCategory}>
                   <div style={{ marginBottom: "15px" }}>
-                    <label style={labelStyle}>Tên Danh Mục (*)</label>
+                    {" "}
+                    <label style={labelStyle}>Tên</label>{" "}
                     <input
                       type="text"
                       name="name"
@@ -827,11 +747,11 @@ const AdminDashboard = () => {
                       value={catFormData.name}
                       onChange={handleCatInputChange}
                       style={inputStyle}
-                      placeholder="Ví dụ: Cây Trong Nhà"
-                    />
+                    />{" "}
                   </div>
                   <div style={{ marginBottom: "15px" }}>
-                    <label style={labelStyle}>Slug (*)</label>
+                    {" "}
+                    <label style={labelStyle}>Slug</label>{" "}
                     <input
                       type="text"
                       name="slug"
@@ -839,43 +759,42 @@ const AdminDashboard = () => {
                       value={catFormData.slug}
                       onChange={handleCatInputChange}
                       style={inputStyle}
-                      placeholder="tu-dong-tao-tu-ten"
-                    />
+                    />{" "}
                   </div>
                   <div style={{ marginBottom: "15px" }}>
-                    <label style={labelStyle}>Mô tả</label>
+                    {" "}
+                    <label style={labelStyle}>Mô tả</label>{" "}
                     <textarea
                       name="description"
-                      rows="3"
+                      rows="2"
                       value={catFormData.description}
                       onChange={handleCatInputChange}
-                      style={{ ...inputStyle, height: "auto" }}
-                    />
+                      style={inputStyle}
+                    />{" "}
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowCategoryForm(false)}
-                      style={{ ...btnCancelStyle, marginRight: "10px" }}
-                    >
-                      Hủy
-                    </button>
+                    {" "}
                     <button type="submit" style={btnSaveStyle}>
-                      {editingCategory ? "Cập Nhật" : "Lưu Lại"}
-                    </button>
+                      Lưu
+                    </button>{" "}
                   </div>
                 </form>
               </div>
             )}
 
-            <div style={tableContainerStyle}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ ...tableContainerStyle, overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: "500px",
+                }}
+              >
                 <thead style={{ background: "#eee" }}>
                   <tr>
                     <th style={thStyle}>ID</th>
-                    <th style={thStyle}>Tên Danh Mục</th>
+                    <th style={thStyle}>Tên</th>
                     <th style={thStyle}>Slug</th>
-                    <th style={thStyle}>Mô tả</th>
                     <th style={thStyle}>Hành động</th>
                   </tr>
                 </thead>
@@ -886,77 +805,66 @@ const AdminDashboard = () => {
                       <td style={tdStyle}>
                         <strong>{cat.name}</strong>
                       </td>
+                      <td style={tdStyle}>{cat.slug}</td>
                       <td style={tdStyle}>
-                        <span
-                          style={{
-                            background: "#e0f2f1",
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            fontSize: "0.9rem",
-                            color: "#00695c",
-                          }}
-                        >
-                          {cat.slug}
-                        </span>
-                      </td>
-                      <td style={tdStyle}>
-                        {cat.description ? (
-                          cat.description.length > 50 ? (
-                            cat.description.substring(0, 50) + "..."
-                          ) : (
-                            cat.description
-                          )
-                        ) : (
-                          <em style={{ color: "#999" }}>Không có</em>
-                        )}
-                      </td>
-                      <td style={tdStyle}>
-                        <button
-                          onClick={() => handleEditCategoryClick(cat)}
-                          style={btnEditStyle}
-                        >
-                          {" "}
-                          <FaEdit />{" "}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCategory(cat.id)}
-                          style={btnDeleteStyle}
-                        >
-                          {" "}
-                          <FaTrash />{" "}
-                        </button>
+                        <div style={{ display: "flex", gap: "5px" }}>
+                          <button
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setCatFormData({
+                                name: cat.name,
+                                slug: cat.slug,
+                                description: cat.description || "",
+                              });
+                              setShowCategoryForm(true);
+                            }}
+                            style={btnEditStyle}
+                          >
+                            {" "}
+                            <FaEdit />{" "}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            style={btnDeleteStyle}
+                          >
+                            {" "}
+                            <FaTrash />{" "}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
-                  {categories.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        style={{ padding: "20px", textAlign: "center" }}
-                      >
-                        Chưa có danh mục nào.
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* === TAB 3: QUẢN LÝ USER === */}
+        {/* === TAB USERS === */}
         {activeTab === "users" && (
           <div>
-            <h2>👥 Quản Lý Người Dùng</h2>
-            <div style={{ ...tableContainerStyle, marginTop: "20px" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <h2>👥 Người Dùng</h2>
+            <div
+              style={{
+                ...tableContainerStyle,
+                marginTop: "20px",
+                overflowX: "auto",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: "500px",
+                }}
+              >
                 <thead style={{ background: "#eee" }}>
                   <tr>
                     <th style={thStyle}>ID</th>
-                    <th style={thStyle}>Họ Tên</th>
+                    <th style={thStyle}>Tên</th>
                     <th style={thStyle}>Email</th>
-                    <th style={thStyle}>Vai trò</th>
-                    <th style={thStyle}>Hành động</th>
+                    <th style={thStyle}>Role</th>
+                    <th style={thStyle}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -968,30 +876,14 @@ const AdminDashboard = () => {
                       <td style={tdStyle}>#{user.id}</td>
                       <td style={tdStyle}>{user.full_name}</td>
                       <td style={tdStyle}>{user.email}</td>
-                      <td style={tdStyle}>
-                        <span
-                          style={{
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            background:
-                              user.role === "admin" ? "#e3f2fd" : "#f1f8e9",
-                            color:
-                              user.role === "admin" ? "#1976d2" : "#388e3c",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {user.role}
-                        </span>
-                      </td>
+                      <td style={tdStyle}>{user.role}</td>
                       <td style={tdStyle}>
                         {user.role !== "admin" && (
                           <button
                             onClick={() => handleDeleteUser(user.id)}
                             style={btnDeleteStyle}
                           >
-                            {" "}
-                            Xóa User{" "}
+                            Xóa
                           </button>
                         )}
                       </td>
@@ -1024,10 +916,12 @@ const Pagination = ({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "wrap",
+        gap: "10px",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <label style={{ color: "#555", fontSize: "14px" }}>Hiển thị:</label>
+        <label style={{ fontSize: "14px", color: "#555" }}>Hiện:</label>
         <select
           value={itemsPerPage}
           onChange={(e) => {
@@ -1035,33 +929,34 @@ const Pagination = ({
             setCurrentPage(1);
           }}
           style={{
-            padding: "5px 10px",
+            padding: "5px",
             borderRadius: "4px",
             border: "1px solid #ccc",
-            cursor: "pointer",
           }}
         >
-          <option value={5}>5 dòng</option>
-          <option value={10}>10 dòng</option>
-          <option value={20}>20 dòng</option>
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
         </select>
       </div>
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div style={{ display: "flex", gap: "5px" }}>
         <button
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
+          style={{ ...btnPageStyle, opacity: currentPage === 1 ? 0.5 : 1 }}
+        >
+          {" "}
+          &lt;{" "}
+        </button>
+        <span
           style={{
-            ...btnPageStyle,
-            opacity: currentPage === 1 ? 0.5 : 1,
-            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+            padding: "5px 10px",
+            fontWeight: "bold",
+            fontSize: "0.9rem",
           }}
         >
           {" "}
-          Trước{" "}
-        </button>
-        <span style={{ padding: "8px 15px", fontWeight: "bold" }}>
-          {" "}
-          Trang {currentPage} / {totalPages}{" "}
+          {currentPage}/{totalPages}{" "}
         </span>
         <button
           disabled={currentPage === totalPages}
@@ -1069,11 +964,10 @@ const Pagination = ({
           style={{
             ...btnPageStyle,
             opacity: currentPage === totalPages ? 0.5 : 1,
-            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
           }}
         >
           {" "}
-          Sau{" "}
+          &gt;{" "}
         </button>
       </div>
     </div>
@@ -1102,7 +996,7 @@ const MenuButton = ({ active, onClick, icon, label }) => (
   </button>
 );
 
-// CSS Styles
+// --- CSS STYLES ---
 const linkStyle = {
   display: "flex",
   alignItems: "center",
@@ -1128,13 +1022,14 @@ const btnLogoutStyle = {
 const btnAddStyle = {
   background: "#2e7d32",
   color: "white",
-  padding: "10px 20px",
+  padding: "10px 15px",
   borderRadius: "5px",
   border: "none",
   display: "flex",
   alignItems: "center",
   gap: "5px",
   cursor: "pointer",
+  height: "40px",
 };
 const formContainerStyle = {
   background: "white",
@@ -1151,7 +1046,7 @@ const closeBtnStyle = {
 };
 const toolbarStyle = {
   display: "flex",
-  gap: "15px",
+  gap: "10px",
   marginBottom: "20px",
   background: "white",
   padding: "15px",
@@ -1167,7 +1062,7 @@ const inputSearchStyle = {
 };
 const selectStyle = {
   flex: 1,
-  minWidth: "150px",
+  minWidth: "130px",
   padding: "10px",
   borderRadius: "5px",
   border: "1px solid #ddd",
@@ -1176,21 +1071,22 @@ const selectStyle = {
 const tableContainerStyle = {
   background: "white",
   borderRadius: "8px",
-  overflow: "hidden",
   boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
 };
 const thStyle = {
-  padding: "15px",
+  padding: "12px",
   textAlign: "left",
   fontSize: "14px",
   color: "#555",
+  whiteSpace: "nowrap",
 };
-const tdStyle = { padding: "15px", color: "#333" };
-
-// Nút Xem (Màu cam/vàng)
+const tdStyle = {
+  padding: "12px",
+  color: "#333",
+  borderBottom: "1px solid #eee",
+};
 const btnViewStyle = {
-  marginRight: "10px",
-  padding: "8px 12px",
+  padding: "6px 10px",
   background: "#fbc02d",
   color: "white",
   border: "none",
@@ -1198,8 +1094,7 @@ const btnViewStyle = {
   cursor: "pointer",
 };
 const btnEditStyle = {
-  marginRight: "10px",
-  padding: "8px 12px",
+  padding: "6px 10px",
   background: "#1976d2",
   color: "white",
   border: "none",
@@ -1207,7 +1102,7 @@ const btnEditStyle = {
   cursor: "pointer",
 };
 const btnDeleteStyle = {
-  padding: "8px 12px",
+  padding: "6px 10px",
   background: "#d32f2f",
   color: "white",
   border: "none",
@@ -1215,7 +1110,7 @@ const btnDeleteStyle = {
   cursor: "pointer",
 };
 const btnPageStyle = {
-  padding: "8px 12px",
+  padding: "5px 10px",
   background: "white",
   border: "1px solid #ccc",
   borderRadius: "4px",
@@ -1226,28 +1121,46 @@ const labelStyle = {
   fontWeight: "bold",
   marginBottom: "5px",
   color: "#333",
+  fontSize: "0.9rem",
 };
 const inputStyle = {
   width: "100%",
-  padding: "10px",
+  padding: "8px",
   border: "1px solid #ccc",
   borderRadius: "5px",
 };
 const btnSaveStyle = {
-  padding: "10px 20px",
+  padding: "8px 20px",
   background: "#2e7d32",
   color: "white",
   border: "none",
   borderRadius: "5px",
   cursor: "pointer",
 };
-const btnCancelStyle = {
-  padding: "10px 20px",
-  background: "#757575",
-  color: "white",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
+
+// Modal Styles
+const modalOverlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  background: "rgba(0,0,0,0.5)",
+  zIndex: 1100,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "10px",
+};
+const modalContentStyle = {
+  background: "white",
+  width: "800px",
+  maxWidth: "100%",
+  maxHeight: "90vh",
+  overflowY: "auto",
+  padding: "20px",
+  borderRadius: "10px",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
 };
 
 export default AdminDashboard;
