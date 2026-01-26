@@ -1,6 +1,6 @@
 const db = require("../config/db");
 
-// 1. Lấy danh sách
+// 1. Lấy danh sách (Giữ nguyên)
 exports.getAllPlants = async (req, res) => {
   try {
     const { keyword, category_id, is_featured } = req.query;
@@ -34,11 +34,10 @@ exports.getAllPlants = async (req, res) => {
   }
 };
 
-// 2. Chi tiết (ĐÃ SỬA: JOIN để lấy category_name)
+// 2. Chi tiết (Đã cập nhật để lấy thêm Attributes)
 exports.getPlantById = async (req, res) => {
   try {
     const plantId = req.params.id;
-    // SỬA Ở ĐÂY: Thêm JOIN với bảng categories
     const sql = `
       SELECT p.*, c.name as category_name 
       FROM plants p 
@@ -52,12 +51,20 @@ exports.getPlantById = async (req, res) => {
 
     const plant = plantRows[0];
 
-    // Lấy album (bao gồm cả ảnh và video phụ)
+    // Lấy album ảnh/video
     const [imageRows] = await db.query(
       "SELECT * FROM plant_images WHERE plant_id = ?",
       [plantId],
     );
     plant.media = imageRows;
+
+    // --- LẤY THÊM CÁC THUỘC TÍNH ĐỘNG (NEW) ---
+    const [attrRows] = await db.query(
+      "SELECT * FROM plant_attributes WHERE plant_id = ?",
+      [plantId],
+    );
+    plant.attributes = attrRows; // Trả về dạng [{ key: 'Cao', value: '1m' }, ...]
+
     res.json(plant);
   } catch (error) {
     console.error(error);
@@ -65,7 +72,7 @@ exports.getPlantById = async (req, res) => {
   }
 };
 
-// 3. THÊM CÂY MỚI
+// 3. THÊM CÂY MỚI (Có xử lý Attributes)
 exports.createPlant = async (req, res) => {
   try {
     const {
@@ -76,18 +83,16 @@ exports.createPlant = async (req, res) => {
       description,
       care_instruction,
       is_featured,
+      attributes, // <-- Nhận chuỗi JSON attributes
     } = req.body;
 
-    // Thumbnail là file ảnh đại diện duy nhất
     const thumbnail = req.files["thumbnail"]
       ? `/uploads/${req.files["thumbnail"][0].filename}`
       : null;
 
-    const featuredVal =
-      is_featured === "true" || is_featured === true || is_featured === "1"
-        ? 1
-        : 0;
+    const featuredVal = is_featured === "true" || is_featured === "1" ? 1 : 0;
 
+    // Insert bảng plants
     const sqlPlant = `INSERT INTO plants (name, category_id, age, scientific_name, description, care_instruction, thumbnail, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     const [result] = await db.query(sqlPlant, [
       name,
@@ -101,15 +106,33 @@ exports.createPlant = async (req, res) => {
     ]);
     const newPlantId = result.insertId;
 
-    // Xử lý Album (Gallery): Chứa cả Ảnh và Video
+    // --- XỬ LÝ ATTRIBUTES (NEW) ---
+    if (attributes) {
+      const parsedAttrs = JSON.parse(attributes); // Client gửi dạng chuỗi JSON
+      if (Array.isArray(parsedAttrs) && parsedAttrs.length > 0) {
+        const attrValues = parsedAttrs.map((item) => [
+          newPlantId,
+          item.key,
+          item.value,
+        ]);
+        await db.query(
+          `INSERT INTO plant_attributes (plant_id, attr_key, attr_value) VALUES ?`,
+          [attrValues],
+        );
+      }
+    }
+
+    // Xử lý Gallery
     if (req.files["gallery"] && req.files["gallery"].length > 0) {
       const mediaValues = req.files["gallery"].map((file) => [
         newPlantId,
         `/uploads/${file.filename}`,
         0,
       ]);
-      const sqlMedia = `INSERT INTO plant_images (plant_id, image_url, is_thumbnail) VALUES ?`;
-      await db.query(sqlMedia, [mediaValues]);
+      await db.query(
+        `INSERT INTO plant_images (plant_id, image_url, is_thumbnail) VALUES ?`,
+        [mediaValues],
+      );
     }
 
     res
@@ -121,7 +144,7 @@ exports.createPlant = async (req, res) => {
   }
 };
 
-// 4. UPDATE CÂY
+// 4. UPDATE CÂY (Có xử lý Attributes)
 exports.updatePlant = async (req, res) => {
   try {
     const plantId = req.params.id;
@@ -133,12 +156,10 @@ exports.updatePlant = async (req, res) => {
       description,
       care_instruction,
       is_featured,
+      attributes, // <-- Nhận chuỗi JSON attributes
     } = req.body;
 
-    const featuredVal =
-      is_featured === "true" || is_featured === true || is_featured === "1"
-        ? 1
-        : 0;
+    const featuredVal = is_featured === "true" || is_featured === "1" ? 1 : 0;
 
     let sql = `UPDATE plants SET name=?, category_id=?, age=?, scientific_name=?, description=?, care_instruction=?, is_featured=?`;
     const params = [
@@ -161,15 +182,43 @@ exports.updatePlant = async (req, res) => {
 
     await db.query(sql, params);
 
-    // Thêm file vào Album (Gallery)
+    // --- XỬ LÝ ATTRIBUTES (NEW) ---
+    // 1. Xóa hết attributes cũ
+    await db.query("DELETE FROM plant_attributes WHERE plant_id = ?", [
+      plantId,
+    ]);
+
+    // 2. Thêm lại attributes mới từ Client
+    if (attributes) {
+      const parsedAttrs = JSON.parse(attributes);
+      if (Array.isArray(parsedAttrs) && parsedAttrs.length > 0) {
+        // Lọc bỏ những dòng trống (nếu có)
+        const validAttrs = parsedAttrs.filter((item) => item.key && item.value);
+        if (validAttrs.length > 0) {
+          const attrValues = validAttrs.map((item) => [
+            plantId,
+            item.key,
+            item.value,
+          ]);
+          await db.query(
+            `INSERT INTO plant_attributes (plant_id, attr_key, attr_value) VALUES ?`,
+            [attrValues],
+          );
+        }
+      }
+    }
+
+    // Thêm Gallery mới
     if (req.files["gallery"] && req.files["gallery"].length > 0) {
       const mediaValues = req.files["gallery"].map((file) => [
         plantId,
         `/uploads/${file.filename}`,
         0,
       ]);
-      const sqlMedia = `INSERT INTO plant_images (plant_id, image_url, is_thumbnail) VALUES ?`;
-      await db.query(sqlMedia, [mediaValues]);
+      await db.query(
+        `INSERT INTO plant_images (plant_id, image_url, is_thumbnail) VALUES ?`,
+        [mediaValues],
+      );
     }
 
     res.json({ message: "Cập nhật thành công!" });
@@ -190,7 +239,7 @@ exports.deletePlant = async (req, res) => {
   }
 };
 
-// 6. XÓA 1 ẢNH/VIDEO TRONG ALBUM (Mới)
+// 6. Xóa ảnh
 exports.deletePlantImage = async (req, res) => {
   try {
     const imageId = req.params.id;

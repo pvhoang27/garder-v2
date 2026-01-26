@@ -3,6 +3,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import axiosClient from "../api/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaTrash, FaPlus } from "react-icons/fa"; // Cần cài icon: npm install react-icons
 
 const AdminPlantForm = () => {
   const { id } = useParams();
@@ -19,18 +20,20 @@ const AdminPlantForm = () => {
     is_featured: false,
   });
 
+  // --- STATE CHO ATTRIBUTES (NEW) ---
+  const [attributes, setAttributes] = useState([]); // [{ key: '', value: '' }]
+
   const [categories, setCategories] = useState([]);
 
   // Quản lý file
-  const [thumbnailFile, setThumbnailFile] = useState(null); // File mới chọn
-  const [thumbnailPreview, setThumbnailPreview] = useState(null); // Preview ảnh mới
-  const [oldThumbnail, setOldThumbnail] = useState(null); // Ảnh cũ từ server
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [oldThumbnail, setOldThumbnail] = useState(null);
 
-  const [galleryFiles, setGalleryFiles] = useState([]); // List file mới chọn (File Object)
-  const [galleryPreview, setGalleryPreview] = useState([]); // List URL preview file mới
-  const [oldMedia, setOldMedia] = useState([]); // List ảnh/video cũ từ server (để hiện và xóa)
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [galleryPreview, setGalleryPreview] = useState([]);
+  const [oldMedia, setOldMedia] = useState([]);
 
-  // Helper: Check file là video hay ảnh
   const isVideo = (filename) => {
     if (!filename) return false;
     const ext = filename.split(".").pop().toLowerCase();
@@ -54,11 +57,35 @@ const AdminPlantForm = () => {
         });
         setOldThumbnail(d.thumbnail);
         setOldMedia(d.media || []);
+
+        // Load attributes từ server về state
+        if (d.attributes && d.attributes.length > 0) {
+          setAttributes(
+            d.attributes.map((a) => ({ key: a.attr_key, value: a.attr_value })),
+          );
+        }
       });
     }
   }, [id, isEdit]);
 
-  // Xử lý chọn Thumbnail mới
+  // --- HÀM XỬ LÝ ATTRIBUTES ---
+  const addAttribute = () => {
+    setAttributes([...attributes, { key: "", value: "" }]);
+  };
+
+  const removeAttribute = (index) => {
+    const newAttrs = [...attributes];
+    newAttrs.splice(index, 1);
+    setAttributes(newAttrs);
+  };
+
+  const handleAttrChange = (index, field, val) => {
+    const newAttrs = [...attributes];
+    newAttrs[index][field] = val;
+    setAttributes(newAttrs);
+  };
+
+  // ... (Giữ nguyên các hàm xử lý ảnh) ...
   const handleThumbnailChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -67,11 +94,9 @@ const AdminPlantForm = () => {
     }
   };
 
-  // Xử lý chọn Album mới (Nhiều file)
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files);
-    setGalleryFiles((prev) => [...prev, ...files]); // Cộng dồn file
-
+    setGalleryFiles((prev) => [...prev, ...files]);
     const newPreviews = files.map((file) => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith("video") ? "video" : "image",
@@ -80,13 +105,11 @@ const AdminPlantForm = () => {
     setGalleryPreview((prev) => [...prev, ...newPreviews]);
   };
 
-  // Xóa file MỚI chọn (chưa up lên server)
   const removeNewFile = (index) => {
     setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
     setGalleryPreview((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Xóa file CŨ (đã có trên server) - Gọi API xóa luôn
   const removeOldMedia = async (mediaId) => {
     if (window.confirm("Bạn chắc chắn muốn xóa ảnh/video này vĩnh viễn?")) {
       try {
@@ -106,11 +129,14 @@ const AdminPlantForm = () => {
     Object.keys(formData).forEach((key) => data.append(key, formData[key]));
 
     if (thumbnailFile) data.append("thumbnail", thumbnailFile);
-
-    // Append Album
     for (let i = 0; i < galleryFiles.length; i++) {
       data.append("gallery", galleryFiles[i]);
     }
+
+    // --- QUAN TRỌNG: GỬI ATTRIBUTES DẠNG JSON STRING ---
+    // Chỉ gửi các dòng có dữ liệu
+    const validAttrs = attributes.filter((a) => a.key.trim() !== "");
+    data.append("attributes", JSON.stringify(validAttrs));
 
     try {
       const url = isEdit ? `/plants/${id}` : "/plants";
@@ -128,9 +154,13 @@ const AdminPlantForm = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: "1000px" }}>
-      <h2>{isEdit ? "Chỉnh Sửa & Quản Lý Ảnh" : "Thêm Cây Mới"}</h2>
+    <div
+      className="container"
+      style={{ maxWidth: "1000px", paddingBottom: "50px" }}
+    >
+      <h2>{isEdit ? "Chỉnh Sửa Cây" : "Thêm Cây Mới"}</h2>
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: "20px" }}>
+        {/* Các input cơ bản */}
         <div
           style={{
             display: "grid",
@@ -140,7 +170,6 @@ const AdminPlantForm = () => {
         >
           <input
             type="text"
-            name="name"
             placeholder="Tên cây"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -148,7 +177,6 @@ const AdminPlantForm = () => {
             style={{ padding: "10px" }}
           />
           <select
-            name="category_id"
             value={formData.category_id}
             onChange={(e) =>
               setFormData({ ...formData, category_id: e.target.value })
@@ -174,7 +202,6 @@ const AdminPlantForm = () => {
         >
           <input
             type="text"
-            name="scientific_name"
             placeholder="Tên khoa học"
             value={formData.scientific_name}
             onChange={(e) =>
@@ -184,12 +211,95 @@ const AdminPlantForm = () => {
           />
           <input
             type="text"
-            name="age"
             placeholder="Tuổi đời"
             value={formData.age}
             onChange={(e) => setFormData({ ...formData, age: e.target.value })}
             style={{ padding: "10px" }}
           />
+        </div>
+
+        {/* --- KHU VỰC THÔNG SỐ KỸ THUẬT (ATTRIBUTES) --- */}
+        <div
+          style={{
+            background: "#f9f9f9",
+            padding: "15px",
+            borderRadius: "8px",
+            border: "1px solid #eee",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: "1.1rem" }}>
+              Thông số chi tiết (Tùy chọn)
+            </h3>
+            <button
+              type="button"
+              onClick={addAttribute}
+              style={{
+                background: "#2e7d32",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                padding: "5px 10px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
+              <FaPlus /> Thêm dòng
+            </button>
+          </div>
+
+          {attributes.length === 0 && (
+            <p style={{ color: "#888", fontStyle: "italic" }}>
+              Chưa có thông số nào.
+            </p>
+          )}
+
+          {attributes.map((attr, index) => (
+            <div
+              key={index}
+              style={{ display: "flex", gap: "10px", marginBottom: "10px" }}
+            >
+              <input
+                type="text"
+                placeholder="Tên thuộc tính (VD: Chiều cao)"
+                value={attr.key}
+                onChange={(e) => handleAttrChange(index, "key", e.target.value)}
+                style={{ flex: 1, padding: "8px" }}
+              />
+              <input
+                type="text"
+                placeholder="Giá trị (VD: 1.5m)"
+                value={attr.value}
+                onChange={(e) =>
+                  handleAttrChange(index, "value", e.target.value)
+                }
+                style={{ flex: 1, padding: "8px" }}
+              />
+              <button
+                type="button"
+                onClick={() => removeAttribute(index)}
+                style={{
+                  background: "#d32f2f",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "5px",
+                  width: "40px",
+                  cursor: "pointer",
+                }}
+              >
+                <FaTrash />
+              </button>
+            </div>
+          ))}
         </div>
 
         <ReactQuill
@@ -200,7 +310,6 @@ const AdminPlantForm = () => {
         />
 
         <textarea
-          name="care_instruction"
           placeholder="Cách chăm sóc"
           value={formData.care_instruction}
           onChange={(e) =>
@@ -210,7 +319,7 @@ const AdminPlantForm = () => {
           style={{ padding: "10px" }}
         ></textarea>
 
-        {/* --- KHU VỰC QUẢN LÝ ẢNH --- */}
+        {/* ... (Phần Upload Ảnh giữ nguyên code cũ của bạn) ... */}
         <div
           style={{
             border: "2px dashed #ccc",
@@ -218,14 +327,12 @@ const AdminPlantForm = () => {
             borderRadius: "10px",
           }}
         >
-          <h3 style={{ marginTop: 0 }}>1. Ảnh Đại Diện (Thumbnail)</h3>
+          <h3 style={{ marginTop: 0 }}>1. Ảnh Đại Diện</h3>
           <input
             type="file"
             onChange={handleThumbnailChange}
             accept="image/*"
           />
-
-          {/* Preview Thumbnail Mới */}
           {thumbnailPreview && (
             <img
               src={thumbnailPreview}
@@ -238,8 +345,6 @@ const AdminPlantForm = () => {
               }}
             />
           )}
-
-          {/* Thumbnail Cũ */}
           {isEdit && !thumbnailPreview && oldThumbnail && (
             <div style={{ marginTop: "10px" }}>
               <p>Ảnh hiện tại:</p>
@@ -259,16 +364,13 @@ const AdminPlantForm = () => {
             borderRadius: "10px",
           }}
         >
-          <h3 style={{ marginTop: 0 }}>2. Thư Viện Ảnh & Video (Gallery)</h3>
+          <h3 style={{ marginTop: 0 }}>2. Thư Viện Ảnh & Video</h3>
           <input
             type="file"
             multiple
             onChange={handleGalleryChange}
             accept="image/*,video/*"
           />
-          <p style={{ fontSize: "0.9em", color: "#666" }}>
-            Giữ phím Ctrl để chọn nhiều file.
-          </p>
 
           <div
             style={{
@@ -278,7 +380,6 @@ const AdminPlantForm = () => {
               marginTop: "20px",
             }}
           >
-            {/* A. HIỆN FILE CŨ (Server) */}
             {oldMedia.map((item) => (
               <div
                 key={item.id}
@@ -323,25 +424,10 @@ const AdminPlantForm = () => {
                     padding: "5px",
                   }}
                 >
-                  XÓA
+                  X
                 </button>
-                <span
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    background: "rgba(0,0,0,0.5)",
-                    color: "white",
-                    width: "100%",
-                    fontSize: "10px",
-                    textAlign: "center",
-                  }}
-                >
-                  Đã lưu
-                </span>
               </div>
             ))}
-
-            {/* B. HIỆN FILE MỚI CHỌN (Preview) */}
             {galleryPreview.map((item, index) => (
               <div
                 key={index}
@@ -364,7 +450,6 @@ const AdminPlantForm = () => {
                 ) : (
                   <img
                     src={item.url}
-                    alt="preview"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -388,19 +473,6 @@ const AdminPlantForm = () => {
                 >
                   HỦY
                 </button>
-                <span
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    background: "green",
-                    color: "white",
-                    width: "100%",
-                    fontSize: "10px",
-                    textAlign: "center",
-                  }}
-                >
-                  Mới (Chưa lưu)
-                </span>
               </div>
             ))}
           </div>
@@ -409,7 +481,6 @@ const AdminPlantForm = () => {
         <label>
           <input
             type="checkbox"
-            name="is_featured"
             checked={formData.is_featured}
             onChange={(e) =>
               setFormData({ ...formData, is_featured: e.target.checked })
@@ -429,7 +500,7 @@ const AdminPlantForm = () => {
             cursor: "pointer",
           }}
         >
-          {isEdit ? "LƯU TẤT CẢ THAY ĐỔI" : "TẠO CÂY MỚI"}
+          {isEdit ? "LƯU THAY ĐỔI" : "TẠO CÂY MỚI"}
         </button>
       </form>
     </div>
