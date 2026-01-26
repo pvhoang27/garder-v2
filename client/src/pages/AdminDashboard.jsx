@@ -12,7 +12,8 @@ import {
   FaEdit,
   FaPlus,
   FaSignOutAlt,
-  FaLayerGroup, // Icon cho Layout
+  FaLayerGroup,
+  FaSortAmountDown, // Icon cho sort
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -23,11 +24,12 @@ const AdminDashboard = () => {
   const [plants, setPlants] = useState([]);
   const [editingPlant, setEditingPlant] = useState(null);
   const [showForm, setShowForm] = useState(false);
+
+  // States bộ lọc & phân trang
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest"); // <-- MỚI: State sắp xếp
   const [currentPage, setCurrentPage] = useState(1);
-
-  // --- THAY ĐỔI: Chuyển itemsPerPage thành State để Admin điều chỉnh ---
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // --- STATES CHO CATEGORY ---
@@ -68,7 +70,7 @@ const AdminDashboard = () => {
       const res = await axiosClient.get("/users");
       setUsers(res.data);
     } catch (error) {
-      console.error("Lỗi tải users (có thể chưa có API):", error);
+      console.error("Lỗi tải users:", error);
     }
   };
 
@@ -90,19 +92,47 @@ const AdminDashboard = () => {
     fetchPlants();
   };
 
-  // Logic Lọc & Tìm kiếm & Phân trang Plant
-  const filteredPlants = plants.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchCategory =
-      filterCategory === "all" ||
-      p.category_id === parseInt(filterCategory) ||
-      p.category_name === filterCategory;
-    return matchSearch && matchCategory;
-  });
+  // --- LOGIC LỌC & SẮP XẾP (CORE LOGIC) ---
+  const processPlants = () => {
+    // 1. Lọc theo tên và danh mục
+    let result = plants.filter((p) => {
+      const matchSearch = p.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchCategory =
+        filterCategory === "all" ||
+        p.category_id === parseInt(filterCategory) ||
+        p.category_name === filterCategory;
+      return matchSearch && matchCategory;
+    });
 
+    // 2. Sắp xếp (Flexible Sort)
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date(b.created_at) - new Date(a.created_at); // Mới nhất lên đầu
+        case "oldest":
+          return new Date(a.created_at) - new Date(b.created_at); // Cũ nhất lên đầu
+        case "price-asc":
+          return Number(a.price) - Number(b.price); // Giá thấp -> cao
+        case "price-desc":
+          return Number(b.price) - Number(a.price); // Giá cao -> thấp
+        case "name-asc":
+          return a.name.localeCompare(b.name); // A -> Z
+        case "name-desc":
+          return b.name.localeCompare(a.name); // Z -> A
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  };
+
+  const filteredPlants = processPlants();
   const totalPages = Math.ceil(filteredPlants.length / itemsPerPage);
 
-  // Đảm bảo currentPage không vượt quá totalPages khi thay đổi itemsPerPage
+  // Reset trang về 1 nếu filter thay đổi quá nhiều làm mất trang hiện tại
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
@@ -342,7 +372,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* TOOLBAR */}
+            {/* TOOLBAR BỘ LỌC (ĐÃ CẬP NHẬT SORT) */}
             <div
               style={{
                 display: "flex",
@@ -351,9 +381,12 @@ const AdminDashboard = () => {
                 background: "white",
                 padding: "15px",
                 borderRadius: "8px",
+                flexWrap: "wrap", // Cho phép xuống dòng nếu màn hình nhỏ
+                alignItems: "center",
               }}
             >
-              <div style={{ flex: 1, position: "relative" }}>
+              {/* 1. Tìm kiếm */}
+              <div style={{ flex: 2, minWidth: "200px", position: "relative" }}>
                 <FaSearch
                   style={{
                     position: "absolute",
@@ -364,7 +397,7 @@ const AdminDashboard = () => {
                 />
                 <input
                   type="text"
-                  placeholder="Tìm kiếm theo tên cây..."
+                  placeholder="Tìm kiếm tên cây..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
@@ -375,14 +408,18 @@ const AdminDashboard = () => {
                   }}
                 />
               </div>
+
+              {/* 2. Lọc Danh Mục */}
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 style={{
+                  flex: 1,
+                  minWidth: "150px",
                   padding: "10px",
                   borderRadius: "5px",
                   border: "1px solid #ddd",
-                  minWidth: "200px",
+                  cursor: "pointer",
                 }}
               >
                 <option value="all">-- Tất cả danh mục --</option>
@@ -392,6 +429,37 @@ const AdminDashboard = () => {
                   </option>
                 ))}
               </select>
+
+              {/* 3. Sắp xếp (Flexible Sort) - NEW */}
+              <div style={{ flex: 1, minWidth: "180px", position: "relative" }}>
+                <FaSortAmountDown
+                  style={{
+                    position: "absolute",
+                    left: "10px",
+                    top: "12px",
+                    color: "#888",
+                  }}
+                />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 10px 10px 35px",
+                    borderRadius: "5px",
+                    border: "1px solid #ddd",
+                    cursor: "pointer",
+                    background: "white",
+                  }}
+                >
+                  <option value="newest">🕒 Mới nhất (Time DESC)</option>
+                  <option value="oldest">🕒 Cũ nhất (Time ASC)</option>
+                  <option value="price-asc">💰 Giá: Thấp ➝ Cao</option>
+                  <option value="price-desc">💰 Giá: Cao ➝ Thấp</option>
+                  <option value="name-asc">🅰️ Tên: A ➝ Z</option>
+                  <option value="name-desc">💤 Tên: Z ➝ A</option>
+                </select>
+              </div>
             </div>
 
             {/* TABLE */}
@@ -435,6 +503,17 @@ const AdminDashboard = () => {
                       </td>
                       <td style={tdStyle}>
                         <strong>{plant.name}</strong>
+                        <div
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#888",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {new Date(plant.created_at).toLocaleDateString(
+                            "vi-VN",
+                          )}
+                        </div>
                       </td>
                       <td style={tdStyle}>{plant.category_name}</td>
                       <td
@@ -485,11 +564,11 @@ const AdminDashboard = () => {
               style={{
                 marginTop: "20px",
                 display: "flex",
-                justifyContent: "space-between", // Căn 2 bên
+                justifyContent: "space-between",
                 alignItems: "center",
               }}
             >
-              {/* SELECTOR SỐ LƯỢNG TRANG (NEW) */}
+              {/* SELECTOR SỐ LƯỢNG TRANG */}
               <div
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
@@ -500,7 +579,7 @@ const AdminDashboard = () => {
                   value={itemsPerPage}
                   onChange={(e) => {
                     setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1); // Reset về trang 1 khi đổi số lượng
+                    setCurrentPage(1);
                   }}
                   style={{
                     padding: "5px 10px",
@@ -557,7 +636,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* === TAB 2: QUẢN LÝ DANH MỤC === */}
+        {/* === TAB 2 & 3 GIỮ NGUYÊN === */}
         {activeTab === "categories" && (
           <div>
             <h2>📂 Quản Lý Danh Mục</h2>
@@ -636,7 +715,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* === TAB 3: QUẢN LÝ USERS === */}
         {activeTab === "users" && (
           <div>
             <h2>👥 Quản Lý Người Dùng</h2>
