@@ -12,7 +12,7 @@ import {
   FaEdit,
   FaPlus,
   FaSignOutAlt,
-  FaLayerGroup // Icon cho Layout
+  FaLayerGroup, // Icon cho Layout
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -26,7 +26,9 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+
+  // --- THAY ĐỔI: Chuyển itemsPerPage thành State để Admin điều chỉnh ---
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // --- STATES CHO CATEGORY ---
   const [categories, setCategories] = useState([]);
@@ -94,11 +96,19 @@ const AdminDashboard = () => {
     const matchCategory =
       filterCategory === "all" ||
       p.category_id === parseInt(filterCategory) ||
-      p.category_name === filterCategory; 
+      p.category_name === filterCategory;
     return matchSearch && matchCategory;
   });
 
   const totalPages = Math.ceil(filteredPlants.length / itemsPerPage);
+
+  // Đảm bảo currentPage không vượt quá totalPages khi thay đổi itemsPerPage
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [itemsPerPage, totalPages, currentPage]);
+
   const currentPlants = filteredPlants.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -161,7 +171,7 @@ const AdminDashboard = () => {
           flexDirection: "column",
           position: "fixed",
           height: "100%",
-          zIndex: 100
+          zIndex: 100,
         }}
       >
         <div
@@ -194,9 +204,15 @@ const AdminDashboard = () => {
             icon={<FaUsers />}
             label="Quản lý Users"
           />
-          
-          <div style={{borderTop: '1px solid #333', marginTop: '10px', paddingTop: '10px'}}>
-             <Link
+
+          <div
+            style={{
+              borderTop: "1px solid #333",
+              marginTop: "10px",
+              paddingTop: "10px",
+            }}
+          >
+            <Link
               to="/admin/popup"
               style={{
                 display: "flex",
@@ -230,7 +246,6 @@ const AdminDashboard = () => {
               <FaLayerGroup /> Bố cục Trang chủ
             </Link>
           </div>
-
         </nav>
         <div style={{ padding: "20px", borderTop: "1px solid #333" }}>
           <button
@@ -465,35 +480,80 @@ const AdminDashboard = () => {
               </table>
             </div>
 
-            {/* PAGINATION */}
-            {totalPages > 1 && (
+            {/* PAGINATION CONTROL & PAGE SELECTION */}
+            <div
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                justifyContent: "space-between", // Căn 2 bên
+                alignItems: "center",
+              }}
+            >
+              {/* SELECTOR SỐ LƯỢNG TRANG (NEW) */}
               <div
-                style={{
-                  marginTop: "20px",
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "10px",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  style={btnPageStyle}
+                <label style={{ color: "#555", fontSize: "14px" }}>
+                  Hiển thị:
+                </label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1); // Reset về trang 1 khi đổi số lượng
+                  }}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                    cursor: "pointer",
+                  }}
                 >
-                  Trước
-                </button>
-                <span style={{ padding: "8px 15px", fontWeight: "bold" }}>
-                  Trang {currentPage} / {totalPages}
-                </span>
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  style={btnPageStyle}
-                >
-                  Sau
-                </button>
+                  <option value={5}>5 dòng</option>
+                  <option value={10}>10 dòng</option>
+                  <option value={20}>20 dòng</option>
+                  <option value={50}>50 dòng</option>
+                  <option value={100}>100 dòng</option>
+                </select>
               </div>
-            )}
+
+              {/* NÚT PHÂN TRANG */}
+              {totalPages > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                  }}
+                >
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    style={{
+                      ...btnPageStyle,
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Trước
+                  </button>
+                  <span style={{ padding: "8px 15px", fontWeight: "bold" }}>
+                    Trang {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    style={{
+                      ...btnPageStyle,
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      cursor:
+                        currentPage === totalPages ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Sau
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
