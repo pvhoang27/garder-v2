@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import { FaSave, FaPlus, FaTrash, FaEdit, FaTimes, FaBars } from "react-icons/fa"; // Import FaBars
-import AdminSidebar from "../components/AdminSidebar"; // Import Sidebar
+import {
+  FaSave,
+  FaPlus,
+  FaTrash,
+  FaEdit,
+  FaTimes,
+  FaBars,
+  FaImages,
+  FaVideo,
+} from "react-icons/fa";
+import AdminSidebar from "../components/AdminSidebar";
 
 const AdminPopupConfig = () => {
   const navigate = useNavigate();
@@ -13,7 +22,6 @@ const AdminPopupConfig = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // --- RESIZE EVENT (Để xử lý responsive) ---
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024);
@@ -23,7 +31,6 @@ const AdminPopupConfig = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Xử lý khi click vào menu bên Sidebar (Quay về Dashboard chính)
   const handleSidebarClick = (tab) => {
     navigate("/admin");
   };
@@ -38,8 +45,8 @@ const AdminPopupConfig = () => {
 
   // State form
   const [config, setConfig] = useState(initialState());
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [files, setFiles] = useState([]); // Mảng file upload mới
+  const [previews, setPreviews] = useState([]); // Preview ảnh/video
 
   function initialState() {
     return {
@@ -49,11 +56,12 @@ const AdminPopupConfig = () => {
       link_url: "",
       position: "center",
       is_active: true,
-      image_url: "",
+      media_urls: "[]", // Lưu JSON string
+      width: "500px",
+      height: "auto",
     };
   }
 
-  // Load danh sách
   useEffect(() => {
     fetchPopups();
   }, []);
@@ -68,17 +76,35 @@ const AdminPopupConfig = () => {
   };
 
   const handleEdit = (popup) => {
-    setConfig({ ...popup, is_active: popup.is_active === 1 });
-    setFile(null);
-    setPreview(null);
+    setConfig({
+      ...popup,
+      is_active: popup.is_active === 1,
+      media_urls: popup.media_urls || "[]",
+    });
+    setFiles([]);
+
+    // Parse JSON media cũ để hiện preview
+    try {
+      const oldMedia = JSON.parse(popup.media_urls || "[]");
+      // Đánh dấu là url cũ (string) để phân biệt với file blob mới
+      setPreviews(
+        oldMedia.map((url) => ({
+          type: "url",
+          url: `http://localhost:3000${url}`,
+        })),
+      );
+    } catch (e) {
+      setPreviews([]);
+    }
+
     setIsEditing(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleAddNew = () => {
     setConfig(initialState());
-    setFile(null);
-    setPreview(null);
+    setFiles([]);
+    setPreviews([]);
     setIsEditing(true);
   };
 
@@ -107,9 +133,15 @@ const AdminPopupConfig = () => {
   };
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    if (selectedFile) setPreview(URL.createObjectURL(selectedFile));
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+
+    // Tạo preview cho file mới
+    const newPreviews = selectedFiles.map((file) => ({
+      type: file.type.startsWith("video") ? "video" : "image",
+      url: URL.createObjectURL(file),
+    }));
+    setPreviews(newPreviews);
   };
 
   const handleSubmit = async (e) => {
@@ -120,18 +152,24 @@ const AdminPopupConfig = () => {
     formData.append("link_url", config.link_url);
     formData.append("position", config.position);
     formData.append("is_active", config.is_active);
+    formData.append("width", config.width);
+    formData.append("height", config.height);
 
-    if (file) formData.append("image", file);
-    else formData.append("old_image_url", config.image_url);
+    // Nếu có file mới, gửi file mới. Nếu không, gửi lại list url cũ
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append("media", file);
+      });
+    } else {
+      formData.append("old_media_urls", config.media_urls);
+    }
 
     try {
       if (config.id) {
-        // Update
         await axiosClient.put(`/popup/${config.id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        // Create
         await axiosClient.post("/popup", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -143,6 +181,58 @@ const AdminPopupConfig = () => {
       console.error(error);
       alert("Lỗi khi lưu");
     }
+  };
+
+  // Helper render media preview
+  const renderPreviewMedia = (item, index) => {
+    const isVideo =
+      item.type === "video" ||
+      (typeof item.url === "string" && item.url.match(/\.(mp4|webm)$/i));
+
+    return (
+      <div
+        key={index}
+        style={{
+          position: "relative",
+          width: "100px",
+          height: "100px",
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          overflow: "hidden",
+        }}
+      >
+        {isVideo ? (
+          <video
+            src={item.url}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <img
+            src={item.url}
+            alt="Preview"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        )}
+        {isVideo && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(0,0,0,0.3)",
+              color: "white",
+            }}
+          >
+            <FaVideo />
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -166,10 +256,24 @@ const AdminPopupConfig = () => {
             boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
           }}
         >
-          <div style={{ fontWeight: "bold", fontSize: "18px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              fontWeight: "bold",
+              fontSize: "18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <button
               onClick={() => setIsSidebarOpen(true)}
-              style={{ background: "none", border: "none", color: "white", fontSize: "24px", cursor: "pointer" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "white",
+                fontSize: "24px",
+                cursor: "pointer",
+              }}
             >
               <FaBars />
             </button>
@@ -183,34 +287,39 @@ const AdminPopupConfig = () => {
         <div
           onClick={() => setIsSidebarOpen(false)}
           style={{
-            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-            background: "rgba(0,0,0,0.5)", zIndex: 999,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 999,
           }}
         ></div>
       )}
 
       {/* --- SIDEBAR --- */}
       <AdminSidebar
-        activeTab="popup" // Đặt activeTab khác plants/categories/users để không highlight nhầm
-        setActiveTab={handleSidebarClick} // Quay về Dashboard khi click menu
+        activeTab="popup"
+        setActiveTab={handleSidebarClick}
         isMobile={isMobile}
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
 
-      {/* --- MAIN CONTENT (Bọc nội dung cũ vào đây) --- */}
+      {/* --- MAIN CONTENT --- */}
       <div style={mainContentStyle}>
-        <div
-          className="container"
-          style={{ paddingBottom: "50px" }}
-        >
+        <div className="container" style={{ paddingBottom: "50px" }}>
           <h2
-            style={{ color: "#2e7d32", textAlign: "center", marginBottom: "30px" }}
+            style={{
+              color: "#2e7d32",
+              textAlign: "center",
+              marginBottom: "30px",
+            }}
           >
-            ⚙️ Quản Lý Popup Quảng Cáo
+            ⚙️ Quản Lý Popup (Đa phương tiện)
           </h2>
 
-          {/* Nếu đang không sửa thì hiện nút Thêm mới */}
           {!isEditing && (
             <div style={{ marginBottom: "20px", textAlign: "right" }}>
               <button
@@ -232,7 +341,6 @@ const AdminPopupConfig = () => {
             </div>
           )}
 
-          {/* FORM THÊM / SỬA */}
           {isEditing && (
             <div
               style={{
@@ -259,6 +367,7 @@ const AdminPopupConfig = () => {
                     <b>Kích hoạt hiển thị</b>
                   </label>
                 </div>
+
                 <div
                   style={{
                     display: "grid",
@@ -273,22 +382,96 @@ const AdminPopupConfig = () => {
                       name="title"
                       value={config.title}
                       onChange={handleChange}
-                      style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        marginTop: "5px",
+                      }}
                     />
                   </div>
                   <div>
-                    <label>Link liên kết:</label>
+                    <label>Link liên kết (khi bấm vào):</label>
                     <input
                       type="text"
                       name="link_url"
                       value={config.link_url}
                       onChange={handleChange}
-                      style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        marginTop: "5px",
+                      }}
                     />
                   </div>
                 </div>
+
+                {/* CẤU HÌNH KÍCH THƯỚC & VỊ TRÍ */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "20px",
+                    marginTop: "15px",
+                    background: "#f9f9f9",
+                    padding: "15px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <div>
+                    <label>Vị trí:</label>
+                    <select
+                      name="position"
+                      value={config.position}
+                      onChange={handleChange}
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        marginTop: "5px",
+                      }}
+                    >
+                      <option value="center">Giữa màn hình</option>
+                      <option value="top-left">Góc trái trên</option>
+                      <option value="top-right">Góc phải trên</option>
+                      <option value="bottom-left">Góc trái dưới</option>
+                      <option value="bottom-right">Góc phải dưới</option>
+                      <option value="top-center">Giữa trên</option>
+                      <option value="bottom-center">Giữa dưới</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Chiều rộng (px hoặc %):</label>
+                    <input
+                      type="text"
+                      name="width"
+                      value={config.width}
+                      onChange={handleChange}
+                      placeholder="VD: 500px, 80%"
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        marginTop: "5px",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label>Chiều cao (px hoặc auto):</label>
+                    <input
+                      type="text"
+                      name="height"
+                      value={config.height}
+                      onChange={handleChange}
+                      placeholder="VD: 400px, auto"
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        marginTop: "5px",
+                      }}
+                    />
+                  </div>
+                </div>
+
                 <div style={{ marginTop: "15px" }}>
-                  <label>Nội dung:</label>
+                  <label>Nội dung text:</label>
                   <textarea
                     name="content"
                     value={config.content}
@@ -297,40 +480,45 @@ const AdminPopupConfig = () => {
                     style={{ width: "100%", padding: "8px", marginTop: "5px" }}
                   ></textarea>
                 </div>
+
+                {/* UPLOAD MULTIPLE MEDIA */}
                 <div style={{ marginTop: "15px" }}>
-                  <label>Vị trí:</label>
-                  <select
-                    name="position"
-                    value={config.position}
-                    onChange={handleChange}
-                    style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
                   >
-                    <option value="center">Giữa màn hình</option>
-                    <option value="bottom-right">Góc phải dưới</option>
-                    <option value="bottom-left">Góc trái dưới</option>
-                  </select>
-                </div>
-                <div style={{ marginTop: "15px" }}>
-                  <label>Hình ảnh:</label>
+                    <FaImages /> Hình ảnh / Video (Chọn nhiều):
+                  </label>
                   <input
                     type="file"
+                    multiple
                     onChange={handleFileChange}
+                    accept="image/*,video/*"
                     style={{ display: "block", marginTop: "5px" }}
                   />
-                  {(preview || config.image_url) && (
-                    <img
-                      src={preview || `http://localhost:3000${config.image_url}`}
-                      alt="Preview"
+
+                  {previews.length > 0 && (
+                    <div
                       style={{
-                        height: "80px",
+                        display: "flex",
+                        gap: "10px",
                         marginTop: "10px",
-                        borderRadius: "5px",
+                        flexWrap: "wrap",
                       }}
-                    />
+                    >
+                      {previews.map((item, index) =>
+                        renderPreviewMedia(item, index),
+                      )}
+                    </div>
                   )}
                 </div>
 
-                <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+                <div
+                  style={{ marginTop: "20px", display: "flex", gap: "10px" }}
+                >
                   <button
                     type="submit"
                     style={{
@@ -369,7 +557,7 @@ const AdminPopupConfig = () => {
             </div>
           )}
 
-          {/* DANH SÁCH POPUP */}
+          {/* LIST POPUP */}
           <div
             style={{
               display: "grid",
@@ -377,93 +565,144 @@ const AdminPopupConfig = () => {
               gap: "20px",
             }}
           >
-            {popups.map((popup) => (
-              <div
-                key={popup.id}
-                style={{
-                  background: "white",
-                  padding: "15px",
-                  borderRadius: "10px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                  borderLeft: popup.is_active
-                    ? "5px solid #2e7d32"
-                    : "5px solid #ccc",
-                }}
-              >
+            {popups.map((popup) => {
+              let mediaList = [];
+              try {
+                mediaList = JSON.parse(popup.media_urls || "[]");
+              } catch (e) {}
+              return (
                 <div
+                  key={popup.id}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
+                    background: "white",
+                    padding: "15px",
+                    borderRadius: "10px",
+                    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                    borderLeft: popup.is_active
+                      ? "5px solid #2e7d32"
+                      : "5px solid #ccc",
                   }}
                 >
-                  <h4 style={{ margin: 0, color: "#333" }}>
-                    {popup.title || "(Không tiêu đề)"}
-                  </h4>
-                  <span
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "start",
+                    }}
+                  >
+                    <h4 style={{ margin: 0, color: "#333" }}>
+                      {popup.title || "(Không tiêu đề)"}
+                    </h4>
+                    <span
+                      style={{
+                        fontSize: "0.8rem",
+                        background: "#eee",
+                        padding: "2px 8px",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      {popup.position}
+                    </span>
+                  </div>
+                  <p
                     style={{
                       fontSize: "0.8rem",
-                      background: "#eee",
-                      padding: "2px 8px",
-                      borderRadius: "10px",
+                      color: "#666",
+                      margin: "5px 0",
                     }}
                   >
-                    {popup.position}
-                  </span>
-                </div>
-                <p style={{ fontSize: "0.9rem", color: "#666", margin: "10px 0" }}>
-                  {popup.content}
-                </p>
-                {popup.image_url && (
-                  <img
-                    src={`http://localhost:3000${popup.image_url}`}
-                    style={{
-                      width: "100%",
-                      height: "100px",
-                      objectFit: "cover",
-                      borderRadius: "5px",
-                    }}
-                    alt=""
-                  />
-                )}
+                    Size: {popup.width} x {popup.height}
+                  </p>
 
-                <div
-                  style={{
-                    marginTop: "15px",
-                    display: "flex",
-                    gap: "10px",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <button
-                    onClick={() => handleEdit(popup)}
+                  {/* Preview ảnh đầu tiên trong list */}
+                  {mediaList.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        height: "120px",
+                        background: "#f0f0f0",
+                        borderRadius: "5px",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      {mediaList[0].match(/\.(mp4|webm)$/i) ? (
+                        <video
+                          src={`http://localhost:3000${mediaList[0]}`}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={`http://localhost:3000${mediaList[0]}`}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      )}
+                      {mediaList.length > 1 && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: 5,
+                            right: 5,
+                            background: "rgba(0,0,0,0.6)",
+                            color: "white",
+                            padding: "2px 6px",
+                            borderRadius: "10px",
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          +{mediaList.length - 1}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div
                     style={{
-                      background: "#ff9800",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "3px",
-                      cursor: "pointer",
+                      marginTop: "15px",
+                      display: "flex",
+                      gap: "10px",
+                      justifyContent: "flex-end",
                     }}
                   >
-                    <FaEdit /> Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDelete(popup.id)}
-                    style={{
-                      background: "#f44336",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "3px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <FaTrash /> Xóa
-                  </button>
+                    <button
+                      onClick={() => handleEdit(popup)}
+                      style={{
+                        background: "#ff9800",
+                        color: "white",
+                        border: "none",
+                        padding: "5px 10px",
+                        borderRadius: "3px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <FaEdit /> Sửa
+                    </button>
+                    <button
+                      onClick={() => handleDelete(popup.id)}
+                      style={{
+                        background: "#f44336",
+                        color: "white",
+                        border: "none",
+                        padding: "5px 10px",
+                        borderRadius: "3px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <FaTrash /> Xóa
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
