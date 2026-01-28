@@ -14,15 +14,11 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
 import CategoryPage from "./pages/CategoryPage";
-import AdminPopupConfig from "./pages/AdminPopupConfig"; 
-import AdminLayoutConfig from "./pages/AdminLayoutConfig"; // <--- Import trang Layout mới
-import PopupBanner from "./components/PopupBanner"; 
-import {
-  FaSignOutAlt,
-  FaSignInAlt,
-  FaBars,
-  FaTimes,
-} from "react-icons/fa";
+import NewsPage from "./pages/NewsPage"; // <--- Import trang Tin Tức mới
+import AdminPopupConfig from "./pages/AdminPopupConfig";
+import AdminLayoutConfig from "./pages/AdminLayoutConfig";
+import PopupBanner from "./components/PopupBanner";
+import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 
 // Component Navigation
 const Navigation = ({ isLoggedIn, onLogout }) => {
@@ -58,6 +54,10 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
           </Link>
           <Link to="/categories" className="nav-link" onClick={closeMenu}>
             Danh Mục
+          </Link>
+          {/* Thêm Link Tin Tức vào Menu */}
+          <Link to="/news" className="nav-link" onClick={closeMenu}>
+            Tin Tức
           </Link>
           <Link to="/contact" className="nav-link" onClick={closeMenu}>
             Liên Hệ
@@ -121,13 +121,14 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/categories" element={<CategoryPage />} />
+          <Route path="/news" element={<NewsPage />} />{" "}
+          {/* <--- Route cho trang Tin Tức */}
           <Route path="/plant/:id" element={<PlantDetail />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route
             path="/login"
             element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
           />
-
           {/* Admin Routes */}
           <Route
             path="/admin"
@@ -141,7 +142,6 @@ function App() {
             path="/admin/edit/:id"
             element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />}
           />
-
           {/* Cấu hình Popup */}
           <Route
             path="/admin/popup"
@@ -149,8 +149,7 @@ function App() {
               isLoggedIn ? <AdminPopupConfig /> : <Navigate to="/login" />
             }
           />
-
-          {/* Cấu hình Layout Trang Chủ (Mới) */}
+          {/* Cấu hình Layout Trang Chủ */}
           <Route
             path="/admin/layout"
             element={

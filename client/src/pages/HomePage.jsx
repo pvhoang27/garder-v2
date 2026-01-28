@@ -1,10 +1,49 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaNewspaper, FaLeaf } from "react-icons/fa";
+
+// --- DỮ LIỆU TIN TỨC GIẢ LẬP (Dùng chung để tìm kiếm) ---
+const FAKE_NEWS_DATA = [
+  {
+    id: 1,
+    title: "Cách chăm sóc cây kim tiền luôn xanh tốt",
+    summary:
+      "Cây kim tiền là loài cây mang lại tài lộc, nhưng chăm sóc sao cho lá luôn xanh mướt thì không phải ai cũng biết.",
+    image:
+      "https://images.unsplash.com/photo-1612361664177-3363351d3846?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    date: "28/01/2026",
+  },
+  {
+    id: 2,
+    title: "Top 5 loại cây lọc không khí tốt nhất cho phòng ngủ",
+    summary:
+      "Giấc ngủ ngon hơn với không khí trong lành nhờ 5 loại cây 'nhỏ nhưng có võ' này.",
+    image:
+      "https://images.unsplash.com/photo-1598516091417-6499806c9a75?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    date: "25/01/2026",
+  },
+  {
+    id: 3,
+    title: "Xu hướng trồng cây ban công năm 2026",
+    summary:
+      "Năm 2026 đánh dấu sự lên ngôi của các dòng cây nhiệt đới và phong cách khu vườn mini (Jungle).",
+    image:
+      "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    date: "20/01/2026",
+  },
+  {
+    id: 4,
+    title: "Lợi ích bất ngờ của việc tưới cây buổi sáng",
+    summary:
+      "Tại sao các chuyên gia khuyên bạn nên tưới cây vào sáng sớm thay vì buổi tối?",
+    image:
+      "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    date: "18/01/2026",
+  },
+];
 
 // --- CSS STYLE NỘI BỘ CHO SEARCH BAR RESPONSIVE ---
-// Bạn có thể đưa phần này vào file .css riêng nếu muốn gọn code hơn
 const searchStyles = `
   .search-container {
     margin-top: 30px;
@@ -17,7 +56,7 @@ const searchStyles = `
     width: 90%;
     max-width: 700px;
     align-items: center;
-    flex-wrap: nowrap; /* Mặc định trên PC là 1 dòng */
+    flex-wrap: nowrap;
   }
 
   .search-input {
@@ -26,7 +65,7 @@ const searchStyles = `
     padding: 10px 20px;
     border-radius: 30px;
     font-size: 1rem;
-    flex: 1; /* Tự động chiếm khoảng trống còn lại */
+    flex: 1;
     min-width: 150px;
   }
 
@@ -53,14 +92,14 @@ const searchStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0; /* Không cho nút bị co lại */
+    flex-shrink: 0;
   }
 
   /* --- MOBILE RESPONSIVE --- */
   @media (max-width: 768px) {
     .search-container {
-      flex-direction: column; /* Chuyển thành cột dọc */
-      border-radius: 20px;    /* Bo góc ít hơn cho dạng khối */
+      flex-direction: column;
+      border-radius: 20px;
       padding: 20px;
     }
     
@@ -82,7 +121,7 @@ const searchStyles = `
     }
 
     .search-btn {
-      width: 100%; /* Nút bấm to full chiều ngang cho dễ bấm */
+      width: 100%;
       border-radius: 10px;
     }
   }
@@ -226,6 +265,7 @@ const HomePage = () => {
     }
   }, [searchParams]);
 
+  // --- LOGIC TÌM KIẾM CÂY ---
   const filteredPlants = allPlants.filter((plant) => {
     const matchesKeyword = plant.name
       .toLowerCase()
@@ -235,6 +275,18 @@ const HomePage = () => {
       : true;
     return matchesKeyword && matchesCategory;
   });
+
+  // --- LOGIC TÌM KIẾM TIN TỨC ---
+  // Tin tức chỉ hiển thị khi có từ khóa tìm kiếm (bỏ qua lọc danh mục cây)
+  const filteredNews = searchTerm
+    ? FAKE_NEWS_DATA.filter((news) => {
+        const keyword = searchTerm.toLowerCase();
+        return (
+          news.title.toLowerCase().includes(keyword) ||
+          news.summary.toLowerCase().includes(keyword)
+        );
+      })
+    : [];
 
   const isFiltering = searchTerm !== "" || selectedCategory !== "";
 
@@ -250,8 +302,7 @@ const HomePage = () => {
             "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight:
-            "400px" /* minHeight để không bị cắt khi nội dung dài ra trên mobile */,
+          minHeight: "400px",
           padding: "20px",
           display: "flex",
           flexDirection: "column",
@@ -263,7 +314,7 @@ const HomePage = () => {
       >
         <h1
           style={{
-            fontSize: "calc(2rem + 1vw)" /* Font size linh hoạt */,
+            fontSize: "calc(2rem + 1vw)",
             textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             margin: "0 10px",
           }}
@@ -285,7 +336,7 @@ const HomePage = () => {
           <input
             className="search-input"
             type="text"
-            placeholder="Tìm tên cây..."
+            placeholder="Tìm cây hoặc tin tức..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -299,7 +350,7 @@ const HomePage = () => {
               else setSearchParams({});
             }}
           >
-            <option value="">Tất cả danh mục</option>
+            <option value="">Tất cả danh mục cây</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -323,10 +374,32 @@ const HomePage = () => {
                 marginBottom: "20px",
               }}
             >
-              Kết quả tìm kiếm ({filteredPlants.length})
+              Kết quả tìm kiếm
             </h2>
+
+            {/* --- KẾT QUẢ TÌM KIẾM: CÂY CẢNH --- */}
+            <h3
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                color: "#333",
+              }}
+            >
+              <FaLeaf color="#2e7d32" /> Sản phẩm ({filteredPlants.length})
+            </h3>
+
             {filteredPlants.length === 0 ? (
-              <p>Không tìm thấy cây nào phù hợp.</p>
+              <p
+                style={{
+                  fontStyle: "italic",
+                  color: "#666",
+                  margin: "10px 0 30px 0",
+                }}
+              >
+                Không tìm thấy cây nào phù hợp.
+              </p>
             ) : (
               <div
                 className="plant-grid"
@@ -334,6 +407,8 @@ const HomePage = () => {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
                   gap: "20px",
+                  marginTop: "15px",
+                  marginBottom: "40px",
                 }}
               >
                 {filteredPlants.map((plant) => (
@@ -386,6 +461,102 @@ const HomePage = () => {
                   </div>
                 ))}
               </div>
+            )}
+
+            {/* --- KẾT QUẢ TÌM KIẾM: TIN TỨC --- */}
+            {searchTerm && (
+              <>
+                <h3
+                  style={{
+                    marginTop: "20px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    color: "#333",
+                    borderTop: "1px solid #eee",
+                    paddingTop: "20px",
+                  }}
+                >
+                  <FaNewspaper color="#2e7d32" /> Tin tức liên quan (
+                  {filteredNews.length})
+                </h3>
+                {filteredNews.length === 0 ? (
+                  <p
+                    style={{
+                      fontStyle: "italic",
+                      color: "#666",
+                      margin: "10px 0",
+                    }}
+                  >
+                    Không tìm thấy tin tức nào phù hợp.
+                  </p>
+                ) : (
+                  <div
+                    className="news-grid"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(300px, 1fr))",
+                      gap: "20px",
+                      marginTop: "15px",
+                    }}
+                  >
+                    {filteredNews.map((news) => (
+                      <Link
+                        to="/news"
+                        key={news.id}
+                        style={{ textDecoration: "none", color: "inherit" }}
+                      >
+                        <div
+                          className="news-card"
+                          style={{
+                            background: "white",
+                            borderRadius: "10px",
+                            overflow: "hidden",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "15px",
+                            padding: "10px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <img
+                            src={news.image}
+                            alt={news.title}
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              borderRadius: "5px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <div>
+                            <h4
+                              style={{ margin: "0 0 5px 0", color: "#2e7d32" }}
+                            >
+                              {news.title}
+                            </h4>
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: "0.9rem",
+                                color: "#666",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {news.summary}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (
