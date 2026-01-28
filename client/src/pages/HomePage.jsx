@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
 import { FaSearch, FaNewspaper, FaLeaf } from "react-icons/fa";
-// --- 1. Import component Fireworks ---
 import { Fireworks } from "@fireworks-js/react";
+import { useTranslation } from "react-i18next"; // <--- Import hook
 
 // --- DỮ LIỆU TIN TỨC GIẢ LẬP ---
 const FAKE_NEWS_DATA = [
@@ -59,7 +59,7 @@ const searchStyles = `
     max-width: 700px;
     align-items: center;
     flex-wrap: nowrap;
-    position: relative; /* Đảm bảo thanh tìm kiếm nổi lên trên pháo hoa */
+    position: relative; 
     z-index: 10;
   }
 
@@ -99,7 +99,6 @@ const searchStyles = `
     flex-shrink: 0;
   }
 
-  /* --- MOBILE RESPONSIVE --- */
   @media (max-width: 768px) {
     .search-container {
       flex-direction: column;
@@ -131,7 +130,6 @@ const searchStyles = `
   }
 `;
 
-// Component hiển thị từng section (Giữ nguyên)
 const DynamicSection = ({ id, title, type, paramValue }) => {
   const [plants, setPlants] = useState([]);
 
@@ -233,6 +231,7 @@ const DynamicSection = ({ id, title, type, paramValue }) => {
 const HomePage = () => {
   const [layoutConfig, setLayoutConfig] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation(); // <--- Sử dụng hook
 
   // --- STATE CHO TÌM KIẾM VÀ LỌC ---
   const [searchParams, setSearchParams] = useSearchParams();
@@ -244,7 +243,6 @@ const HomePage = () => {
     searchParams.get("category_id") || "",
   );
 
-  // Ref cho fireworks
   const ref = useRef(null);
 
   useEffect(() => {
@@ -298,7 +296,6 @@ const HomePage = () => {
 
   return (
     <div>
-      {/* Inject Style */}
       <style>{searchStyles}</style>
 
       <div
@@ -316,18 +313,17 @@ const HomePage = () => {
           alignItems: "center",
           color: "white",
           textAlign: "center",
-          position: "relative" /* Quan trọng để chứa pháo hoa absolute */,
+          position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* --- 2. Component Fireworks đặt ở đây --- */}
         <Fireworks
           ref={ref}
           options={{
             opacity: 0.7,
-            particles: 50, // Số lượng hạt vừa phải
+            particles: 50,
             explosion: 5,
-            intensity: 10, // Bắn nhẹ nhàng
+            intensity: 10,
             traceLength: 2,
             brightness: {
               min: 50,
@@ -338,12 +334,10 @@ const HomePage = () => {
               max: 360,
             },
             delay: {
-              // Bắn chậm rãi
               min: 30,
               max: 60,
             },
             rocketsPoint: {
-              // Bắn từ giữa dưới lên
               min: 50,
               max: 50,
             },
@@ -354,8 +348,8 @@ const HomePage = () => {
             width: "100%",
             height: "100%",
             position: "absolute",
-            zIndex: 1 /* Nằm trên ảnh nền, nhưng dưới chữ */,
-            pointerEvents: "none" /* Để không chặn click vào thanh tìm kiếm */,
+            zIndex: 1,
+            pointerEvents: "none",
           }}
         />
 
@@ -365,10 +359,10 @@ const HomePage = () => {
             textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             margin: "0 10px",
             position: "relative",
-            zIndex: 10 /* Nổi lên trên pháo hoa */,
+            zIndex: 10,
           }}
         >
-          Mang thiên nhiên vào nhà bạn
+          {t("home.banner_title")}
         </h1>
         <p
           style={{
@@ -376,18 +370,17 @@ const HomePage = () => {
             marginTop: "10px",
             textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
             position: "relative",
-            zIndex: 10 /* Nổi lên trên pháo hoa */,
+            zIndex: 10,
           }}
         >
-          Khám phá bộ sưu tập cây xanh tươi mát
+          {t("home.banner_subtitle")}
         </p>
 
-        {/* Section tìm kiếm (đã có z-index 10 trong style CSS nội bộ ở trên) */}
         <div className="search-container">
           <input
             className="search-input"
             type="text"
-            placeholder="Tìm cây hoặc tin tức..."
+            placeholder={t("home.search_placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -401,7 +394,7 @@ const HomePage = () => {
               else setSearchParams({});
             }}
           >
-            <option value="">Tất cả danh mục cây</option>
+            <option value="">{t("home.all_categories")}</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -417,7 +410,6 @@ const HomePage = () => {
       <div style={{ paddingBottom: "50px" }}>
         {isFiltering ? (
           <div className="container" style={{ marginTop: "40px" }}>
-            {/* ... (Phần hiển thị kết quả tìm kiếm giữ nguyên như cũ) ... */}
             <h2
               style={{
                 color: "#2e7d32",
@@ -426,10 +418,9 @@ const HomePage = () => {
                 marginBottom: "20px",
               }}
             >
-              Kết quả tìm kiếm
+              {t("home.search_results")}
             </h2>
 
-            {/* --- KẾT QUẢ TÌM KIẾM: CÂY CẢNH --- */}
             <h3
               style={{
                 marginTop: "20px",
@@ -439,7 +430,8 @@ const HomePage = () => {
                 color: "#333",
               }}
             >
-              <FaLeaf color="#2e7d32" /> Sản phẩm ({filteredPlants.length})
+              <FaLeaf color="#2e7d32" /> {t("home.products")} (
+              {filteredPlants.length})
             </h3>
 
             {filteredPlants.length === 0 ? (
@@ -450,7 +442,7 @@ const HomePage = () => {
                   margin: "10px 0 30px 0",
                 }}
               >
-                Không tìm thấy cây nào phù hợp.
+                {t("home.no_plants")}
               </p>
             ) : (
               <div
@@ -515,7 +507,6 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* --- KẾT QUẢ TÌM KIẾM: TIN TỨC --- */}
             {searchTerm && (
               <>
                 <h3
@@ -529,7 +520,7 @@ const HomePage = () => {
                     paddingTop: "20px",
                   }}
                 >
-                  <FaNewspaper color="#2e7d32" /> Tin tức liên quan (
+                  <FaNewspaper color="#2e7d32" /> {t("home.news_related")} (
                   {filteredNews.length})
                 </h3>
                 {filteredNews.length === 0 ? (
@@ -540,7 +531,7 @@ const HomePage = () => {
                       margin: "10px 0",
                     }}
                   >
-                    Không tìm thấy tin tức nào phù hợp.
+                    {t("home.no_news")}
                   </p>
                 ) : (
                   <div
@@ -627,7 +618,7 @@ const HomePage = () => {
               <div
                 style={{ textAlign: "center", marginTop: 50, color: "#888" }}
               >
-                <h3>Trang chủ đang được cập nhật</h3>
+                <h3>{t("home.updating")}</h3>
               </div>
             )}
           </>

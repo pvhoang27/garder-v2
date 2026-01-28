@@ -6,8 +6,10 @@ import {
   Link,
   useNavigate,
   Navigate,
-  useLocation, // <--- Thêm hook này để kiểm tra đường dẫn
+  useLocation, 
 } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // <--- Import hook dịch
+
 import HomePage from "./pages/HomePage";
 import PlantDetail from "./pages/PlantDetail";
 import LoginPage from "./pages/LoginPage";
@@ -19,18 +21,21 @@ import NewsPage from "./pages/NewsPage";
 import AdminPopupConfig from "./pages/AdminPopupConfig";
 import AdminLayoutConfig from "./pages/AdminLayoutConfig";
 import PopupBanner from "./components/PopupBanner";
+import LanguageSwitcher from "./components/LanguageSwitcher"; // <--- Import nút đổi ngữ
+
 import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 
 // Component Navigation
 const Navigation = ({ isLoggedIn, onLogout }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useTranslation(); // <--- Sử dụng hook
 
   const handleLogoutClick = () => {
     onLogout();
     navigate("/");
     setIsMobileMenuOpen(false);
-    alert("Đã đăng xuất thành công!");
+    alert(t("common.success_logout"));
   };
 
   const closeMenu = () => setIsMobileMenuOpen(false);
@@ -39,9 +44,11 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
     <nav className="navbar">
       <div className="container navbar-container">
         <Link to="/" className="nav-logo" onClick={closeMenu}>
-          🌿 Green Garden
+          🌿 {t("nav.brand")}
         </Link>
 
+        {/* Thêm nút đổi ngôn ngữ trên Mobile nếu muốn, hoặc để trong menu */}
+        
         <div
           className="mobile-icon"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -51,16 +58,16 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
 
         <div className={isMobileMenuOpen ? "nav-menu active" : "nav-menu"}>
           <Link to="/" className="nav-link" onClick={closeMenu}>
-            Trang Chủ
+            {t("nav.home")}
           </Link>
           <Link to="/categories" className="nav-link" onClick={closeMenu}>
-            Danh Mục
+            {t("nav.categories")}
           </Link>
           <Link to="/news" className="nav-link" onClick={closeMenu}>
-            Tin Tức
+            {t("nav.news")}
           </Link>
           <Link to="/contact" className="nav-link" onClick={closeMenu}>
-            Liên Hệ
+            {t("nav.contact")}
           </Link>
 
           {isLoggedIn ? (
@@ -70,13 +77,13 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
                 className="nav-link nav-btn-admin"
                 onClick={closeMenu}
               >
-                Quản Trị
+                {t("nav.admin")}
               </Link>
               <button
                 onClick={handleLogoutClick}
                 className="nav-link nav-btn-logout"
               >
-                <FaSignOutAlt /> Thoát
+                <FaSignOutAlt /> {t("nav.logout")}
               </button>
             </>
           ) : (
@@ -85,19 +92,24 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
               className="nav-link nav-btn-login"
               onClick={closeMenu}
             >
-              <FaSignInAlt /> Đăng Nhập
+              <FaSignInAlt /> {t("nav.login")}
             </Link>
           )}
+          
+          {/* Đặt nút chuyển ngữ vào cuối menu */}
+          <div className="nav-link" style={{display: 'flex', alignItems: 'center'}}>
+             <LanguageSwitcher />
+          </div>
         </div>
       </div>
     </nav>
   );
 };
 
-// --- COMPONENT CONTENT WRAPPER (MỚI) ---
-// Tạo component này để dùng được useLocation bên trong BrowserRouter
+// --- COMPONENT CONTENT WRAPPER ---
 const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
   const location = useLocation();
+  const { t } = useTranslation(); // <--- Hook cho footer
 
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -171,9 +183,9 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
         >
           <h3>Green Garden Showcase</h3>
           <p style={{ opacity: 0.7, fontSize: "0.9rem", marginTop: "10px" }}>
-            Địa chỉ: Vườn cây gia đình
+            {t("home.footer_address")}
             <br />
-            Điện thoại: 0988.888.888
+            {t("home.footer_phone")}
           </p>
           <p style={{ marginTop: "20px", fontSize: "0.8rem", opacity: 0.5 }}>
             © 2026 Developed by You
@@ -201,7 +213,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Chuyển toàn bộ nội dung vào AppContent để xử lý logic ẩn hiện Header/Footer */}
       <AppContent
         isLoggedIn={isLoggedIn}
         handleLoginSuccess={handleLoginSuccess}
