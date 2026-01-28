@@ -1,7 +1,22 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaLeaf, FaList, FaUsers, FaCog, FaSignOutAlt, FaLayerGroup, FaTimes } from "react-icons/fa";
+import {
+  FaLeaf,
+  FaList,
+  FaUsers,
+  FaCog,
+  FaSignOutAlt,
+  FaLayerGroup,
+  FaTimes,
+  FaHome,
+} from "react-icons/fa";
 
-const AdminSidebar = ({ activeTab, setActiveTab, isMobile, isOpen, setIsOpen }) => {
+const AdminSidebar = ({
+  activeTab,
+  setActiveTab,
+  isMobile,
+  isOpen,
+  setIsOpen,
+}) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -31,40 +46,126 @@ const AdminSidebar = ({ activeTab, setActiveTab, isMobile, isOpen, setIsOpen }) 
   };
 
   const linkStyle = {
-    display: "flex", alignItems: "center", gap: "10px", color: "#ccc",
-    textDecoration: "none", padding: "12px 20px", transition: "0.3s",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    color: "#ccc",
+    textDecoration: "none",
+    padding: "12px 20px",
+    transition: "0.3s",
   };
 
   const btnLogoutStyle = {
-    width: "100%", padding: "10px", background: "#d32f2f", color: "white",
-    border: "none", borderRadius: "5px", cursor: "pointer", display: "flex",
-    alignItems: "center", justifyContent: "center", gap: "10px",
+    width: "100%",
+    padding: "10px",
+    background: "#d32f2f",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
   };
 
   return (
     <div style={sidebarStyle}>
-      <div style={{ padding: "20px", fontSize: "20px", fontWeight: "bold", borderBottom: "1px solid #333", color: "#4caf50", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>Garder Admin</span>
+      {/* --- PHẦN HEADER SIDEBAR ĐÃ SỬA --- */}
+      <div
+        style={{
+          padding: "20px",
+          fontSize: "20px",
+          fontWeight: "bold",
+          borderBottom: "1px solid #333",
+          color: "#4caf50",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* Biến chữ Garder Admin thành Link về Trang chủ */}
+        <Link
+          to="/"
+          title="Về trang chủ"
+          style={{
+            color: "#4caf50",
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+          onClick={() => isMobile && setIsOpen(false)}
+        >
+          <FaHome /> Trang Chủ
+        </Link>
+
         {isMobile && (
-          <button onClick={() => setIsOpen(false)} style={{ background: "none", border: "none", color: "#888", fontSize: "20px" }}>
+          <button
+            onClick={() => setIsOpen(false)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#888",
+              fontSize: "20px",
+            }}
+          >
             <FaTimes />
           </button>
         )}
       </div>
 
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
-        <MenuButton active={activeTab === "plants"} onClick={() => handleMenuClick("plants")} icon={<FaLeaf />} label="Quản lý Cây" />
-        <MenuButton active={activeTab === "categories"} onClick={() => handleMenuClick("categories")} icon={<FaList />} label="Quản lý Danh mục" />
-        <MenuButton active={activeTab === "users"} onClick={() => handleMenuClick("users")} icon={<FaUsers />} label="Quản lý Users" />
+        <MenuButton
+          active={activeTab === "plants"}
+          onClick={() => handleMenuClick("plants")}
+          icon={<FaLeaf />}
+          label="Quản lý Cây"
+        />
+        <MenuButton
+          active={activeTab === "categories"}
+          onClick={() => handleMenuClick("categories")}
+          icon={<FaList />}
+          label="Quản lý Danh mục"
+        />
+        <MenuButton
+          active={activeTab === "users"}
+          onClick={() => handleMenuClick("users")}
+          icon={<FaUsers />}
+          label="Quản lý Users"
+        />
 
-        <div style={{ borderTop: "1px solid #333", marginTop: "10px", paddingTop: "10px" }}>
-          <Link to="/admin/popup" style={linkStyle} onClick={() => isMobile && setIsOpen(false)}> <FaCog /> Cấu hình Popup </Link>
-          <Link to="/admin/layout" style={linkStyle} onClick={() => isMobile && setIsOpen(false)}> <FaLayerGroup /> Bố cục Trang chủ </Link>
+        <div
+          style={{
+            borderTop: "1px solid #333",
+            marginTop: "10px",
+            paddingTop: "10px",
+          }}
+        >
+          <Link
+            to="/admin/popup"
+            style={linkStyle}
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            {" "}
+            <FaCog /> Cấu hình Popup{" "}
+          </Link>
+          <Link
+            to="/admin/layout"
+            style={linkStyle}
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            {" "}
+            <FaLayerGroup /> Bố cục Trang chủ{" "}
+          </Link>
         </div>
       </nav>
 
       <div style={{ padding: "20px", borderTop: "1px solid #333" }}>
-        <button onClick={handleLogout} style={btnLogoutStyle}> <FaSignOutAlt /> Đăng xuất </button>
+        <button onClick={handleLogout} style={btnLogoutStyle}>
+          {" "}
+          <FaSignOutAlt /> Đăng xuất{" "}
+        </button>
       </div>
     </div>
   );
@@ -74,9 +175,18 @@ const MenuButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
     style={{
-      width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "15px 20px",
-      background: active ? "#2e7d32" : "transparent", color: active ? "white" : "#ccc",
-      border: "none", textAlign: "left", fontSize: "16px", cursor: "pointer", transition: "0.2s",
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      padding: "15px 20px",
+      background: active ? "#2e7d32" : "transparent",
+      color: active ? "white" : "#ccc",
+      border: "none",
+      textAlign: "left",
+      fontSize: "16px",
+      cursor: "pointer",
+      transition: "0.2s",
     }}
   >
     {icon} {label}
