@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
 import { FaSearch, FaNewspaper, FaLeaf } from "react-icons/fa";
+// --- 1. Import component Fireworks ---
+import { Fireworks } from "@fireworks-js/react";
 
-// --- DỮ LIỆU TIN TỨC GIẢ LẬP (Dùng chung để tìm kiếm) ---
+// --- DỮ LIỆU TIN TỨC GIẢ LẬP ---
 const FAKE_NEWS_DATA = [
   {
     id: 1,
@@ -57,6 +59,8 @@ const searchStyles = `
     max-width: 700px;
     align-items: center;
     flex-wrap: nowrap;
+    position: relative; /* Đảm bảo thanh tìm kiếm nổi lên trên pháo hoa */
+    z-index: 10;
   }
 
   .search-input {
@@ -240,6 +244,9 @@ const HomePage = () => {
     searchParams.get("category_id") || "",
   );
 
+  // Ref cho fireworks
+  const ref = useRef(null);
+
   useEffect(() => {
     // 1. Lấy Layout
     axiosClient
@@ -277,7 +284,6 @@ const HomePage = () => {
   });
 
   // --- LOGIC TÌM KIẾM TIN TỨC ---
-  // Tin tức chỉ hiển thị khi có từ khóa tìm kiếm (bỏ qua lọc danh mục cây)
   const filteredNews = searchTerm
     ? FAKE_NEWS_DATA.filter((news) => {
         const keyword = searchTerm.toLowerCase();
@@ -310,13 +316,56 @@ const HomePage = () => {
           alignItems: "center",
           color: "white",
           textAlign: "center",
+          position: "relative" /* Quan trọng để chứa pháo hoa absolute */,
+          overflow: "hidden",
         }}
       >
+        {/* --- 2. Component Fireworks đặt ở đây --- */}
+        <Fireworks
+          ref={ref}
+          options={{
+            opacity: 0.7,
+            particles: 50, // Số lượng hạt vừa phải
+            explosion: 5,
+            intensity: 10, // Bắn nhẹ nhàng
+            traceLength: 2,
+            brightness: {
+              min: 50,
+              max: 80,
+            },
+            hue: {
+              min: 0,
+              max: 360,
+            },
+            delay: {
+              // Bắn chậm rãi
+              min: 30,
+              max: 60,
+            },
+            rocketsPoint: {
+              // Bắn từ giữa dưới lên
+              min: 50,
+              max: 50,
+            },
+          }}
+          style={{
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            zIndex: 1 /* Nằm trên ảnh nền, nhưng dưới chữ */,
+            pointerEvents: "none" /* Để không chặn click vào thanh tìm kiếm */,
+          }}
+        />
+
         <h1
           style={{
             fontSize: "calc(2rem + 1vw)",
             textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             margin: "0 10px",
+            position: "relative",
+            zIndex: 10 /* Nổi lên trên pháo hoa */,
           }}
         >
           Mang thiên nhiên vào nhà bạn
@@ -326,12 +375,14 @@ const HomePage = () => {
             fontSize: "1.2rem",
             marginTop: "10px",
             textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+            position: "relative",
+            zIndex: 10 /* Nổi lên trên pháo hoa */,
           }}
         >
           Khám phá bộ sưu tập cây xanh tươi mát
         </p>
 
-        {/* --- SECTION TÌM KIẾM ĐÃ ĐƯỢC RESPONSIVE --- */}
+        {/* Section tìm kiếm (đã có z-index 10 trong style CSS nội bộ ở trên) */}
         <div className="search-container">
           <input
             className="search-input"
@@ -366,6 +417,7 @@ const HomePage = () => {
       <div style={{ paddingBottom: "50px" }}>
         {isFiltering ? (
           <div className="container" style={{ marginTop: "40px" }}>
+            {/* ... (Phần hiển thị kết quả tìm kiếm giữ nguyên như cũ) ... */}
             <h2
               style={{
                 color: "#2e7d32",
