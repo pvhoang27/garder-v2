@@ -37,11 +37,16 @@ const AdminSidebar = ({
     display: "flex",
     flexDirection: "column",
     position: "fixed",
-    height: "100%",
-    zIndex: 1000,
-    transition: "0.3s ease-in-out",
-    left: isMobile ? (isOpen ? "0" : "-260px") : "0",
+    height: "100vh", // Full viewport height
+    zIndex: 1100, // Cao hơn Header Mobile và Overlay
+    transition: "transform 0.3s ease-in-out",
+    left: 0,
     top: 0,
+    transform: isMobile
+      ? isOpen
+        ? "translateX(0)"
+        : "translateX(-100%)"
+      : "translateX(0)",
     boxShadow: isOpen ? "2px 0 10px rgba(0,0,0,0.5)" : "none",
   };
 
@@ -53,11 +58,12 @@ const AdminSidebar = ({
     textDecoration: "none",
     padding: "12px 20px",
     transition: "0.3s",
+    fontSize: "15px",
   };
 
   const btnLogoutStyle = {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     background: "#d32f2f",
     color: "white",
     border: "none",
@@ -67,11 +73,12 @@ const AdminSidebar = ({
     alignItems: "center",
     justifyContent: "center",
     gap: "10px",
+    fontSize: "15px",
   };
 
   return (
     <div style={sidebarStyle}>
-      {/* --- PHẦN HEADER SIDEBAR ĐÃ SỬA --- */}
+      {/* --- HEADER SIDEBAR --- */}
       <div
         style={{
           padding: "20px",
@@ -82,9 +89,9 @@ const AdminSidebar = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          height: "70px",
         }}
       >
-        {/* Biến chữ Garder Admin thành Link về Trang chủ */}
         <Link
           to="/"
           title="Về trang chủ"
@@ -107,7 +114,8 @@ const AdminSidebar = ({
               background: "none",
               border: "none",
               color: "#888",
-              fontSize: "20px",
+              fontSize: "24px",
+              cursor: "pointer",
             }}
           >
             <FaTimes />
@@ -115,6 +123,7 @@ const AdminSidebar = ({
         )}
       </div>
 
+      {/* --- MENU SCROLLABLE --- */}
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
         <MenuButton
           active={activeTab === "plants"}
@@ -147,24 +156,21 @@ const AdminSidebar = ({
             style={linkStyle}
             onClick={() => isMobile && setIsOpen(false)}
           >
-            {" "}
-            <FaCog /> Cấu hình Popup{" "}
+            <FaCog /> Cấu hình Popup
           </Link>
           <Link
             to="/admin/layout"
             style={linkStyle}
             onClick={() => isMobile && setIsOpen(false)}
           >
-            {" "}
-            <FaLayerGroup /> Bố cục Trang chủ{" "}
+            <FaLayerGroup /> Bố cục Trang chủ
           </Link>
         </div>
       </nav>
 
       <div style={{ padding: "20px", borderTop: "1px solid #333" }}>
         <button onClick={handleLogout} style={btnLogoutStyle}>
-          {" "}
-          <FaSignOutAlt /> Đăng xuất{" "}
+          <FaSignOutAlt /> Đăng xuất
         </button>
       </div>
     </div>
@@ -184,9 +190,10 @@ const MenuButton = ({ active, onClick, icon, label }) => (
       color: active ? "white" : "#ccc",
       border: "none",
       textAlign: "left",
-      fontSize: "16px",
+      fontSize: "15px",
       cursor: "pointer",
       transition: "0.2s",
+      borderLeft: active ? "4px solid #4caf50" : "4px solid transparent",
     }}
   >
     {icon} {label}

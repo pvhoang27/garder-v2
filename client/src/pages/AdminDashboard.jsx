@@ -6,8 +6,9 @@ import {
   FaSearch,
   FaAngleDown,
   FaSignOutAlt,
+  FaHeart,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPlantManager from "../components/AdminPlantManager";
 import AdminCategoryManager from "../components/AdminCategoryManager";
@@ -17,14 +18,15 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("plants"); // plants | categories | users
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false); // State cho menu user
-  const navigate = useNavigate(); // Hook để chuyển trang
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const navigate = useNavigate();
 
   // --- RESIZE EVENT ---
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) setIsSidebarOpen(false);
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (!mobile) setIsSidebarOpen(false);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -58,7 +60,7 @@ const AdminDashboard = () => {
     wrapper: {
       display: "flex",
       minHeight: "100vh",
-      background: "#f0f2f5", // Màu nền tổng thể sáng sủa hơn
+      background: "#f0f2f5",
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
     mainContent: {
@@ -67,7 +69,7 @@ const AdminDashboard = () => {
       display: "flex",
       flexDirection: "column",
       transition: "margin 0.3s ease",
-      width: "100%", // Đảm bảo full width
+      width: isMobile ? "100%" : "calc(100% - 250px)", // Fix width calculation
     },
     headerDesktop: {
       background: "#ffffff",
@@ -79,7 +81,7 @@ const AdminDashboard = () => {
       position: "sticky",
       top: 0,
       zIndex: 100,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)", // Shadow nhẹ
+      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
     },
     headerMobile: {
       position: "fixed",
@@ -118,6 +120,7 @@ const AdminDashboard = () => {
       alignItems: "center",
       justifyContent: "center",
       transition: "background 0.2s",
+      position: "relative",
     },
     userProfile: {
       display: "flex",
@@ -127,7 +130,7 @@ const AdminDashboard = () => {
       padding: "5px 10px",
       borderRadius: "6px",
       transition: "background 0.2s",
-      position: "relative", // Để định vị dropdown
+      position: "relative",
     },
     dropdownMenu: {
       position: "absolute",
@@ -141,6 +144,7 @@ const AdminDashboard = () => {
       marginTop: "10px",
       display: showUserMenu ? "block" : "none",
       border: "1px solid #eee",
+      zIndex: 1000,
     },
     dropdownItem: {
       padding: "10px 20px",
@@ -154,8 +158,18 @@ const AdminDashboard = () => {
       transition: "background 0.2s",
     },
     contentBody: {
-      padding: isMobile ? "80px 20px 20px" : "30px", // Padding chuẩn
-      flex: 1,
+      padding: isMobile ? "80px 15px 20px" : "30px", // Padding top lớn hơn ở mobile để tránh header che
+      flex: 1, // Đẩy footer xuống dưới
+      overflowX: "hidden", // Tránh vỡ layout ngang
+    },
+    footer: {
+      background: "#fff",
+      padding: "20px",
+      textAlign: "center",
+      fontSize: "13px",
+      color: "#666",
+      borderTop: "1px solid #e0e0e0",
+      marginTop: "auto", // Quan trọng để footer luôn ở đáy nếu nội dung ngắn
     },
   };
 
@@ -185,7 +199,6 @@ const AdminDashboard = () => {
             style={{ position: "relative" }}
           >
             <FaUserCircle size={24} />
-            {/* Dropdown Mobile */}
             {showUserMenu && (
               <div
                 style={{
@@ -234,7 +247,6 @@ const AdminDashboard = () => {
         {/* --- DESKTOP HEADER --- */}
         {!isMobile && (
           <header style={styles.headerDesktop}>
-            {/* Left: Title & Breadcrumb */}
             <div>
               <div style={styles.breadcrumb}>
                 Admin /{" "}
@@ -247,9 +259,7 @@ const AdminDashboard = () => {
               <h2 style={styles.pageTitle}>{getPageTitle()}</h2>
             </div>
 
-            {/* Right: Actions & User */}
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-              {/* Search Box giả lập cho đẹp */}
               <div style={{ position: "relative", color: "#888" }}>
                 <FaSearch
                   style={{
@@ -274,14 +284,13 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              {/* Icon Chuông */}
               <button style={styles.iconBtn} title="Thông báo">
                 <FaBell size={18} />
                 <span
                   style={{
                     position: "absolute",
-                    top: "18px",
-                    right: "125px",
+                    top: "5px",
+                    right: "5px",
                     width: "8px",
                     height: "8px",
                     background: "red",
@@ -294,12 +303,11 @@ const AdminDashboard = () => {
                 style={{ width: "1px", height: "30px", background: "#eee" }}
               ></div>
 
-              {/* User Profile Dropdown */}
               <div
                 style={styles.userProfile}
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                onMouseLeave={() => setShowUserMenu(false)} // Tự đóng khi chuột rời đi
-                onMouseEnter={() => setShowUserMenu(true)} // Tự mở khi chuột vào
+                onMouseLeave={() => setShowUserMenu(false)}
+                onMouseEnter={() => setShowUserMenu(true)}
               >
                 <img
                   src="https://via.placeholder.com/40"
@@ -337,7 +345,6 @@ const AdminDashboard = () => {
                   style={{ marginLeft: "5px" }}
                 />
 
-                {/* Dropdown Menu Desktop */}
                 <div style={styles.dropdownMenu}>
                   <div
                     style={styles.dropdownItem}
@@ -364,9 +371,27 @@ const AdminDashboard = () => {
         {/* --- CONTENT BODY --- */}
         <div style={styles.contentBody}>
           {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
-          {activeTab === "categories" && <AdminCategoryManager />}
-          {activeTab === "users" && <AdminUserManager />}
+          {activeTab === "categories" && (
+            <AdminCategoryManager isMobile={isMobile} />
+          )}
+          {activeTab === "users" && <AdminUserManager isMobile={isMobile} />}
         </div>
+
+        {/* --- FOOTER --- */}
+        <footer style={styles.footer}>
+          <p>© {new Date().getFullYear()} Garder Admin Dashboard.</p>
+          <p
+            style={{
+              marginTop: "5px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "5px",
+            }}
+          >
+            Made with <FaHeart color="red" /> by PVHoang27
+          </p>
+        </footer>
       </div>
     </div>
   );
