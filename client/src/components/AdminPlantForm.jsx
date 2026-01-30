@@ -3,16 +3,22 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import axiosClient from "../api/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaTrash, FaPlus } from "react-icons/fa";
 
-const AdminPlantForm = () => {
-  const { id } = useParams();
+// Components & CSS
+import PlantAttributes from "./admin/plants/PlantAttributes";
+import PlantMedia from "./admin/plants/PlantMedia";
+import "./AdminPlantForm.css";
+
+const AdminPlantForm = ({ initialData, onSuccess }) => {
+  // Hỗ trợ cả dùng trong Modal (có initialData) và trang riêng (có useParams)
+  const { id } = useParams(); 
   const navigate = useNavigate();
-  const isEdit = Boolean(id);
+  const plantId = initialData?.id || id;
+  const isEdit = Boolean(plantId);
 
   const [formData, setFormData] = useState({
     name: "",
-    price: "", // <--- THÊM STATE PRICE
+    price: "",
     scientific_name: "",
     age: "",
     category_id: "",
@@ -21,12 +27,10 @@ const AdminPlantForm = () => {
     is_featured: false,
   });
 
-  // --- STATE CHO ATTRIBUTES (NEW) ---
-  const [attributes, setAttributes] = useState([]); // [{ key: '', value: '' }]
-
+  const [attributes, setAttributes] = useState([]); 
   const [categories, setCategories] = useState([]);
 
-  // Quản lý file
+  // Media State
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [oldThumbnail, setOldThumbnail] = useState(null);
@@ -35,59 +39,39 @@ const AdminPlantForm = () => {
   const [galleryPreview, setGalleryPreview] = useState([]);
   const [oldMedia, setOldMedia] = useState([]);
 
-  const isVideo = (filename) => {
-    if (!filename) return false;
-    const ext = filename.split(".").pop().toLowerCase();
-    return ["mp4", "mov", "avi", "webm"].includes(ext);
-  };
-
   useEffect(() => {
     axiosClient.get("/categories").then((res) => setCategories(res.data));
 
     if (isEdit) {
-      axiosClient.get(`/plants/${id}`).then((res) => {
-        const d = res.data;
-        setFormData({
-          name: d.name,
-          price: d.price || "", // <--- LOAD GIÁ TỪ API
-          scientific_name: d.scientific_name || "",
-          age: d.age || "",
-          category_id: d.category_id,
-          description: d.description || "",
-          care_instruction: d.care_instruction || "",
-          is_featured: d.is_featured === 1,
-        });
-        setOldThumbnail(d.thumbnail);
-        setOldMedia(d.media || []);
-
-        // Load attributes từ server về state
-        if (d.attributes && d.attributes.length > 0) {
-          setAttributes(
-            d.attributes.map((a) => ({ key: a.attr_key, value: a.attr_value })),
-          );
-        }
-      });
+      if (initialData) {
+        fillData(initialData);
+      } else {
+        axiosClient.get(`/plants/${plantId}`).then((res) => fillData(res.data));
+      }
     }
-  }, [id, isEdit]);
+  }, [plantId, isEdit, initialData]);
 
-  // --- HÀM XỬ LÝ ATTRIBUTES ---
-  const addAttribute = () => {
-    setAttributes([...attributes, { key: "", value: "" }]);
+  const fillData = (d) => {
+    setFormData({
+      name: d.name,
+      price: d.price || "",
+      scientific_name: d.scientific_name || "",
+      age: d.age || "",
+      category_id: d.category_id,
+      description: d.description || "",
+      care_instruction: d.care_instruction || "",
+      is_featured: d.is_featured === 1,
+    });
+    setOldThumbnail(d.thumbnail);
+    setOldMedia(d.media || []);
+    if (d.attributes && d.attributes.length > 0) {
+      setAttributes(
+        d.attributes.map((a) => ({ key: a.attr_key, value: a.attr_value }))
+      );
+    }
   };
 
-  const removeAttribute = (index) => {
-    const newAttrs = [...attributes];
-    newAttrs.splice(index, 1);
-    setAttributes(newAttrs);
-  };
-
-  const handleAttrChange = (index, field, val) => {
-    const newAttrs = [...attributes];
-    newAttrs[index][field] = val;
-    setAttributes(newAttrs);
-  };
-
-  // ... (Giữ nguyên các hàm xử lý ảnh) ...
+  // --- HANDLERS MEDIA ---
   const handleThumbnailChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -117,7 +101,6 @@ const AdminPlantForm = () => {
       try {
         await axiosClient.delete(`/plants/images/${mediaId}`);
         setOldMedia((prev) => prev.filter((item) => item.id !== mediaId));
-        alert("Đã xóa!");
       } catch (error) {
         console.error(error);
         alert("Lỗi khi xóa!");
@@ -125,6 +108,7 @@ const AdminPlantForm = () => {
     }
   };
 
+  // --- SUBMIT ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
@@ -135,19 +119,19 @@ const AdminPlantForm = () => {
       data.append("gallery", galleryFiles[i]);
     }
 
-    // --- QUAN TRỌNG: GỬI ATTRIBUTES DẠNG JSON STRING ---
     const validAttrs = attributes.filter((a) => a.key.trim() !== "");
     data.append("attributes", JSON.stringify(validAttrs));
 
     try {
-      const url = isEdit ? `/plants/${id}` : "/plants";
+      const url = isEdit ? `/plants/${plantId}` : "/plants";
       const method = isEdit ? "put" : "post";
 
       await axiosClient[method](url, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Thành công!");
-      navigate("/admin");
+      if (onSuccess) onSuccess(); // Nếu là component con (Modal)
+      else navigate("/admin"); // Nếu là trang riêng
     } catch (error) {
       console.error(error);
       alert("Có lỗi xảy ra!");
@@ -155,365 +139,99 @@ const AdminPlantForm = () => {
   };
 
   return (
-    <div
-      className="container"
-      style={{ maxWidth: "1000px", paddingBottom: "50px" }}
-    >
-      <h2>{isEdit ? "Chỉnh Sửa Cây" : "Thêm Cây Mới"}</h2>
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: "20px" }}>
-        {/* Các input cơ bản */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr", // Điều chỉnh cột
-            gap: "15px",
-          }}
-        >
+    <div className="container admin-form-container">
+      <h2 className="form-title">{isEdit ? "Chỉnh Sửa Cây" : "Thêm Cây Mới"}</h2>
+      <form onSubmit={handleSubmit} className="form-grid">
+        
+        {/* Row 1: Tên, Giá, Danh mục */}
+        <div className="row-3-cols">
           <input
             type="text"
             placeholder="Tên cây"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            style={{ padding: "10px" }}
+            className="form-input"
           />
-
-          {/* INPUT GIÁ */}
           <input
             type="number"
             placeholder="Giá (VNĐ)"
             value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
             required
-            style={{ padding: "10px" }}
+            className="form-input"
           />
-
           <select
             value={formData.category_id}
-            onChange={(e) =>
-              setFormData({ ...formData, category_id: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
             required
-            style={{ padding: "10px" }}
+            className="form-select"
           >
             <option value="">-- Chọn Danh Mục --</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "15px",
-          }}
-        >
+        {/* Row 2: Tên KH, Tuổi */}
+        <div className="row-2-cols">
           <input
             type="text"
             placeholder="Tên khoa học"
             value={formData.scientific_name}
-            onChange={(e) =>
-              setFormData({ ...formData, scientific_name: e.target.value })
-            }
-            style={{ padding: "10px" }}
+            onChange={(e) => setFormData({ ...formData, scientific_name: e.target.value })}
+            className="form-input"
           />
           <input
             type="text"
             placeholder="Tuổi đời"
             value={formData.age}
             onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-            style={{ padding: "10px" }}
+            className="form-input"
           />
         </div>
 
-        {/* --- KHU VỰC THÔNG SỐ KỸ THUẬT (ATTRIBUTES) --- */}
-        <div
-          style={{
-            background: "#f9f9f9",
-            padding: "15px",
-            borderRadius: "8px",
-            border: "1px solid #eee",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "10px",
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: "1.1rem" }}>
-              Thông số chi tiết (Tùy chọn)
-            </h3>
-            <button
-              type="button"
-              onClick={addAttribute}
-              style={{
-                background: "#2e7d32",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                padding: "5px 10px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-              }}
-            >
-              <FaPlus /> Thêm dòng
-            </button>
-          </div>
-
-          {attributes.length === 0 && (
-            <p style={{ color: "#888", fontStyle: "italic" }}>
-              Chưa có thông số nào.
-            </p>
-          )}
-
-          {attributes.map((attr, index) => (
-            <div
-              key={index}
-              style={{ display: "flex", gap: "10px", marginBottom: "10px" }}
-            >
-              <input
-                type="text"
-                placeholder="Tên thuộc tính (VD: Chiều cao)"
-                value={attr.key}
-                onChange={(e) => handleAttrChange(index, "key", e.target.value)}
-                style={{ flex: 1, padding: "8px" }}
-              />
-              <input
-                type="text"
-                placeholder="Giá trị (VD: 1.5m)"
-                value={attr.value}
-                onChange={(e) =>
-                  handleAttrChange(index, "value", e.target.value)
-                }
-                style={{ flex: 1, padding: "8px" }}
-              />
-              <button
-                type="button"
-                onClick={() => removeAttribute(index)}
-                style={{
-                  background: "#d32f2f",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "5px",
-                  width: "40px",
-                  cursor: "pointer",
-                }}
-              >
-                <FaTrash />
-              </button>
-            </div>
-          ))}
-        </div>
+        {/* Components con: Attributes & Media */}
+        <PlantAttributes attributes={attributes} setAttributes={setAttributes} />
 
         <ReactQuill
           theme="snow"
           value={formData.description}
           onChange={(val) => setFormData({ ...formData, description: val })}
-          style={{ height: "150px", marginBottom: "40px" }}
+          style={{ height: "150px", marginBottom: "50px" }}
         />
 
         <textarea
           placeholder="Cách chăm sóc"
           value={formData.care_instruction}
-          onChange={(e) =>
-            setFormData({ ...formData, care_instruction: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, care_instruction: e.target.value })}
           rows="4"
-          style={{ padding: "10px" }}
+          className="form-textarea"
         ></textarea>
 
-        {/* ... (Phần Upload Ảnh giữ nguyên) ... */}
-        <div
-          style={{
-            border: "2px dashed #ccc",
-            padding: "20px",
-            borderRadius: "10px",
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>1. Ảnh Đại Diện</h3>
-          <input
-            type="file"
-            onChange={handleThumbnailChange}
-            accept="image/*"
-          />
-          {thumbnailPreview && (
-            <img
-              src={thumbnailPreview}
-              alt="New"
-              style={{
-                height: "100px",
-                marginTop: "10px",
-                display: "block",
-                border: "2px solid green",
-              }}
-            />
-          )}
-          {isEdit && !thumbnailPreview && oldThumbnail && (
-            <div style={{ marginTop: "10px" }}>
-              <p>Ảnh hiện tại:</p>
-              <img
-                src={`http://localhost:3000${oldThumbnail}`}
-                alt="Old"
-                style={{ height: "100px" }}
-              />
-            </div>
-          )}
-        </div>
-
-        <div
-          style={{
-            border: "2px dashed #ccc",
-            padding: "20px",
-            borderRadius: "10px",
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>2. Thư Viện Ảnh & Video</h3>
-          <input
-            type="file"
-            multiple
-            onChange={handleGalleryChange}
-            accept="image/*,video/*"
-          />
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "15px",
-              marginTop: "20px",
-            }}
-          >
-            {oldMedia.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  position: "relative",
-                  width: "150px",
-                  height: "150px",
-                  border: "1px solid #ddd",
-                }}
-              >
-                {isVideo(item.image_url) ? (
-                  <video
-                    src={`http://localhost:3000${item.image_url}`}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <img
-                    src={`http://localhost:3000${item.image_url}`}
-                    alt="old"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeOldMedia(item.id)}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    background: "red",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "5px",
-                  }}
-                >
-                  X
-                </button>
-              </div>
-            ))}
-            {galleryPreview.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  position: "relative",
-                  width: "150px",
-                  height: "150px",
-                  border: "2px solid #2e7d32",
-                }}
-              >
-                {item.type === "video" ? (
-                  <video
-                    src={item.url}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <img
-                    src={item.url}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeNewFile(index)}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    background: "#666",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "5px",
-                  }}
-                >
-                  HỦY
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PlantMedia
+          thumbnailPreview={thumbnailPreview}
+          handleThumbnailChange={handleThumbnailChange}
+          oldThumbnail={oldThumbnail}
+          galleryPreview={galleryPreview}
+          handleGalleryChange={handleGalleryChange}
+          oldMedia={oldMedia}
+          removeOldMedia={removeOldMedia}
+          removeNewFile={removeNewFile}
+          isEdit={isEdit}
+        />
 
         <label>
           <input
             type="checkbox"
             checked={formData.is_featured}
-            onChange={(e) =>
-              setFormData({ ...formData, is_featured: e.target.checked })
-            }
+            onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
           />{" "}
-          Nổi bật
+          Nổi bật (Hiển thị lên trang chủ nếu có cấu hình)
         </label>
 
-        <button
-          type="submit"
-          style={{
-            padding: "15px",
-            background: "#2e7d32",
-            color: "white",
-            border: "none",
-            fontSize: "18px",
-            cursor: "pointer",
-          }}
-        >
+        <button type="submit" className="btn-submit">
           {isEdit ? "LƯU THAY ĐỔI" : "TẠO CÂY MỚI"}
         </button>
       </form>
