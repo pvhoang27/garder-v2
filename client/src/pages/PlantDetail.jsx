@@ -76,7 +76,7 @@ const PlantDetail = () => {
       </Link>
 
       <div className="detail-container">
-        {/* SLIDER (Giữ nguyên) */}
+        {/* SLIDER */}
         <div className="detail-left" style={{ minWidth: 0 }}>
           {slides.length > 0 ? (
             <Swiper
@@ -145,6 +145,11 @@ const PlantDetail = () => {
             <span className="badge">{plant.category_name}</span>
           )}
           <h1 className="detail-title">{plant.name}</h1>
+          
+          {/* HIỂN THỊ GIÁ */}
+          <div style={{ fontSize: "1.5rem", color: "#d32f2f", fontWeight: "bold", margin: "10px 0" }}>
+            {plant.price ? Number(plant.price).toLocaleString() : "Liên hệ"} VNĐ
+          </div>
 
           <div style={{ marginBottom: "20px", color: "#555" }}>
             <p style={{ marginBottom: "5px" }}>
@@ -157,7 +162,7 @@ const PlantDetail = () => {
             </p>
           </div>
 
-          {/* --- HIỂN THỊ THUỘC TÍNH ĐỘNG (NEW) --- */}
+          {/* --- HIỂN THỊ THUỘC TÍNH ĐỘNG --- */}
           {plant.attributes && plant.attributes.length > 0 && (
             <div style={{ marginBottom: "20px" }}>
               <h4

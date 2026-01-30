@@ -3,7 +3,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import axiosClient from "../api/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaTrash, FaPlus } from "react-icons/fa"; // Cần cài icon: npm install react-icons
+import { FaTrash, FaPlus } from "react-icons/fa";
 
 const AdminPlantForm = () => {
   const { id } = useParams();
@@ -12,6 +12,7 @@ const AdminPlantForm = () => {
 
   const [formData, setFormData] = useState({
     name: "",
+    price: "", // <--- THÊM STATE PRICE
     scientific_name: "",
     age: "",
     category_id: "",
@@ -48,6 +49,7 @@ const AdminPlantForm = () => {
         const d = res.data;
         setFormData({
           name: d.name,
+          price: d.price || "", // <--- LOAD GIÁ TỪ API
           scientific_name: d.scientific_name || "",
           age: d.age || "",
           category_id: d.category_id,
@@ -134,7 +136,6 @@ const AdminPlantForm = () => {
     }
 
     // --- QUAN TRỌNG: GỬI ATTRIBUTES DẠNG JSON STRING ---
-    // Chỉ gửi các dòng có dữ liệu
     const validAttrs = attributes.filter((a) => a.key.trim() !== "");
     data.append("attributes", JSON.stringify(validAttrs));
 
@@ -164,7 +165,7 @@ const AdminPlantForm = () => {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "2fr 1fr 1fr", // Điều chỉnh cột
             gap: "15px",
           }}
         >
@@ -176,6 +177,19 @@ const AdminPlantForm = () => {
             required
             style={{ padding: "10px" }}
           />
+
+          {/* INPUT GIÁ */}
+          <input
+            type="number"
+            placeholder="Giá (VNĐ)"
+            value={formData.price}
+            onChange={(e) =>
+              setFormData({ ...formData, price: e.target.value })
+            }
+            required
+            style={{ padding: "10px" }}
+          />
+
           <select
             value={formData.category_id}
             onChange={(e) =>
@@ -319,7 +333,7 @@ const AdminPlantForm = () => {
           style={{ padding: "10px" }}
         ></textarea>
 
-        {/* ... (Phần Upload Ảnh giữ nguyên code cũ của bạn) ... */}
+        {/* ... (Phần Upload Ảnh giữ nguyên) ... */}
         <div
           style={{
             border: "2px dashed #ccc",

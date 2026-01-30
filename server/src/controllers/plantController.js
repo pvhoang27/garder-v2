@@ -72,18 +72,19 @@ exports.getPlantById = async (req, res) => {
   }
 };
 
-// 3. THÊM CÂY MỚI (Có xử lý Attributes)
+// 3. THÊM CÂY MỚI (Có xử lý Attributes và Price)
 exports.createPlant = async (req, res) => {
   try {
     const {
       name,
+      price, // <--- THÊM GIÁ
       category_id,
       age,
       scientific_name,
       description,
       care_instruction,
       is_featured,
-      attributes, // <-- Nhận chuỗi JSON attributes
+      attributes,
     } = req.body;
 
     const thumbnail = req.files["thumbnail"]
@@ -91,11 +92,13 @@ exports.createPlant = async (req, res) => {
       : null;
 
     const featuredVal = is_featured === "true" || is_featured === "1" ? 1 : 0;
+    const priceVal = price ? parseInt(price) : 0; // Xử lý giá
 
     // Insert bảng plants
-    const sqlPlant = `INSERT INTO plants (name, category_id, age, scientific_name, description, care_instruction, thumbnail, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const sqlPlant = `INSERT INTO plants (name, price, category_id, age, scientific_name, description, care_instruction, thumbnail, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const [result] = await db.query(sqlPlant, [
       name,
+      priceVal,
       category_id,
       age,
       scientific_name,
@@ -144,26 +147,29 @@ exports.createPlant = async (req, res) => {
   }
 };
 
-// 4. UPDATE CÂY (Có xử lý Attributes)
+// 4. UPDATE CÂY (Có xử lý Attributes và Price)
 exports.updatePlant = async (req, res) => {
   try {
     const plantId = req.params.id;
     const {
       name,
+      price, // <--- THÊM GIÁ
       category_id,
       age,
       scientific_name,
       description,
       care_instruction,
       is_featured,
-      attributes, // <-- Nhận chuỗi JSON attributes
+      attributes,
     } = req.body;
 
     const featuredVal = is_featured === "true" || is_featured === "1" ? 1 : 0;
+    const priceVal = price ? parseInt(price) : 0;
 
-    let sql = `UPDATE plants SET name=?, category_id=?, age=?, scientific_name=?, description=?, care_instruction=?, is_featured=?`;
+    let sql = `UPDATE plants SET name=?, price=?, category_id=?, age=?, scientific_name=?, description=?, care_instruction=?, is_featured=?`;
     const params = [
       name,
+      priceVal,
       category_id,
       age,
       scientific_name,
