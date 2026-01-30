@@ -8,6 +8,7 @@ import {
   FaLayerGroup,
   FaTimes,
   FaHome,
+  FaNewspaper, // <--- Import icon báo chí
 } from "react-icons/fa";
 
 const AdminSidebar = ({
@@ -37,8 +38,8 @@ const AdminSidebar = ({
     display: "flex",
     flexDirection: "column",
     position: "fixed",
-    height: "100vh", // Full viewport height
-    zIndex: 1100, // Cao hơn Header Mobile và Overlay
+    height: "100vh",
+    zIndex: 1100,
     transition: "transform 0.3s ease-in-out",
     left: 0,
     top: 0,
@@ -137,6 +138,14 @@ const AdminSidebar = ({
           icon={<FaList />}
           label="Quản lý Danh mục"
         />
+        {/* --- MỤC MỚI: TIN TỨC --- */}
+        <MenuButton
+          active={activeTab === "news"}
+          onClick={() => handleMenuClick("news")}
+          icon={<FaNewspaper />}
+          label="Quản lý Tin tức"
+        />
+        
         <MenuButton
           active={activeTab === "users"}
           onClick={() => handleMenuClick("users")}
