@@ -292,7 +292,6 @@ nav a:hover {
     grid-template-columns: 1fr !important; /* 1 cột trên mobile */
   }
 }
-/* ... Giữ nguyên các code cũ ... */
 
 /* --- POPUP STYLES --- */
 .popup-banner {
@@ -341,12 +340,12 @@ nav a:hover {
   to { opacity: 1; }
 }
 
-/* --- FLOATING CONTACT BUTTONS --- */
+/* --- FLOATING CONTACT BUTTONS (BÊN PHẢI) --- */
 .floating-contact-wrapper {
   position: fixed;
-  bottom: 100px; /* Cách đáy một chút để không che footer/menu mobile */
-  left: 20px;    /* Nằm bên trái, đổi thành right: 20px nếu muốn sang phải */
-  z-index: 9990; /* Cao hơn nội dung nhưng thấp hơn Popup Banner (9999) */
+  bottom: 100px; /* Cách đáy một chút */
+  right: 20px;   /* <--- ĐÃ ĐỔI THÀNH RIGHT (Cũ là left) */
+  z-index: 9990; /* Cao hơn nội dung nhưng thấp hơn Popup Banner */
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -387,10 +386,12 @@ nav a:hover {
   100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
 }
 
-/* Tooltip hiện chữ khi hover */
+/* Tooltip hiện chữ khi hover - ĐÃ ĐỔI SANG HIỆN BÊN TRÁI NÚT */
 .contact-tooltip {
   position: absolute;
-  left: 60px; /* Hiện bên phải nút */
+  right: 60px; /* <--- HIỆN BÊN TRÁI CỦA NÚT (Neo vào cạnh phải cách 60px) */
+  top: 50%;
+  transform: translateY(-50%); /* Căn giữa dọc */
   background: rgba(0,0,0,0.8);
   color: white;
   padding: 5px 10px;
@@ -429,10 +430,10 @@ nav a:hover {
   background: red;
 }
 
-/* Responsive cho Mobile: Đẩy lên cao hơn chút để tránh Navigation Bar nếu có */
+/* Responsive cho Mobile: Đẩy lên cao hơn chút và căn phải */
 @media (max-width: 960px) {
   .floating-contact-wrapper {
     bottom: 120px; 
-    left: 15px;
+    right: 15px; /* <--- ĐÃ ĐỔI THÀNH RIGHT */
   }
 }
