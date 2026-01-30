@@ -1,20 +1,35 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaPlus, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaTimes, FaEdit, FaTrash, FaImage } from "react-icons/fa";
+
+// SỬA PORT THÀNH 3000 ĐỂ KHỚP VỚI SERVER
+const API_URL = "http://localhost:3000/uploads/";
 
 const AdminCategoryManager = ({ isMobile }) => {
   const [categories, setCategories] = useState([]);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  
   const [catFormData, setCatFormData] = useState({
     name: "",
     slug: "",
     description: "",
   });
+  // State lưu file ảnh được chọn
+  const [selectedFile, setSelectedFile] = useState(null);
+  // State lưu URL xem trước ảnh
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  const resetForm = () => {
+    setCatFormData({ name: "", slug: "", description: "" });
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setEditingCategory(null);
+  };
 
   const fetchCategories = async () => {
     try {
@@ -47,21 +62,44 @@ const AdminCategoryManager = ({ isMobile }) => {
     });
   };
 
+  // Xử lý khi người dùng chọn file
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmitCategory = async (e) => {
     e.preventDefault();
+    
+    // Dùng FormData để gửi file + text
+    const formData = new FormData();
+    formData.append("name", catFormData.name);
+    formData.append("slug", catFormData.slug);
+    formData.append("description", catFormData.description);
+    if (selectedFile) {
+      formData.append("image", selectedFile);
+    }
+
     try {
       if (editingCategory) {
-        await axiosClient.put(`/categories/${editingCategory.id}`, catFormData);
+        await axiosClient.put(`/categories/${editingCategory.id}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
         alert("Cập nhật thành công!");
       } else {
-        await axiosClient.post("/categories", catFormData);
+        await axiosClient.post("/categories", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
         alert("Thêm thành công!");
       }
       fetchCategories();
       setShowCategoryForm(false);
-      setEditingCategory(null);
-      setCatFormData({ name: "", slug: "", description: "" });
+      resetForm();
     } catch (error) {
+      console.error(error);
       alert(error.response?.data?.message || "Lỗi khi lưu!");
     }
   };
@@ -76,7 +114,7 @@ const AdminCategoryManager = ({ isMobile }) => {
     }
   };
 
-  // --- STYLES ---
+  // Styles
   const styles = {
     btnAdd: {
       background: "#2e7d32",
@@ -143,6 +181,7 @@ const AdminCategoryManager = ({ isMobile }) => {
       color: "#333",
       borderBottom: "1px solid #eee",
       fontSize: "14px",
+      verticalAlign: "middle",
     },
     btnEdit: {
       padding: "6px 10px",
@@ -160,6 +199,13 @@ const AdminCategoryManager = ({ isMobile }) => {
       borderRadius: "4px",
       cursor: "pointer",
     },
+    imgPreview: {
+      width: "60px", 
+      height: "60px", 
+      objectFit: "cover", 
+      borderRadius: "4px",
+      border: "1px solid #ddd"
+    }
   };
 
   return (
@@ -177,8 +223,7 @@ const AdminCategoryManager = ({ isMobile }) => {
         </h2>
         <button
           onClick={() => {
-            setEditingCategory(null);
-            setCatFormData({ name: "", slug: "", description: "" });
+            resetForm();
             setShowCategoryForm(true);
           }}
           style={styles.btnAdd}
@@ -217,6 +262,7 @@ const AdminCategoryManager = ({ isMobile }) => {
                 style={styles.input}
               />
             </div>
+            
             <div style={{ marginBottom: "15px" }}>
               <label style={styles.label}>Slug</label>
               <input
@@ -228,6 +274,28 @@ const AdminCategoryManager = ({ isMobile }) => {
                 style={styles.input}
               />
             </div>
+            
+            {/* Input Hình ảnh */}
+            <div style={{ marginBottom: "15px" }}>
+              <label style={styles.label}>Hình ảnh</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ ...styles.input, padding: "5px" }}
+              />
+              {/* Hiển thị ảnh preview */}
+              {(previewUrl || editingCategory?.image) && (
+                <div style={{ marginTop: "10px" }}>
+                  <img 
+                    src={previewUrl || (editingCategory?.image ? `${API_URL}${editingCategory.image}` : "")} 
+                    alt="Preview" 
+                    style={{ maxHeight: "150px", borderRadius: "5px", border: "1px solid #ccc" }}
+                  />
+                </div>
+              )}
+            </div>
+
             <div style={{ marginBottom: "15px" }}>
               <label style={styles.label}>Mô tả</label>
               <textarea
@@ -252,12 +320,13 @@ const AdminCategoryManager = ({ isMobile }) => {
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            minWidth: "500px",
+            minWidth: "600px",
           }}
         >
           <thead>
             <tr>
               <th style={styles.th}>ID</th>
+              <th style={styles.th}>Ảnh</th>
               <th style={styles.th}>Tên</th>
               <th style={styles.th}>Slug</th>
               <th style={styles.th}>Hành động</th>
@@ -267,6 +336,20 @@ const AdminCategoryManager = ({ isMobile }) => {
             {categories.map((cat) => (
               <tr key={cat.id} style={{ borderBottom: "1px solid #eee" }}>
                 <td style={styles.td}>#{cat.id}</td>
+                <td style={styles.td}>
+                    {cat.image ? (
+                        <img 
+                            src={`${API_URL}${cat.image}`} 
+                            alt={cat.name} 
+                            style={styles.imgPreview} 
+                            onError={(e) => {e.target.style.display='none'}} 
+                        />
+                    ) : (
+                        <div style={{...styles.imgPreview, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0f0', color: '#888'}}>
+                            <FaImage />
+                        </div>
+                    )}
+                </td>
                 <td style={styles.td}>
                   <strong>{cat.name}</strong>
                 </td>
@@ -281,6 +364,8 @@ const AdminCategoryManager = ({ isMobile }) => {
                           slug: cat.slug,
                           description: cat.description || "",
                         });
+                        setPreviewUrl(null);
+                        setSelectedFile(null);
                         setShowCategoryForm(true);
                       }}
                       style={styles.btnEdit}
