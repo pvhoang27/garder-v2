@@ -1,5 +1,6 @@
 import React from "react";
 import { FaSave } from "react-icons/fa";
+import "./AdminLayout.css";
 
 const AdminLayoutForm = ({
   isEditing,
@@ -15,44 +16,30 @@ const AdminLayoutForm = ({
   filteredPlantsForSelection,
 }) => {
   return (
-    <div
-      style={{
-        background: "white",
-        padding: "20px",
-        borderRadius: "10px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-        marginBottom: "30px",
-      }}
-    >
+    <div className="layout-form-container">
       <h3>
         {isEditing
           ? `Đang chỉnh sửa: ${config.title}`
           : "Thêm Section Nội Dung Mới"}
       </h3>
       <form onSubmit={handleSubmit} style={{ marginTop: "15px" }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "20px",
-          }}
-        >
-          <div>
+        <div className="form-grid">
+          <div className="form-input-group">
             <label>Tiêu đề hiển thị:</label>
             <input
               type="text"
               required
+              className="form-input"
               value={config.title}
               onChange={(e) => setConfig({ ...config, title: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
           </div>
-          <div>
+          <div className="form-input-group">
             <label>Kiểu nội dung:</label>
             <select
+              className="form-input"
               value={config.type}
               onChange={(e) => setConfig({ ...config, type: e.target.value })}
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             >
               <option value="manual">Tự chọn từng cây (Thủ công)</option>
               <option value="category">Theo Danh Mục Cụ Thể (Tự động)</option>
@@ -62,15 +49,7 @@ const AdminLayoutForm = ({
 
         {/* CHECKLIST CHỌN CÂY */}
         {config.type === "manual" && (
-          <div
-            style={{
-              marginTop: "20px",
-              border: "1px solid #ddd",
-              padding: "15px",
-              borderRadius: "5px",
-              background: "#f9f9f9",
-            }}
-          >
+          <div className="plant-checklist">
             <label
               style={{
                 fontWeight: "bold",
@@ -84,66 +63,29 @@ const AdminLayoutForm = ({
             <input
               type="text"
               placeholder="🔍 Tìm tên cây..."
+              className="plant-search-input"
               value={searchPlant}
               onChange={(e) => setSearchPlant(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px",
-                marginBottom: "10px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
             />
 
-            <div
-              style={{
-                maxHeight: "200px",
-                overflowY: "auto",
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "10px",
-              }}
-            >
+            <div className="plant-list-grid">
               {filteredPlantsForSelection.map((plant) => (
-                <label
-                  key={plant.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    background: "white",
-                    padding: "5px",
-                    border: "1px solid #eee",
-                  }}
-                >
+                <label key={plant.id} className="plant-checkbox-item">
                   <input
                     type="checkbox"
+                    className="plant-checkbox"
                     checked={selectedPlantIds.includes(plant.id)}
                     onChange={() => togglePlantSelection(plant.id)}
-                    style={{
-                      marginRight: "8px",
-                      transform: "scale(1.2)",
-                    }}
                   />
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "5px",
-                    }}
-                  >
+                  <div className="plant-info">
                     {plant.thumbnail && (
                       <img
                         src={`http://localhost:3000${plant.thumbnail}`}
                         alt=""
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          objectFit: "cover",
-                        }}
+                        className="plant-thumb"
                       />
                     )}
-                    <span style={{ fontSize: "0.9rem" }}>{plant.name}</span>
+                    <span className="plant-name">{plant.name}</span>
                   </div>
                 </label>
               ))}
@@ -156,11 +98,11 @@ const AdminLayoutForm = ({
           <div style={{ marginTop: "15px" }}>
             <label>Chọn Danh Mục:</label>
             <select
+              className="form-input"
               value={config.param_value}
               onChange={(e) =>
                 setConfig({ ...config, param_value: e.target.value })
               }
-              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             >
               <option value="">-- Chọn danh mục --</option>
               {categories.map((cat) => (
@@ -172,18 +114,12 @@ const AdminLayoutForm = ({
           </div>
         )}
 
-        <div
-          style={{
-            marginTop: "15px",
-            display: "flex",
-            gap: "20px",
-            alignItems: "center",
-          }}
-        >
+        <div className="form-order-row">
           <div>
             <label>Thứ tự hiển thị:</label>
             <input
               type="number"
+              className="input-order"
               value={config.sort_order}
               onChange={(e) =>
                 setConfig({
@@ -191,20 +127,9 @@ const AdminLayoutForm = ({
                   sort_order: parseInt(e.target.value),
                 })
               }
-              style={{
-                width: "80px",
-                padding: "8px",
-                marginLeft: "10px",
-              }}
             />
           </div>
-          <label
-            style={{
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <label className="checkbox-active">
             <input
               type="checkbox"
               checked={config.is_active}
@@ -217,34 +142,12 @@ const AdminLayoutForm = ({
           </label>
         </div>
 
-        <div style={{ marginTop: "20px" }}>
-          <button
-            type="submit"
-            style={{
-              background: "#2e7d32",
-              color: "white",
-              padding: "10px 20px",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
+        <div className="form-buttons">
+          <button type="submit" className="btn-submit">
             <FaSave /> Lưu Cấu Hình
           </button>
           {isEditing && (
-            <button
-              type="button"
-              onClick={resetForm}
-              style={{
-                background: "#666",
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "10px",
-              }}
-            >
+            <button type="button" onClick={resetForm} className="btn-cancel">
               Hủy / Thêm mới
             </button>
           )}
