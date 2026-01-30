@@ -1,0 +1,178 @@
+/* Container chung */
+.plant-detail-page {
+  padding-bottom: 50px;
+  margin-top: 30px;
+}
+
+.back-link {
+  color: #666;
+  display: inline-block;
+  margin-bottom: 15px;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.back-link:hover {
+  color: #2e7d32;
+  text-decoration: underline;
+}
+
+/* Layout 2 cột */
+.detail-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.detail-left {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px; /* Giới hạn chiều rộng ảnh */
+}
+
+.detail-right {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* Gallery Slider */
+.gallery-swiper {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #fff;
+}
+
+.gallery-media {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-video {
+  object-fit: contain;
+  background-color: #000;
+}
+
+.no-media {
+  height: 450px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #888;
+  font-size: 1.1rem;
+}
+
+/* Thông tin sản phẩm */
+.plant-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.plant-title {
+  font-size: 2rem;
+  margin: 0 0 10px 0;
+  color: #333;
+  line-height: 1.2;
+}
+
+.plant-price {
+  font-size: 1.5rem;
+  color: #d32f2f;
+  font-weight: bold;
+  margin: 10px 0 20px 0;
+}
+
+.plant-meta {
+  margin-bottom: 25px;
+  color: #555;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Bảng thông số kỹ thuật */
+.attr-section {
+  margin-bottom: 30px;
+}
+
+.attr-heading {
+  margin: 0 0 10px 0;
+  color: #2e7d32;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.attr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.attr-item {
+  background: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 5px;
+}
+
+.attr-key {
+  font-weight: bold;
+  color: #444;
+}
+
+.attr-val {
+  margin-left: 5px;
+  color: #666;
+}
+
+/* Các phần text khác */
+.section-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.description-content {
+  line-height: 1.6;
+  color: #444;
+}
+
+.care-box {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 5px solid #2e7d32;
+  font-style: italic;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .detail-container {
+    flex-direction: column;
+  }
+  
+  .detail-left {
+    max-width: 100%;
+  }
+  
+  .gallery-media, .no-media {
+    height: 300px; /* Giảm chiều cao trên mobile */
+  }
+}
