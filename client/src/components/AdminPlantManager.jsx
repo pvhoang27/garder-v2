@@ -7,7 +7,7 @@ import AdminPlantForm from "./AdminPlantForm";
 import Pagination from "./Pagination";
 import PlantToolbar from "./admin/plants/PlantToolbar";
 import PlantDetailModal from "./admin/plants/PlantDetailModal";
-import PlantTable from "./admin/plants/PlantTable"; // Import mới
+import PlantTable from "./admin/plants/PlantTable";
 
 // CSS
 import "./AdminPlantManager.css";
@@ -25,6 +25,11 @@ const AdminPlantManager = ({ isMobile }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  
+  // --- STATE MỚI CHO BỘ LỌC NGÀY ---
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
@@ -84,15 +89,39 @@ const AdminPlantManager = ({ isMobile }) => {
     window.scrollTo(0, 0);
   };
 
-  // --- LOGIC FILTER & SORT ---
+  // --- LOGIC FILTER & SORT (ĐÃ CẬP NHẬT NGÀY) ---
   const filteredPlants = plants
     .filter((p) => {
+      // 1. Lọc theo tên
       const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // 2. Lọc theo danh mục
       const matchCategory =
         filterCategory === "all" ||
         p.category_id === parseInt(filterCategory) ||
         p.category_name === filterCategory;
-      return matchSearch && matchCategory;
+
+      // 3. Lọc theo ngày (MỚI)
+      let matchDate = true;
+      if (startDate || endDate) {
+        const plantDate = new Date(p.created_at);
+        // Reset giờ của ngày tạo về 00:00:00 để so sánh chính xác ngày
+        plantDate.setHours(0, 0, 0, 0);
+
+        if (startDate) {
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          if (plantDate < start) matchDate = false;
+        }
+
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(0, 0, 0, 0);
+          if (plantDate > end) matchDate = false;
+        }
+      }
+
+      return matchSearch && matchCategory && matchDate;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -158,7 +187,7 @@ const AdminPlantManager = ({ isMobile }) => {
         isMobile={isMobile}
       />
 
-      {/* COMPONENT: TOOLBAR */}
+      {/* COMPONENT: TOOLBAR (Đã truyền thêm props ngày) */}
       <PlantToolbar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -167,9 +196,13 @@ const AdminPlantManager = ({ isMobile }) => {
         sortBy={sortBy}
         setSortBy={setSortBy}
         categories={categories}
+        startDate={startDate} // MỚI
+        setStartDate={setStartDate} // MỚI
+        endDate={endDate} // MỚI
+        setEndDate={setEndDate} // MỚI
       />
 
-      {/* COMPONENT: TABLE (Đã tách ra) */}
+      {/* COMPONENT: TABLE */}
       <PlantTable 
         plants={currentPlants}
         onView={handleViewDetails}
