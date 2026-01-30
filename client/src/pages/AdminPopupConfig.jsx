@@ -4,9 +4,10 @@ import axiosClient from "../api/axiosClient";
 import { FaPlus, FaBars } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
-// Import các component con đã tách
+// Import các component con và CSS
 import AdminPopupForm from "../components/admin/popup/AdminPopupForm";
 import AdminPopupList from "../components/admin/popup/AdminPopupList";
+import "../components/admin/popup/AdminPopup.css"; // Import CSS file
 
 const AdminPopupConfig = () => {
   const navigate = useNavigate();
@@ -81,7 +82,6 @@ const AdminPopupConfig = () => {
     // Parse JSON media cũ để hiện preview
     try {
       const oldMedia = JSON.parse(popup.media_urls || "[]");
-      // Đánh dấu là url cũ (string) để phân biệt với file blob mới
       setPreviews(
         oldMedia.map((url) => ({
           type: "url",
@@ -150,7 +150,6 @@ const AdminPopupConfig = () => {
     formData.append("width", config.width);
     formData.append("height", config.height);
 
-    // Nếu có file mới, gửi file mới. Nếu không, gửi lại list url cũ
     if (files.length > 0) {
       files.forEach((file) => {
         formData.append("media", file);
@@ -180,7 +179,7 @@ const AdminPopupConfig = () => {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6f8" }}>
-      {/* --- MOBILE HEADER --- */}
+      {/* --- MOBILE HEADER (Giữ nguyên style inline vì logic responsive) --- */}
       {isMobile && (
         <div
           style={{
@@ -252,33 +251,12 @@ const AdminPopupConfig = () => {
 
       {/* --- MAIN CONTENT --- */}
       <div style={mainContentStyle}>
-        <div className="container" style={{ paddingBottom: "50px" }}>
-          <h2
-            style={{
-              color: "#2e7d32",
-              textAlign: "center",
-              marginBottom: "30px",
-            }}
-          >
-            ⚙️ Quản Lý Popup (Đa phương tiện)
-          </h2>
+        <div className="container admin-popup-page">
+          <h2 className="page-title">⚙️ Quản Lý Popup (Đa phương tiện)</h2>
 
           {!isEditing && (
-            <div style={{ marginBottom: "20px", textAlign: "right" }}>
-              <button
-                onClick={handleAddNew}
-                style={{
-                  background: "#2e7d32",
-                  color: "white",
-                  padding: "10px 20px",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                }}
-              >
+            <div className="page-top-actions">
+              <button onClick={handleAddNew} className="btn-popup btn-add">
                 <FaPlus /> Thêm Popup Mới
               </button>
             </div>
