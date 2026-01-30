@@ -3,7 +3,9 @@ import axiosClient from "../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
 import { FaSearch, FaNewspaper, FaLeaf } from "react-icons/fa";
 import { Fireworks } from "@fireworks-js/react";
-import { useTranslation } from "react-i18next"; // <--- Import hook
+import Snowfall from "react-snowfall"; // Cần cài npm install react-snowfall
+import Confetti from "react-confetti"; // Cần cài npm install react-confetti
+import { useTranslation } from "react-i18next"; 
 
 // --- DỮ LIỆU TIN TỨC GIẢ LẬP ---
 const FAKE_NEWS_DATA = [
@@ -60,7 +62,7 @@ const searchStyles = `
     align-items: center;
     flex-wrap: nowrap;
     position: relative; 
-    z-index: 10;
+    z-index: 60; 
   }
 
   .search-input {
@@ -228,22 +230,59 @@ const DynamicSection = ({ id, title, type, paramValue }) => {
   );
 };
 
+// Component hiển thị hiệu ứng nền
+const BackgroundEffect = ({ effectType }) => {
+  const style = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none', // Cho phép click xuyên qua
+    zIndex: 50
+  };
+
+  if (effectType === 'snow') {
+    return <Snowfall style={style} snowflakeCount={200} />;
+  }
+  
+  if (effectType === 'confetti') {
+    return <Confetti width={window.innerWidth} height={window.innerHeight} style={style} />;
+  }
+
+  if (effectType === 'fireworks') {
+    return (
+      <Fireworks
+        options={{
+          opacity: 0.5,
+          particles: 50,
+          explosion: 5,
+          intensity: 10,
+          traceLength: 2,
+        }}
+        style={style}
+      />
+    );
+  }
+
+  return null;
+};
+
 const HomePage = () => {
   const [layoutConfig, setLayoutConfig] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation(); // <--- Sử dụng hook
+  const { t } = useTranslation();
 
   // --- STATE CHO TÌM KIẾM VÀ LỌC ---
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
+  const [globalEffect, setGlobalEffect] = useState("none");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get("category_id") || "",
   );
-
-  const ref = useRef(null);
 
   useEffect(() => {
     // 1. Lấy Layout
@@ -261,6 +300,11 @@ const HomePage = () => {
 
     // 3. Lấy tất cả cây để phục vụ tìm kiếm
     axiosClient.get("/plants").then((res) => setAllPlants(res.data));
+
+    // 4. Lấy hiệu ứng nền
+    axiosClient.get("/layout/effect").then((res) => {
+      if(res.data.effect) setGlobalEffect(res.data.effect);
+    });
   }, []);
 
   useEffect(() => {
@@ -298,6 +342,9 @@ const HomePage = () => {
     <div>
       <style>{searchStyles}</style>
 
+      {/* RENDER HIỆU ỨNG GLOBAL */}
+      <BackgroundEffect effectType={globalEffect} />
+
       <div
         className="banner"
         style={{
@@ -317,41 +364,7 @@ const HomePage = () => {
           overflow: "hidden",
         }}
       >
-        <Fireworks
-          ref={ref}
-          options={{
-            opacity: 0.7,
-            particles: 50,
-            explosion: 5,
-            intensity: 10,
-            traceLength: 2,
-            brightness: {
-              min: 50,
-              max: 80,
-            },
-            hue: {
-              min: 0,
-              max: 360,
-            },
-            delay: {
-              min: 30,
-              max: 60,
-            },
-            rocketsPoint: {
-              min: 50,
-              max: 50,
-            },
-          }}
-          style={{
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            position: "absolute",
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        />
+        {/* Đã xóa Fireworks cũ ở đây để dùng GlobalEffect ở trên */}
 
         <h1
           style={{
@@ -359,7 +372,7 @@ const HomePage = () => {
             textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             margin: "0 10px",
             position: "relative",
-            zIndex: 10,
+            zIndex: 60,
           }}
         >
           {t("home.banner_title")}
@@ -370,7 +383,7 @@ const HomePage = () => {
             marginTop: "10px",
             textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
             position: "relative",
-            zIndex: 10,
+            zIndex: 60,
           }}
         >
           {t("home.banner_subtitle")}

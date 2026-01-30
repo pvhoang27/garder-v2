@@ -8,6 +8,7 @@ import {
   FaBars,
   FaArrowUp,
   FaArrowDown,
+  FaMagic,
 } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
@@ -17,6 +18,9 @@ const AdminLayoutConfig = () => {
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // State hiệu ứng global
+  const [globalEffect, setGlobalEffect] = useState("none");
 
   // --- STATE CHO LAYOUT & SIDEBAR ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -64,22 +68,32 @@ const AdminLayoutConfig = () => {
     fetchLayouts();
     fetchCategories();
     fetchAllPlants();
+    fetchGlobalEffect();
   }, []);
 
   const fetchLayouts = async () => {
     try {
       const res = await axiosClient.get("/layout");
-      // Sắp xếp theo sort_order để hiển thị đúng thứ tự
       const sortedData = res.data.sort((a, b) => a.sort_order - b.sort_order);
       setLayouts(sortedData);
 
-      // Tự động điền sort_order tiếp theo cho form thêm mới
       if (!isEditing) {
         const nextOrder =
           sortedData.length > 0
             ? sortedData[sortedData.length - 1].sort_order + 1
             : 1;
         setConfig((prev) => ({ ...prev, sort_order: nextOrder }));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchGlobalEffect = async () => {
+    try {
+      const res = await axiosClient.get("/layout/effect");
+      if (res.data.effect) {
+        setGlobalEffect(res.data.effect);
       }
     } catch (error) {
       console.error(error);
@@ -101,6 +115,16 @@ const AdminLayoutConfig = () => {
       setAllPlants(res.data);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  // Xử lý lưu hiệu ứng
+  const handleSaveEffect = async () => {
+    try {
+      await axiosClient.post("/layout/effect", { effect: globalEffect });
+      alert("Đã lưu hiệu ứng trang chủ!");
+    } catch (error) {
+      alert("Lỗi lưu hiệu ứng");
     }
   };
 
@@ -130,19 +154,14 @@ const AdminLayoutConfig = () => {
     }
   };
 
-  // --- LOGIC ĐỔI VỊ TRÍ (LÊN/XUỐNG) ---
   const handleMoveSection = async (index, direction) => {
-    // direction: -1 (Lên), 1 (Xuống)
     const currentItem = layouts[index];
     const targetItem = layouts[index + direction];
-
     if (!currentItem || !targetItem) return;
 
-    // Hoán đổi giá trị sort_order
     const currentOrder = currentItem.sort_order;
     const targetOrder = targetItem.sort_order;
 
-    // Cập nhật giao diện ngay lập tức (Optimistic UI)
     const newLayouts = [...layouts];
     newLayouts[index] = { ...currentItem, sort_order: targetOrder };
     newLayouts[index + direction] = { ...targetItem, sort_order: currentOrder };
@@ -150,7 +169,6 @@ const AdminLayoutConfig = () => {
     setLayouts(newLayouts);
 
     try {
-      // Gọi API cập nhật (Chỉ gửi thông tin cơ bản, KHÔNG gửi plant_ids nên server sẽ giữ nguyên cây)
       await Promise.all([
         axiosClient.put(`/layout/${currentItem.id}`, {
           ...currentItem,
@@ -161,10 +179,10 @@ const AdminLayoutConfig = () => {
           sort_order: currentOrder,
         }),
       ]);
-      fetchLayouts(); // Đồng bộ lại với server cho chắc chắn
+      fetchLayouts();
     } catch (error) {
       alert("Lỗi khi thay đổi vị trí!");
-      fetchLayouts(); // Rollback nếu lỗi
+      fetchLayouts();
     }
   };
 
@@ -203,7 +221,6 @@ const AdminLayoutConfig = () => {
   const resetForm = () => {
     setIsEditing(false);
     const newInitial = initialState();
-    // Tính toán sort_order cho item mới
     const maxOrder =
       layouts.length > 0 ? Math.max(...layouts.map((l) => l.sort_order)) : 0;
     newInitial.sort_order = maxOrder + 1;
@@ -300,6 +317,65 @@ const AdminLayoutConfig = () => {
             🎨 Quản Lý Bố Cục Trang Chủ
           </h2>
 
+          {/* --- CẤU HÌNH HIỆU ỨNG GLOBAL --- */}
+          <div 
+            style={{
+              background: "#e8f5e9",
+              padding: "20px",
+              borderRadius: "10px",
+              marginBottom: "30px",
+              border: "1px solid #c8e6c9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "20px"
+            }}
+          >
+            <div style={{display: "flex", alignItems: "center", gap: "10px"}}>
+               <FaMagic size={24} color="#2e7d32" />
+               <div>
+                  <h3 style={{margin: 0, color: "#2e7d32"}}>Hiệu ứng trang chủ</h3>
+                  <p style={{margin: "5px 0 0 0", fontSize: "0.9rem", color: "#555"}}>Hiệu ứng sẽ xuất hiện toàn màn hình trên trang chủ</p>
+               </div>
+            </div>
+            
+            <div style={{display: "flex", gap: "10px", alignItems: "center"}}>
+              <select 
+                value={globalEffect}
+                onChange={(e) => setGlobalEffect(e.target.value)}
+                style={{
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  minWidth: "200px"
+                }}
+              >
+                <option value="none">🚫 Không hiệu ứng</option>
+                <option value="fireworks">🎆 Pháo hoa (Fireworks)</option>
+                <option value="snow">❄️ Tuyết rơi (Snowfall)</option>
+                <option value="confetti">🎉 Pháo giấy (Confetti)</option>
+              </select>
+              <button 
+                onClick={handleSaveEffect}
+                style={{
+                  background: "#2e7d32",
+                  color: "white",
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px"
+                }}
+              >
+                <FaSave /> Lưu
+              </button>
+            </div>
+          </div>
+
+
           {/* FORM */}
           <div
             style={{
@@ -313,7 +389,7 @@ const AdminLayoutConfig = () => {
             <h3>
               {isEditing
                 ? `Đang chỉnh sửa: ${config.title}`
-                : "Thêm Section Mới"}
+                : "Thêm Section Nội Dung Mới"}
             </h3>
             <form onSubmit={handleSubmit} style={{ marginTop: "15px" }}>
               <div

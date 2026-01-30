@@ -3,9 +3,12 @@ const router = express.Router();
 const layoutController = require('../controllers/layoutController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.get('/', layoutController.getLayouts);
+// Route lấy cấu hình hiệu ứng (Public)
+router.get('/effect', layoutController.getGlobalEffect);
+// Route cập nhật hiệu ứng (Admin only)
+router.post('/effect', authMiddleware, layoutController.updateGlobalEffect);
 
-// Route mới để lấy danh sách cây của layout (Public để trang chủ gọi)
+router.get('/', layoutController.getLayouts);
 router.get('/:id/plants', layoutController.getLayoutPlants); 
 
 router.post('/', authMiddleware, layoutController.createSection);
