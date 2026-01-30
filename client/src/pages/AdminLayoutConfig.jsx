@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaList, FaPlus, FaMagic } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
 // Import components
@@ -18,6 +18,10 @@ const AdminLayoutConfig = () => {
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+
+  // --- STATE QUẢN LÝ TAB ---
+  // "list": Danh sách, "form": Thêm/Sửa, "effect": Hiệu ứng
+  const [activeTab, setActiveTab] = useState("list"); 
 
   // State hiệu ứng global
   const [globalEffect, setGlobalEffect] = useState("none");
@@ -69,6 +73,7 @@ const AdminLayoutConfig = () => {
       const sortedData = res.data.sort((a, b) => a.sort_order - b.sort_order);
       setLayouts(sortedData);
 
+      // Nếu đang không sửa thì tính toán sort order mới
       if (!isEditing) {
         const nextOrder =
           sortedData.length > 0
@@ -120,6 +125,7 @@ const AdminLayoutConfig = () => {
     }
   };
 
+  // KHI BẤM SỬA TỪ DANH SÁCH
   const handleEdit = async (item) => {
     setConfig({ ...item, is_active: item.is_active === 1 });
     setIsEditing(true);
@@ -136,7 +142,8 @@ const AdminLayoutConfig = () => {
       setSelectedPlantIds([]);
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Chuyển sang tab Form để sửa
+    setActiveTab("form");
   };
 
   const handleDelete = async (id) => {
@@ -201,28 +208,63 @@ const AdminLayoutConfig = () => {
       } else {
         await axiosClient.post("/layout", payload);
       }
-      setIsEditing(false);
-      resetForm();
       alert("Lưu thành công!");
+      
+      // Sau khi lưu xong, reset form và quay về danh sách
+      resetFormState();
+      setIsEditing(false);
+      setActiveTab("list");
       fetchLayouts();
     } catch (error) {
       alert("Lỗi khi lưu");
     }
   };
 
-  const resetForm = () => {
-    setIsEditing(false);
+  // Hàm reset dữ liệu form (không liên quan đến chuyển tab)
+  const resetFormState = () => {
     const newInitial = initialState();
     const maxOrder =
       layouts.length > 0 ? Math.max(...layouts.map((l) => l.sort_order)) : 0;
     newInitial.sort_order = maxOrder + 1;
     setConfig(newInitial);
     setSelectedPlantIds([]);
+    setIsEditing(false);
   };
+
+  // Hàm xử lý nút "Hủy / Thêm mới" hoặc chuyển tab
+  const handleResetAndBack = () => {
+    resetFormState();
+    setActiveTab("list");
+  };
+
+  // Xử lý khi bấm vào Tab trên thanh điều hướng
+  const handleTabClick = (tabName) => {
+    if (tabName === "form") {
+      // Nếu bấm tab "Thêm mới", đảm bảo reset về trạng thái thêm mới
+      resetFormState();
+    }
+    setActiveTab(tabName);
+  }
 
   const filteredPlantsForSelection = allPlants.filter((p) =>
     p.name.toLowerCase().includes(searchPlant.toLowerCase()),
   );
+
+  // Inline styles cho Tabs (Bạn có thể đưa vào CSS file nếu muốn)
+  const tabBtnStyle = (isActive) => ({
+    padding: "10px 20px",
+    marginRight: "10px",
+    cursor: "pointer",
+    border: "none",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    backgroundColor: isActive ? "#2e7d32" : "#e0e0e0",
+    color: isActive ? "#fff" : "#333",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    transition: "all 0.3s"
+  });
 
   return (
     <div className="admin-layout-page">
@@ -269,38 +311,73 @@ const AdminLayoutConfig = () => {
         <div className="container" style={{ paddingBottom: "50px" }}>
           <h2 className="page-heading">🎨 Quản Lý Bố Cục Trang Chủ</h2>
 
-          {/* COMPONENT 1: CẤU HÌNH HIỆU ỨNG GLOBAL */}
-          <AdminGlobalEffectConfig
-            globalEffect={globalEffect}
-            setGlobalEffect={setGlobalEffect}
-            handleSaveEffect={handleSaveEffect}
-          />
+          {/* --- TAB NAVIGATION --- */}
+          <div style={{ display: "flex", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <button 
+              style={tabBtnStyle(activeTab === "list")}
+              onClick={() => handleTabClick("list")}
+            >
+              <FaList /> Danh Sách
+            </button>
+            
+            <button 
+              style={tabBtnStyle(activeTab === "form")}
+              onClick={() => handleTabClick("form")}
+            >
+              <FaPlus /> {isEditing ? "Đang Sửa Section" : "Thêm Section Mới"}
+            </button>
+            
+            <button 
+              style={tabBtnStyle(activeTab === "effect")}
+              onClick={() => handleTabClick("effect")}
+            >
+              <FaMagic /> Cấu Hình Hiệu Ứng
+            </button>
+          </div>
 
-          {/* COMPONENT 2: FORM THÊM/SỬA */}
-          <AdminLayoutForm
-            isEditing={isEditing}
-            config={config}
-            setConfig={setConfig}
-            handleSubmit={handleSubmit}
-            resetForm={resetForm}
-            categories={categories}
-            selectedPlantIds={selectedPlantIds}
-            togglePlantSelection={togglePlantSelection}
-            searchPlant={searchPlant}
-            setSearchPlant={setSearchPlant}
-            filteredPlantsForSelection={filteredPlantsForSelection}
-          />
+          {/* --- TAB CONTENT: LIST --- */}
+          {activeTab === "list" && (
+            <div>
+               <h3 className="section-sub-heading">
+                Danh sách hiển thị trên trang chủ
+              </h3>
+              <AdminLayoutList
+                layouts={layouts}
+                handleMoveSection={handleMoveSection}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+              />
+            </div>
+          )}
 
-          {/* COMPONENT 3: DANH SÁCH HIỂN THỊ */}
-          <h3 className="section-sub-heading">
-            Danh sách hiển thị trên trang chủ
-          </h3>
-          <AdminLayoutList
-            layouts={layouts}
-            handleMoveSection={handleMoveSection}
-            handleEdit={handleEdit}
-            handleDelete={handleDelete}
-          />
+          {/* --- TAB CONTENT: FORM --- */}
+          {activeTab === "form" && (
+            <div>
+              <AdminLayoutForm
+                isEditing={isEditing}
+                config={config}
+                setConfig={setConfig}
+                handleSubmit={handleSubmit}
+                resetForm={handleResetAndBack} // Truyền hàm quay lại list
+                categories={categories}
+                selectedPlantIds={selectedPlantIds}
+                togglePlantSelection={togglePlantSelection}
+                searchPlant={searchPlant}
+                setSearchPlant={setSearchPlant}
+                filteredPlantsForSelection={filteredPlantsForSelection}
+              />
+            </div>
+          )}
+
+          {/* --- TAB CONTENT: EFFECT --- */}
+          {activeTab === "effect" && (
+             <AdminGlobalEffectConfig
+                globalEffect={globalEffect}
+                setGlobalEffect={setGlobalEffect}
+                handleSaveEffect={handleSaveEffect}
+           />
+          )}
+
         </div>
       </div>
     </div>
