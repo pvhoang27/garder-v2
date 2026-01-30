@@ -18,11 +18,12 @@ import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
 import CategoryPage from "./pages/CategoryPage";
 import NewsPage from "./pages/NewsPage";
+import NewsDetail from "./pages/NewsDetail"; // <--- MỚI: Import trang chi tiết tin tức
 import AdminPopupConfig from "./pages/AdminPopupConfig";
 import AdminLayoutConfig from "./pages/AdminLayoutConfig";
 import PopupBanner from "./components/PopupBanner";
 import LanguageSwitcher from "./components/LanguageSwitcher"; 
-import FloatingContact from "./components/FloatingContact"; // <--- 1. IMPORT COMPONENT MỚI
+import FloatingContact from "./components/FloatingContact"; 
 
 import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 
@@ -122,7 +123,7 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
       {/* Popup quảng cáo */}
       <PopupBanner />
 
-      {/* 2. HIỂN THỊ NÚT LIÊN HỆ NỔI (chỉ hiện cho khách, admin có thể ẩn nếu muốn) */}
+      {/* HIỂN THỊ NÚT LIÊN HỆ NỔI (chỉ hiện cho khách, admin có thể ẩn nếu muốn) */}
       {!isAdminRoute && <FloatingContact />}
 
       {/* Điều chỉnh padding nếu là trang Admin thì full màn hình, không cần padding bottom */}
@@ -136,7 +137,11 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/categories" element={<CategoryPage />} />
+          
+          {/* ROUTE TIN TỨC */}
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/news/:id" element={<NewsDetail />} /> {/* <--- MỚI: Route chi tiết tin tức */}
+
           <Route path="/plant/:id" element={<PlantDetail />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route

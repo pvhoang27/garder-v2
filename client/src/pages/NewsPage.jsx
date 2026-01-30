@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; 
 import axiosClient from "../api/axiosClient";
 
 const NewsPage = () => {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -20,7 +22,7 @@ const NewsPage = () => {
   }, []);
 
   return (
-    <div className="container" style={{ marginTop: "30px" }}>
+    <div className="container" style={{ marginTop: "30px", paddingBottom: "50px" }}>
       <h1 style={{ textAlign: "center", color: "#2e7d32", marginBottom: "10px" }}>
         Tin Tức & Kiến Thức Cây Cảnh
       </h1>
@@ -46,7 +48,10 @@ const NewsPage = () => {
               flexDirection: "column",
               transition: "transform 0.3s"
             }}>
-              <div style={{ height: "200px", overflow: "hidden" }}>
+              <div 
+                style={{ height: "200px", overflow: "hidden", cursor: "pointer" }}
+                onClick={() => navigate(`/news/${news.id}`)} 
+              >
                 <img 
                   src={news.image ? (news.image.startsWith('http') ? news.image : `http://localhost:3000${news.image}`) : 'https://via.placeholder.com/300x200?text=No+Image'} 
                   alt={news.title}
@@ -59,7 +64,14 @@ const NewsPage = () => {
                 <span style={{ fontSize: "0.85rem", color: "#999", marginBottom: "5px" }}>
                     {new Date(news.created_at).toLocaleDateString('vi-VN')}
                 </span>
-                <h3 style={{ margin: "0 0 10px 0", fontSize: "1.2rem", color: "#333" }}>{news.title}</h3>
+                
+                <h3 
+                    style={{ margin: "0 0 10px 0", fontSize: "1.2rem", color: "#333", cursor: "pointer" }}
+                    onClick={() => navigate(`/news/${news.id}`)}
+                >
+                    {news.title}
+                </h3>
+                
                 <p style={{ color: "#555", fontSize: "0.95rem", lineHeight: "1.5", flex: 1 }}>
                   {news.summary}
                 </p>
@@ -74,7 +86,7 @@ const NewsPage = () => {
                   fontWeight: "bold",
                   alignSelf: "flex-start"
                 }}
-                onClick={() => alert("Nội dung chi tiết:\n\n" + (news.content || "Chưa có nội dung chi tiết."))}
+                onClick={() => navigate(`/news/${news.id}`)} 
                 >
                   Xem chi tiết
                 </button>
