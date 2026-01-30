@@ -8,7 +8,7 @@ import {
   Navigate,
   useLocation, 
 } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // <--- Import hook dịch
+import { useTranslation } from "react-i18next"; 
 
 import HomePage from "./pages/HomePage";
 import PlantDetail from "./pages/PlantDetail";
@@ -21,7 +21,8 @@ import NewsPage from "./pages/NewsPage";
 import AdminPopupConfig from "./pages/AdminPopupConfig";
 import AdminLayoutConfig from "./pages/AdminLayoutConfig";
 import PopupBanner from "./components/PopupBanner";
-import LanguageSwitcher from "./components/LanguageSwitcher"; // <--- Import nút đổi ngữ
+import LanguageSwitcher from "./components/LanguageSwitcher"; 
+import FloatingContact from "./components/FloatingContact"; // <--- 1. IMPORT COMPONENT MỚI
 
 import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 
@@ -29,7 +30,7 @@ import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 const Navigation = ({ isLoggedIn, onLogout }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t } = useTranslation(); // <--- Sử dụng hook
+  const { t } = useTranslation(); 
 
   const handleLogoutClick = () => {
     onLogout();
@@ -46,8 +47,6 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
         <Link to="/" className="nav-logo" onClick={closeMenu}>
           🌿 {t("nav.brand")}
         </Link>
-
-        {/* Thêm nút đổi ngôn ngữ trên Mobile nếu muốn, hoặc để trong menu */}
         
         <div
           className="mobile-icon"
@@ -96,7 +95,6 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
             </Link>
           )}
           
-          {/* Đặt nút chuyển ngữ vào cuối menu */}
           <div className="nav-link" style={{display: 'flex', alignItems: 'center'}}>
              <LanguageSwitcher />
           </div>
@@ -109,7 +107,7 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
 // --- COMPONENT CONTENT WRAPPER ---
 const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
   const location = useLocation();
-  const { t } = useTranslation(); // <--- Hook cho footer
+  const { t } = useTranslation(); 
 
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -121,7 +119,11 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
         <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} />
       )}
 
+      {/* Popup quảng cáo */}
       <PopupBanner />
+
+      {/* 2. HIỂN THỊ NÚT LIÊN HỆ NỔI (chỉ hiện cho khách, admin có thể ẩn nếu muốn) */}
+      {!isAdminRoute && <FloatingContact />}
 
       {/* Điều chỉnh padding nếu là trang Admin thì full màn hình, không cần padding bottom */}
       <div

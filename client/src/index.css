@@ -340,3 +340,99 @@ nav a:hover {
   from { opacity: 0; transform: translate(-50%, -60%); } /* Hiệu ứng trượt nhẹ */
   to { opacity: 1; }
 }
+
+/* --- FLOATING CONTACT BUTTONS --- */
+.floating-contact-wrapper {
+  position: fixed;
+  bottom: 100px; /* Cách đáy một chút để không che footer/menu mobile */
+  left: 20px;    /* Nằm bên trái, đổi thành right: 20px nếu muốn sang phải */
+  z-index: 9990; /* Cao hơn nội dung nhưng thấp hơn Popup Banner (9999) */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.contact-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  position: relative;
+  transition: transform 0.3s;
+  animation: pulse-animation 2s infinite;
+}
+
+.contact-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Màu Zalo */
+.zalo-btn {
+  background-color: #0068FF; 
+}
+
+/* Màu Điện thoại */
+.phone-btn {
+  background-color: #dd3333; /* Màu đỏ nổi bật */
+}
+
+/* Hiệu ứng sóng tỏa ra (Pulse) */
+@keyframes pulse-animation {
+  0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+/* Tooltip hiện chữ khi hover */
+.contact-tooltip {
+  position: absolute;
+  left: 60px; /* Hiện bên phải nút */
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+}
+
+.contact-btn:hover .contact-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Nút tắt (X) nhỏ xíu */
+.close-contact-btn {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.close-contact-btn:hover {
+  background: red;
+}
+
+/* Responsive cho Mobile: Đẩy lên cao hơn chút để tránh Navigation Bar nếu có */
+@media (max-width: 960px) {
+  .floating-contact-wrapper {
+    bottom: 120px; 
+    left: 15px;
+  }
+}
