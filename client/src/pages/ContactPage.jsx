@@ -30,12 +30,21 @@ const ContactPage = () => {
     }
   };
 
+  // Địa chỉ chính xác
+  const address = "Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định, Việt Nam";
+  
+  // Tạo link embed chuẩn từ địa chỉ (fix lỗi không hiện map)
+  const mapEmbedUrl = `https://www.google.com/maps4{encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  
+  // Link mở tab mới
+  const mapDirectLink = `https://maps.google.com/maps?q=20.3789,106.1289&...{encodeURIComponent(address)}`;
+
   const contactInfo = [
     {
       icon: <FaPhoneAlt size={20} />,
       label: "Điện thoại",
-      value: "0988.888.888 (Chú Bảy)",
-      href: "tel:0988888888",
+      value: "0913.561.755 - 0912.947.777",
+      href: "tel:0913561755", 
     },
     {
       icon: <FaEnvelope size={20} />,
@@ -46,10 +55,10 @@ const ContactPage = () => {
     {
       icon: <FaMapMarkerAlt size={20} />,
       label: "Địa chỉ",
-      value: "Số 1, Đường Cây Cảnh, Khu Vườn Xanh",
-      href: "https://www.google.com/maps",
+      value: address,
+      href: mapDirectLink,
       isLink: true,
-      hasDirectionBtn: true // Đánh dấu để hiển thị nút chỉ đường
+      hasDirectionBtn: true 
     },
   ];
 
@@ -98,7 +107,7 @@ const ContactPage = () => {
                       <p>{item.value}</p>
                     )}
 
-                    {/* Nút chỉ đường - Chỉ hiển thị nếu có hasDirectionBtn */}
+                    {/* Nút chỉ đường */}
                     {item.hasDirectionBtn && (
                       <a 
                         href={item.href} 
@@ -119,10 +128,11 @@ const ContactPage = () => {
             <div className="map-container">
               <iframe
                 title="Google Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.292513285882!2d105.78792341540212!3d20.983916994784964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135accdd8a1ad71%3A0xa2f9b16036648187!2zSOG7YyB2aeG7h2uCBDDtG5nIG5naOG7hyBCxrB1IGNow61uaCBWaeG7hW4gdGjDtG5n!5e0!3m2!1svi!2s!4v1689651234567!5m2!1svi!2s"
+                src={mapEmbedUrl}
                 loading="lazy"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
+                style={{ border: 0, width: "100%", height: "100%" }}
               ></iframe>
             </div>
           </div>

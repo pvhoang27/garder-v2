@@ -48,7 +48,7 @@ const Footer = () => {
             <ul className="footer-links-list">
               <li className="footer-contact-item">
                 <FaPhoneAlt className="footer-icon" />
-                <span>0123 456 789</span>
+                <span>0913 561 755 - 0912 947 777</span>
               </li>
               <li className="footer-contact-item">
                 <FaEnvelope className="footer-icon" />
@@ -56,7 +56,8 @@ const Footer = () => {
               </li>
               <li className="footer-contact-item">
                 <FaMapMarkerAlt className="footer-icon" />
-                <span>123 Đường Cây Xanh, Quận 1, TP. Hồ Chí Minh</span>
+                {/* Địa chỉ chuẩn từ Map */}
+                <span>Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định</span>
               </li>
             </ul>
           </div>
@@ -65,7 +66,7 @@ const Footer = () => {
         {/* Bottom Copyright */}
         <div className="footer-bottom">
           <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} Green Garden. All rights reserved.
+            © {new Date().getFullYear()} Green Garden. All rights reserved.
           </p>
         </div>
       </div>

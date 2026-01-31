@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { FaPhoneAlt, FaTimes } from "react-icons/fa";
-import { SiZalo } from "react-icons/si"; // Nếu không có icon Zalo trong thư viện hiện tại thì dùng tạm icon comment
-import { FaCommentDots } from "react-icons/fa"; // Dùng icon này thay Zalo nếu chưa cài react-icons/si
+import { SiZalo } from "react-icons/si"; 
+import { FaCommentDots } from "react-icons/fa"; 
 
 const FloatingContact = () => {
   const [isVisible, setIsVisible] = useState(true);
 
-  // Thay số điện thoại của bạn vào đây
-  const phoneNumber = "0987654321"; 
-  const zaloLink = "https://zalo.me/0987654321"; 
+  // Cập nhật số điện thoại chính mới (0913...)
+  const phoneNumber = "0913561755"; 
+  const zaloLink = "https://zalo.me/0913561755"; 
 
   if (!isVisible) return null;
 
@@ -30,10 +30,7 @@ const FloatingContact = () => {
         className="contact-btn zalo-btn"
       >
         <span className="contact-icon">
-            {/* Dùng FaCommentDots tượng trưng cho Zalo nếu chưa cài icon set khác */}
             <FaCommentDots size={24} /> 
-            {/* Hoặc dùng chữ Zalo nếu thích */}
-            {/* <span style={{fontWeight: 'bold'}}>Zalo</span> */}
         </span>
         <span className="contact-tooltip">Chat Zalo</span>
       </a>
