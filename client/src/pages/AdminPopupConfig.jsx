@@ -4,17 +4,17 @@ import axiosClient from "../api/axiosClient";
 import { FaPlus, FaBars } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
-// Import các component con và CSS
+// Import components
 import AdminPopupForm from "../components/admin/popup/AdminPopupForm";
 import AdminPopupList from "../components/admin/popup/AdminPopupList";
-import "../components/admin/popup/AdminPopup.css"; // Import CSS file
+import "../components/admin/popup/AdminPopup.css";
 
 const AdminPopupConfig = () => {
   const navigate = useNavigate();
   const [popups, setPopups] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  // --- STATE CHO LAYOUT & SIDEBAR ---
+  // --- STATE LAYOUT ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -41,8 +41,8 @@ const AdminPopupConfig = () => {
 
   // State form
   const [config, setConfig] = useState(initialState());
-  const [files, setFiles] = useState([]); // Mảng file upload mới
-  const [previews, setPreviews] = useState([]); // Preview ảnh/video
+  const [files, setFiles] = useState([]); 
+  const [previews, setPreviews] = useState([]); 
 
   function initialState() {
     return {
@@ -52,7 +52,7 @@ const AdminPopupConfig = () => {
       link_url: "",
       position: "center",
       is_active: true,
-      media_urls: "[]", // Lưu JSON string
+      media_urls: "[]",
       width: "500px",
       height: "auto",
     };
@@ -63,8 +63,9 @@ const AdminPopupConfig = () => {
   }, []);
 
   const fetchPopups = () => {
+    // FIX: /popups/all
     axiosClient
-      .get("/popup/all")
+      .get("/popups/all")
       .then((res) => {
         setPopups(res.data);
       })
@@ -79,7 +80,6 @@ const AdminPopupConfig = () => {
     });
     setFiles([]);
 
-    // Parse JSON media cũ để hiện preview
     try {
       const oldMedia = JSON.parse(popup.media_urls || "[]");
       setPreviews(
@@ -111,7 +111,8 @@ const AdminPopupConfig = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa popup này?")) {
       try {
-        await axiosClient.delete(`/popup/${id}`);
+        // FIX: /popups/:id
+        await axiosClient.delete(`/popups/${id}`);
         fetchPopups();
       } catch (error) {
         alert("Lỗi khi xóa");
@@ -131,7 +132,6 @@ const AdminPopupConfig = () => {
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
 
-    // Tạo preview cho file mới
     const newPreviews = selectedFiles.map((file) => ({
       type: file.type.startsWith("video") ? "video" : "image",
       url: URL.createObjectURL(file),
@@ -160,11 +160,13 @@ const AdminPopupConfig = () => {
 
     try {
       if (config.id) {
-        await axiosClient.put(`/popup/${config.id}`, formData, {
+        // FIX: PUT /popups/:id
+        await axiosClient.put(`/popups/${config.id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        await axiosClient.post("/popup", formData, {
+        // FIX: POST /popups
+        await axiosClient.post("/popups", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -179,7 +181,7 @@ const AdminPopupConfig = () => {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6f8" }}>
-      {/* --- MOBILE HEADER (Giữ nguyên style inline vì logic responsive) --- */}
+      {/* Mobile Header */}
       {isMobile && (
         <div
           style={{
@@ -224,7 +226,7 @@ const AdminPopupConfig = () => {
         </div>
       )}
 
-      {/* --- OVERLAY --- */}
+      {/* Overlay */}
       {isMobile && isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
@@ -240,7 +242,7 @@ const AdminPopupConfig = () => {
         ></div>
       )}
 
-      {/* --- SIDEBAR --- */}
+      {/* Sidebar */}
       <AdminSidebar
         activeTab="popup"
         setActiveTab={handleSidebarClick}
@@ -249,7 +251,7 @@ const AdminPopupConfig = () => {
         setIsOpen={setIsSidebarOpen}
       />
 
-      {/* --- MAIN CONTENT --- */}
+      {/* Main Content */}
       <div style={mainContentStyle}>
         <div className="container admin-popup-page">
           <h2 className="page-title">⚙️ Quản Lý Popup (Đa phương tiện)</h2>
@@ -262,7 +264,6 @@ const AdminPopupConfig = () => {
             </div>
           )}
 
-          {/* HIỂN THỊ FORM HOẶC LIST */}
           {isEditing ? (
             <AdminPopupForm
               config={config}

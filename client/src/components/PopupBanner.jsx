@@ -6,10 +6,12 @@ const PopupBanner = () => {
   const [popups, setPopups] = useState([]);
 
   useEffect(() => {
+    // FIX: Sửa endpoint thành /popups (số nhiều) để khớp với Server
     axiosClient
-      .get("/popup")
+      .get("/popups") 
       .then((res) => {
         if (res.data && Array.isArray(res.data)) {
+          // Lọc các popup đã bị đóng trong session
           const activePopups = res.data.filter(
             (p) => !sessionStorage.getItem(`popup_closed_${p.id}`),
           );
@@ -18,7 +20,7 @@ const PopupBanner = () => {
           }
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Lỗi tải popup:", err));
   }, []);
 
   const handleClose = (id) => {
@@ -60,15 +62,16 @@ const PopupBanner = () => {
   );
 };
 
-// Component con để xử lý slide cho từng popup riêng biệt
+// Component con hiển thị nội dung từng popup
 const SinglePopup = ({ popup, onClose }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
+  // Parse list media
   let mediaList = [];
   try {
     mediaList = JSON.parse(popup.media_urls || "[]");
   } catch (e) {
-    mediaList = popup.image_url ? [popup.image_url] : []; // Fallback cũ
+    mediaList = popup.image_url ? [popup.image_url] : [];
   }
 
   const nextSlide = () =>
@@ -78,16 +81,23 @@ const SinglePopup = ({ popup, onClose }) => {
       (prev) => (prev - 1 + mediaList.length) % mediaList.length,
     );
 
-  // Auto slide nếu là ảnh
+  // Auto slide
   useEffect(() => {
     if (mediaList.length > 1) {
-      const timer = setInterval(nextSlide, 5000); // 5s đổi ảnh
+      const timer = setInterval(nextSlide, 5000);
       return () => clearInterval(timer);
     }
   }, [mediaList.length]);
 
   const currentMedia = mediaList[currentMediaIndex];
   const isVideo = currentMedia && currentMedia.match(/\.(mp4|webm)$/i);
+
+  // Hàm xử lý url ảnh (từ localhost hoặc link ngoài)
+  const getMediaUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    return `http://localhost:3000${path}`;
+  };
 
   return (
     <div
@@ -126,7 +136,7 @@ const SinglePopup = ({ popup, onClose }) => {
         <div className="media-container" style={{ minHeight: "200px" }}>
           {isVideo ? (
             <video
-              src={`http://localhost:3000${currentMedia}`}
+              src={getMediaUrl(currentMedia)}
               controls
               autoPlay
               muted
@@ -135,7 +145,7 @@ const SinglePopup = ({ popup, onClose }) => {
             />
           ) : (
             <img
-              src={`http://localhost:3000${currentMedia}`}
+              src={getMediaUrl(currentMedia)}
               alt={popup.title}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -166,9 +176,7 @@ const SinglePopup = ({ popup, onClose }) => {
         </div>
       )}
 
-      <div
-        style={{ padding: "15px", textAlign: "center", background: "white" }}
-      >
+      <div style={{ padding: "15px", textAlign: "center", background: "white" }}>
         {popup.title && (
           <h4 style={{ color: "#2e7d32", marginBottom: "8px" }}>
             {popup.title}
