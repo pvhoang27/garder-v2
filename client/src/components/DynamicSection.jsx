@@ -3,11 +3,10 @@ import { Link } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import { FaLeaf, FaArrowRight } from "react-icons/fa";
 
-const DynamicSection = ({ id, title, type, paramValue, categories }) => {
+const DynamicSection = ({ id, title, type, paramValue, categories, index }) => {
   const [plants, setPlants] = useState([]);
 
   useEffect(() => {
-    // Logic fetch dữ liệu giữ nguyên
     if (type === "manual") {
       axiosClient
         .get(`/layout/${id}/plants`)
@@ -22,12 +21,11 @@ const DynamicSection = ({ id, title, type, paramValue, categories }) => {
         if (paramValue) {
           data = data.filter((p) => p.category_id == paramValue);
         }
-        setPlants(data.slice(0, 8)); // Lấy tối đa 8 cây
+        setPlants(data.slice(0, 8));
       });
     }
   }, [id, type, paramValue]);
 
-  // Helper xử lý ảnh (copy từ HomePage để đảm bảo hiển thị đúng)
   const getImageUrl = (path) => {
     if (!path)
       return "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
@@ -35,7 +33,6 @@ const DynamicSection = ({ id, title, type, paramValue, categories }) => {
     return `http://localhost:3000${path}`;
   };
 
-  // Helper lấy tên danh mục
   const getCategoryName = (catId) => {
     if (!categories || categories.length === 0) return "Cây cảnh";
     const cat = categories.find((c) => c.id == catId);
@@ -44,19 +41,31 @@ const DynamicSection = ({ id, title, type, paramValue, categories }) => {
 
   if (plants.length === 0) return null;
 
+  // --- LOGIC THẨM MỸ (AESTHETIC LOGIC) ---
+  // Section trước đó (Featured) là màu XÁM (bg-secondary).
+  // Vì vậy: 
+  // - index 0 (Section đầu tiên): Nên là TRẮNG để tách biệt.
+  // - index 1 (Section thứ hai): Nên là XÁM để đổi gió.
+  // - index 2: TRẮNG...
+  // Logic: Nếu index là số lẻ (1, 3, 5...) -> Thêm class bg-secondary.
+  
+  const sectionClass = index % 2 !== 0 ? "section bg-secondary" : "section";
+  
+  // Điều chỉnh style phụ trợ để nút bấm và badge hài hòa trên nền xám
+  const badgeStyle = index % 2 !== 0 ? { background: "white", marginBottom: "10px" } : { marginBottom: "10px" };
+  const btnStyle = index % 2 !== 0 ? { background: "white" } : {};
+
   return (
-    // Sử dụng class 'section' để đồng bộ style padding/margin với trang chủ
-    <section className="section">
+    <section className={sectionClass}>
       <div className="container">
-        {/* Header Section: Badge + Title + Button 'Xem tất cả' */}
+        {/* Header Section */}
         <div className="section-header flex-between">
           <div>
-            <div className="badge" style={{ marginBottom: "10px" }}>
+            <div className="badge" style={badgeStyle}>
               <FaLeaf /> Bộ sưu tập
             </div>
             <h2 className="section-title">{title}</h2>
           </div>
-          {/* Nút xem tất cả (điều hướng sang gallery hoặc search theo category) */}
           <Link
             to={
               type === "category" && paramValue
@@ -64,12 +73,13 @@ const DynamicSection = ({ id, title, type, paramValue, categories }) => {
                 : "/gallery"
             }
             className="btn btn-outline"
+            style={btnStyle}
           >
             Xem tất cả <FaArrowRight />
           </Link>
         </div>
 
-        {/* Grid hiển thị cây: Sử dụng class 'plant-grid' của HomePage */}
+        {/* Plant Grid - Chuẩn class của HomePage để tái sử dụng CSS */}
         <div className="plant-grid">
           {plants.map((plant) => (
             <Link
@@ -77,7 +87,6 @@ const DynamicSection = ({ id, title, type, paramValue, categories }) => {
               to={`/plant/${plant.id}`}
               style={{ textDecoration: "none", color: "inherit" }}
             >
-              {/* Sử dụng đúng cấu trúc class 'plant-item-card' */}
               <div className="plant-item-card">
                 <div className="plant-img-wrapper">
                   <img

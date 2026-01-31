@@ -292,7 +292,7 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* FEATURED PLANTS SECTION (Cây nổi bật - HARDCODED) */}
+          {/* FEATURED PLANTS SECTION (Cây nổi bật - HARDCODED - NỀN XÁM) */}
           <section className="section bg-secondary">
             <div className="container">
               <div className="section-header flex-between">
@@ -327,19 +327,20 @@ const HomePage = () => {
           </section>
 
           {/* [NEW] DYNAMIC SECTIONS (CÁC BỐ CỤC TỪ ADMIN) */}
-          {/* Render các section được cấu hình trong admin, nằm giữa Featured và About */}
-          {layouts.map((layout) => (
+          {/* Render xen kẽ màu nền để hài hòa */}
+          {layouts.map((layout, index) => (
             layout.is_active && (
               <DynamicSection 
                 key={layout.id} 
                 {...layout} 
                 paramValue={layout.value || layout.param_value} 
-                categories={categories} // <--- QUAN TRỌNG: Truyền categories để hiển thị tên
+                categories={categories}
+                index={index} // <--- QUAN TRỌNG: Truyền index để tính màu nền
               />
             )
           ))}
 
-          {/* ABOUT SECTION */}
+          {/* ABOUT SECTION (NỀN TRẮNG) */}
           <section className="section">
             <div className="container">
               <div className="about-grid">
