@@ -333,7 +333,8 @@ const HomePage = () => {
               <DynamicSection 
                 key={layout.id} 
                 {...layout} 
-                paramValue={layout.value || layout.param_value} // Pass giá trị tham số cho DynamicSection
+                paramValue={layout.value || layout.param_value} 
+                categories={categories} // <--- QUAN TRỌNG: Truyền categories để hiển thị tên
               />
             )
           ))}
