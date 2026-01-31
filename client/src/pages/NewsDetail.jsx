@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import "./NewsDetail.css"; // Import CSS mới
 
 const NewsDetail = () => {
   const { id } = useParams();
@@ -23,60 +24,50 @@ const NewsDetail = () => {
     fetchNewsDetail();
   }, [id]);
 
-  if (loading) return <div style={{ textAlign: "center", marginTop: "50px" }}>Đang tải...</div>;
-  if (!news) return <div style={{ textAlign: "center", marginTop: "50px" }}>Không tìm thấy bài viết!</div>;
+  if (loading) return <div className="loading-message">Đang tải bài viết...</div>;
+  if (!news) return <div className="error-message">Không tìm thấy bài viết!</div>;
+
+  const imageUrl = news.image 
+    ? (news.image.startsWith('http') ? news.image : `http://localhost:3000${news.image}`) 
+    : null;
 
   return (
-    <div className="container" style={{ marginTop: "30px", maxWidth: "800px", paddingBottom: "50px" }}>
+    <div className="news-detail-container">
       {/* Nút Quay lại */}
       <button 
         onClick={() => navigate("/news")}
-        style={{
-          background: "transparent",
-          border: "none",
-          display: "flex",
-          alignItems: "center",
-          gap: "5px",
-          cursor: "pointer",
-          color: "#666",
-          fontSize: "1rem",
-          marginBottom: "20px"
-        }}
+        className="back-btn"
       >
-        <FaArrowLeft /> Quay lại tin tức
+        <FaArrowLeft /> Quay lại danh sách
       </button>
 
-      <article style={{ background: "white", padding: "30px", borderRadius: "10px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
-        <h1 style={{ color: "#2e7d32", fontSize: "2rem", marginBottom: "15px" }}>{news.title}</h1>
+      <article className="article-content">
+        <h1 className="article-title">{news.title}</h1>
         
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#888", marginBottom: "20px", fontSize: "0.9rem" }}>
+        <div className="article-meta">
           <FaCalendarAlt />
           <span>{new Date(news.created_at).toLocaleDateString('vi-VN')}</span>
+          {/* Có thể thêm Tác giả nếu API trả về */}
         </div>
 
-        {/* Ảnh bìa lớn */}
-        {news.image && (
-          <div style={{ marginBottom: "30px", borderRadius: "8px", overflow: "hidden" }}>
-            <img 
-              src={news.image.startsWith('http') ? news.image : `http://localhost:3000${news.image}`} 
-              alt={news.title}
-              style={{ width: "100%", maxHeight: "400px", objectFit: "cover" }}
-            />
+        {/* Ảnh bìa */}
+        {imageUrl && (
+          <img 
+            src={imageUrl} 
+            alt={news.title}
+            className="article-hero-image"
+          />
+        )}
+
+        {/* Tóm tắt nổi bật */}
+        {news.summary && (
+          <div className="article-summary">
+            {news.summary}
           </div>
         )}
 
-        {/* Tóm tắt (in đậm) */}
-        <div style={{ fontWeight: "bold", fontSize: "1.1rem", marginBottom: "20px", color: "#444", borderLeft: "4px solid #2e7d32", paddingLeft: "15px" }}>
-          {news.summary}
-        </div>
-
         {/* Nội dung chi tiết */}
-        <div style={{ 
-          fontSize: "1rem", 
-          lineHeight: "1.8", 
-          color: "#333",
-          whiteSpace: "pre-wrap" // Giữ nguyên định dạng xuống dòng của văn bản
-        }}>
+        <div className="article-body">
           {news.content}
         </div>
       </article>
