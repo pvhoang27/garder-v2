@@ -18,12 +18,13 @@ import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
 import CategoryPage from "./pages/CategoryPage";
 import NewsPage from "./pages/NewsPage";
-import NewsDetail from "./pages/NewsDetail"; // <--- MỚI: Import trang chi tiết tin tức
+import NewsDetail from "./pages/NewsDetail";
 import AdminPopupConfig from "./pages/AdminPopupConfig";
 import AdminLayoutConfig from "./pages/AdminLayoutConfig";
 import PopupBanner from "./components/PopupBanner";
 import LanguageSwitcher from "./components/LanguageSwitcher"; 
 import FloatingContact from "./components/FloatingContact"; 
+import Footer from "./components/Footer"; // <--- IMPORT COMPONENT FOOTER MỚI
 
 import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 
@@ -123,14 +124,14 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
       {/* Popup quảng cáo */}
       <PopupBanner />
 
-      {/* HIỂN THỊ NÚT LIÊN HỆ NỔI (chỉ hiện cho khách, admin có thể ẩn nếu muốn) */}
+      {/* HIỂN THỊ NÚT LIÊN HỆ NỔI */}
       {!isAdminRoute && <FloatingContact />}
 
       {/* Điều chỉnh padding nếu là trang Admin thì full màn hình, không cần padding bottom */}
       <div
         style={{
           minHeight: "80vh",
-          paddingBottom: isAdminRoute ? "0" : "50px",
+          paddingBottom: isAdminRoute ? "0" : "0", // Xóa padding bottom vì Footer mới đã tự xử lý
         }}
       >
         <Routes>
@@ -138,9 +139,8 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
           <Route path="/" element={<HomePage />} />
           <Route path="/categories" element={<CategoryPage />} />
           
-          {/* ROUTE TIN TỨC */}
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/news/:id" element={<NewsDetail />} /> {/* <--- MỚI: Route chi tiết tin tức */}
+          <Route path="/news/:id" element={<NewsDetail />} />
 
           <Route path="/plant/:id" element={<PlantDetail />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -177,28 +177,8 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
         </Routes>
       </div>
 
-      {/* Chỉ hiện Footer nếu KHÔNG PHẢI trang admin */}
-      {!isAdminRoute && (
-        <footer
-          style={{
-            background: "#2c3e50",
-            color: "white",
-            textAlign: "center",
-            padding: "30px",
-            marginTop: "auto",
-          }}
-        >
-          <h3>Green Garden Showcase</h3>
-          <p style={{ opacity: 0.7, fontSize: "0.9rem", marginTop: "10px" }}>
-            {t("home.footer_address")}
-            <br />
-            {t("home.footer_phone")}
-          </p>
-          <p style={{ marginTop: "20px", fontSize: "0.8rem", opacity: 0.5 }}>
-            © 2026 Developed by You
-          </p>
-        </footer>
-      )}
+      {/* Thay thế Footer cũ bằng Component Footer mới */}
+      {!isAdminRoute && <Footer />}
     </>
   );
 };
