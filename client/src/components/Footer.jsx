@@ -56,8 +56,8 @@ const Footer = () => {
               </li>
               <li className="footer-contact-item">
                 <FaMapMarkerAlt className="footer-icon" />
-                {/* Địa chỉ chuẩn từ Map */}
-                <span>Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định</span>
+                {/* Thêm tên quán cho rõ ràng */}
+                <span>Hoa lan cây cảnh Nam Định - Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định</span>
               </li>
             </ul>
           </div>

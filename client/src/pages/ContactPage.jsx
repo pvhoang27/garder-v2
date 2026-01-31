@@ -30,14 +30,11 @@ const ContactPage = () => {
     }
   };
 
-  // Địa chỉ chính xác
-  const address = "Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định, Việt Nam";
+  // Link nhúng (Embed)
+  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3739.7138477852345!2d106.119452!3d20.394685!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135de5baebab9f1%3A0xac3a4f333eb08c6d!2zSG9hIGxhbiBjw6J5IGPhuqNuaCBOYW0gxJDhu4tuaA!5e0!3m2!1svi!2s!4v1769858924017!5m2!1svi!2s";
   
-  // Tạo link embed chuẩn từ địa chỉ (fix lỗi không hiện map)
-  const mapEmbedUrl = `https://www.google.com/maps4{encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-  
-  // Link mở tab mới
-  const mapDirectLink = `https://maps.google.com/maps?q=20.3789,106.1289&...{encodeURIComponent(address)}`;
+  // Link mở Google Maps trực tiếp
+  const mapDirectLink = "https://maps.google.com/?cid=12410318804686507117&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQ";
 
   const contactInfo = [
     {
@@ -55,7 +52,8 @@ const ContactPage = () => {
     {
       icon: <FaMapMarkerAlt size={20} />,
       label: "Địa chỉ",
-      value: address,
+      // Thêm tên quán vào trước địa chỉ để khách dễ nhận diện biển hiệu
+      value: "Hoa lan cây cảnh Nam Định - Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định",
       href: mapDirectLink,
       isLink: true,
       hasDirectionBtn: true 
@@ -129,10 +127,10 @@ const ContactPage = () => {
               <iframe
                 title="Google Map"
                 src={mapEmbedUrl}
+                style={{ border: 0, width: "100%", height: "100%", minHeight: "450px" }}
+                allowFullScreen=""
                 loading="lazy"
-                allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
-                style={{ border: 0, width: "100%", height: "100%" }}
               ></iframe>
             </div>
           </div>
