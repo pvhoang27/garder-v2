@@ -25,16 +25,27 @@ ul {
   padding: 20px;
 }
 
-/* --- HEADER / NAVBAR STYLE MỚI (Nền trắng - Chữ đen) --- */
-nav {
-  background: #ffffff; /* Đổi nền sang trắng */
-  padding: 0; /* Padding xử lý trong .navbar */
-  color: #333; /* Chữ màu tối */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Shadow nhẹ nhàng hơn */
+/* --- [ĐÃ SỬA] HEADER / NAVBAR STYLE --- */
+/* Thay vì dùng "nav", ta dùng ".navbar" để không ảnh hưởng Admin Sidebar */
+.navbar {
+  background: #ffffff; /* Nền trắng */
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.05rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: #333;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Shadow mềm mại */
 }
-nav a {
+
+.navbar a {
   transition: 0.3s;
 }
+
+/* --- CÁC PHẦN DƯỚI GIỮ NGUYÊN --- */
 
 /* Grid Danh sách cây */
 .plant-list {
@@ -154,19 +165,7 @@ nav a {
   }
 }
 
-/* --- PHẦN NAVBAR RESPONSIVE --- */
-.navbar {
-  background: #ffffff; /* Nền trắng */
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.05rem; /* Font chữ vừa phải hơn */
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08); /* Shadow mềm hơn */
-}
+/* --- PHẦN NAVBAR STYLE CHI TIẾT --- */
 
 .navbar-container {
   display: flex;
@@ -177,9 +176,9 @@ nav a {
 }
 
 .nav-logo {
-  color: #2e7d32; /* Logo màu xanh thương hiệu */
+  color: #2e7d32; /* Logo xanh */
   font-size: 1.6rem;
-  font-weight: 800; /* Đậm hơn chút */
+  font-weight: 800;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -194,7 +193,7 @@ nav a {
 }
 
 .nav-link {
-  color: #333; /* Chữ menu màu đen xám */
+  color: #333; /* Chữ menu đen */
   text-decoration: none;
   padding: 0.6rem 1.2rem;
   transition: all 0.2s ease;
@@ -206,24 +205,23 @@ nav a {
   border-radius: 6px;
 }
 
-/* Hover vào link: Nền xanh rất nhạt, chữ xanh */
 .nav-link:hover {
-  background-color: #f1f8e9; /* Xanh lá cực nhạt */
+  background-color: #f1f8e9; /* Hover nền xanh nhạt */
   color: #2e7d32;
 }
 
 /* Các nút đặc biệt */
 .nav-btn-admin {
-  background: #2e7d32; /* Nền xanh */
-  color: white; /* Chữ trắng */
-  border-radius: 25px; /* Bo tròn nhiều hơn */
+  background: #2e7d32;
+  color: white;
+  border-radius: 25px;
   font-weight: 600;
   font-size: 0.9rem;
   padding: 0.5rem 1.2rem;
   box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
 }
 .nav-btn-admin:hover {
-  background: #1b5e20; /* Xanh đậm hơn khi hover */
+  background: #1b5e20;
   color: white;
   transform: translateY(-1px);
 }
@@ -243,7 +241,7 @@ nav a {
 .nav-btn-logout {
   background: transparent;
   border: none;
-  color: #d32f2f; /* Màu đỏ cho nút logout */
+  color: #d32f2f;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -252,47 +250,42 @@ nav a {
   background-color: #ffebee;
 }
 
-/* Icon Hamburger trên mobile */
+/* Icon Hamburger ẩn trên PC */
 .mobile-icon {
   display: none;
-  color: #333; /* Icon màu đen */
+  color: #333;
   font-size: 1.8rem;
   cursor: pointer;
 }
 
 /* --- RESPONSIVE CHO ĐIỆN THOẠI (Dưới 960px) --- */
 @media screen and (max-width: 960px) {
-  .navbar {
-    position: relative; /* Để menu sổ xuống đè lên nội dung */
-  }
+  /* Class .navbar đã có position sticky ở trên, ở đây chỉ chỉnh lại behavior */
 
-  /* Hiện nút 3 gạch */
   .mobile-icon {
     display: block;
     position: absolute;
     top: 0;
     right: 0;
-    transform: translate(-100%, 60%); /* Căn giữa chiều dọc */
+    transform: translate(-100%, 60%);
   }
 
-  /* Menu biến thành dạng cột (ẩn mặc định) */
   .nav-menu {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: auto; /* Chiều cao tự động theo nội dung */
+    height: auto;
     position: absolute;
-    top: 80px; /* Nằm ngay dưới thanh navbar */
-    left: -100%; /* Giấu sang bên trái màn hình */
+    top: 80px;
+    left: -100%;
     opacity: 0;
     transition: all 0.4s ease;
-    background: #ffffff; /* Nền trắng cho menu mobile */
+    background: #ffffff; /* Nền trắng cho mobile menu */
     padding-bottom: 20px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     border-top: 1px solid #f0f0f0;
   }
 
-  /* Khi active (được click) thì trượt ra */
   .nav-menu.active {
     left: 0;
     opacity: 1;
@@ -313,15 +306,15 @@ nav a {
     border-radius: 0;
   }
 
-  .nav-btn-admin, .nav-btn-login {
+  .nav-btn-admin,
+  .nav-btn-login {
     width: 80%;
     margin: 10px auto;
     justify-content: center;
   }
 
-  /* Fix lại layout trang chủ cho mobile */
   .plant-list {
-    grid-template-columns: 1fr !important; /* 1 cột trên mobile */
+    grid-template-columns: 1fr !important;
   }
 }
 
@@ -333,13 +326,12 @@ nav a {
   max-width: 320px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   animation: fadeIn 0.5s ease-out;
   transition: all 0.3s ease;
 }
 
-/* Các vị trí trên Desktop */
 .popup-pos-center {
   top: 50%;
   left: 50%;
@@ -356,7 +348,6 @@ nav a {
   left: 20px;
 }
 
-/* RESPONSIVE: Trên điện thoại luôn ra giữa */
 @media (max-width: 768px) {
   .popup-banner {
     top: 50% !important;
@@ -368,16 +359,21 @@ nav a {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translate(-50%, -60%); } /* Hiệu ứng trượt nhẹ */
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-/* --- FLOATING CONTACT BUTTONS (BÊN PHẢI) --- */
+/* --- FLOATING CONTACT --- */
 .floating-contact-wrapper {
   position: fixed;
-  bottom: 100px; /* Cách đáy một chút */
-  right: 20px;   /* <--- ĐÃ ĐỔI THÀNH RIGHT (Cũ là left) */
-  z-index: 9990; /* Cao hơn nội dung nhưng thấp hơn Popup Banner */
+  bottom: 100px;
+  right: 20px;
+  z-index: 9990;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -391,7 +387,7 @@ nav a {
   justify-content: center;
   align-items: center;
   color: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   position: relative;
   transition: transform 0.3s;
   animation: pulse-animation 2s infinite;
@@ -401,30 +397,32 @@ nav a {
   transform: scale(1.1);
 }
 
-/* Màu Zalo */
 .zalo-btn {
-  background-color: #0068FF; 
+  background-color: #0068ff;
 }
 
-/* Màu Điện thoại */
 .phone-btn {
-  background-color: #dd3333; /* Màu đỏ nổi bật */
+  background-color: #dd3333;
 }
 
-/* Hiệu ứng sóng tỏa ra (Pulse) */
 @keyframes pulse-animation {
-  0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
 }
 
-/* Tooltip hiện chữ khi hover - ĐÃ ĐỔI SANG HIỆN BÊN TRÁI NÚT */
 .contact-tooltip {
   position: absolute;
-  right: 60px; /* <--- HIỆN BÊN TRÁI CỦA NÚT (Neo vào cạnh phải cách 60px) */
+  right: 60px;
   top: 50%;
-  transform: translateY(-50%); /* Căn giữa dọc */
-  background: rgba(0,0,0,0.8);
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
@@ -440,13 +438,12 @@ nav a {
   visibility: visible;
 }
 
-/* Nút tắt (X) nhỏ xíu */
 .close-contact-btn {
   position: absolute;
   top: -25px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   border: none;
   color: white;
   width: 20px;
@@ -462,10 +459,9 @@ nav a {
   background: red;
 }
 
-/* Responsive cho Mobile: Đẩy lên cao hơn chút và căn phải */
 @media (max-width: 960px) {
   .floating-contact-wrapper {
-    bottom: 120px; 
-    right: 15px; /* <--- ĐÃ ĐỔI THÀNH RIGHT */
+    bottom: 120px;
+    right: 15px;
   }
 }
