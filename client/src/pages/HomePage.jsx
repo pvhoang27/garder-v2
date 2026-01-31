@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import BackgroundEffect from "../components/BackgroundEffect";
 import FloatingContact from "../components/FloatingContact";
 import PopupBanner from "../components/PopupBanner";
+import DynamicSection from "../components/DynamicSection"; // [NEW] Import DynamicSection
 
 // Styles
 import "./HomePage.css";
@@ -20,6 +21,9 @@ const HomePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
+  
+  // [NEW] State lưu danh sách bố cục từ Admin
+  const [layouts, setLayouts] = useState([]);
 
   // State Admin Control
   const [globalEffect, setGlobalEffect] = useState("none");
@@ -43,6 +47,13 @@ const HomePage = () => {
     axiosClient.get("/plants").then((res) => {
       setAllPlants(res.data);
       setLoading(false);
+    });
+
+    // 4. [NEW] Lấy danh sách bố cục Dynamic Sections
+    axiosClient.get("/layout").then((res) => {
+      // Sắp xếp theo sort_order trước khi lưu
+      const sortedLayouts = (res.data || []).sort((a, b) => a.sort_order - b.sort_order);
+      setLayouts(sortedLayouts);
     });
   }, []);
 
@@ -281,7 +292,7 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* FEATURED PLANTS SECTION */}
+          {/* FEATURED PLANTS SECTION (Cây nổi bật - HARDCODED) */}
           <section className="section bg-secondary">
             <div className="container">
               <div className="section-header flex-between">
@@ -314,6 +325,18 @@ const HomePage = () => {
               )}
             </div>
           </section>
+
+          {/* [NEW] DYNAMIC SECTIONS (CÁC BỐ CỤC TỪ ADMIN) */}
+          {/* Render các section được cấu hình trong admin, nằm giữa Featured và About */}
+          {layouts.map((layout) => (
+            layout.is_active && (
+              <DynamicSection 
+                key={layout.id} 
+                {...layout} 
+                paramValue={layout.value || layout.param_value} // Pass giá trị tham số cho DynamicSection
+              />
+            )
+          ))}
 
           {/* ABOUT SECTION */}
           <section className="section">
