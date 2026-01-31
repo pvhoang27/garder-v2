@@ -24,7 +24,10 @@ import AdminLayoutConfig from "./pages/AdminLayoutConfig";
 import PopupBanner from "./components/PopupBanner";
 import LanguageSwitcher from "./components/LanguageSwitcher"; 
 import FloatingContact from "./components/FloatingContact"; 
-import Footer from "./components/Footer"; // <--- IMPORT COMPONENT FOOTER MỚI
+import Footer from "./components/Footer"; 
+
+// --- IMPORT LOGO ---
+import logo from "./assets/logo.png";
 
 import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 
@@ -46,8 +49,14 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
   return (
     <nav className="navbar">
       <div className="container navbar-container">
-        <Link to="/" className="nav-logo" onClick={closeMenu}>
-          🌿 {t("nav.brand")}
+        {/* --- THAY THẾ LOGO TẠI ĐÂY --- */}
+        <Link to="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img 
+            src={logo} 
+            alt="Green Garden Logo" 
+            style={{ height: '40px', width: 'auto', objectFit: 'contain' }} 
+          />
+          <span>{t("nav.brand")}</span>
         </Link>
         
         <div
@@ -131,7 +140,7 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
       <div
         style={{
           minHeight: "80vh",
-          paddingBottom: isAdminRoute ? "0" : "0", // Xóa padding bottom vì Footer mới đã tự xử lý
+          paddingBottom: isAdminRoute ? "0" : "0", 
         }}
       >
         <Routes>
