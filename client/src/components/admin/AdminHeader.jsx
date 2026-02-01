@@ -6,6 +6,8 @@ import {
   FaCog,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axiosClient from "../../api/axiosClient"; // Import để gọi API
 
 const AdminHeader = ({
   isMobile,
@@ -16,9 +18,43 @@ const AdminHeader = ({
   title,
   breadcrumb,
 }) => {
-  // Lấy thông tin user từ localStorage để hiển thị tên
+  // Lấy thông tin user từ localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {
     full_name: "Admin",
+  };
+
+  // State cho thông báo
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifMenu, setShowNotifMenu] = useState(false);
+
+  // Fetch thông báo
+  const fetchNotifications = async () => {
+    try {
+      const res = await axiosClient.get("/notifications");
+      setNotifications(res.data.notifications);
+      setUnreadCount(res.data.unreadCount);
+    } catch (error) {
+      console.error("Lỗi tải thông báo", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    // Có thể set interval để tự động cập nhật mỗi 30s
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleRead = async (id) => {
+    try {
+      await axiosClient.put(`/notifications/${id}/read`);
+      // Cập nhật lại UI local cho nhanh
+      setNotifications(prev => prev.map(n => n.id === id ? {...n, is_read: 1} : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -65,37 +101,84 @@ const AdminHeader = ({
 
       {/* Right: User Menu */}
       <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        {/* Notification Icon (Demo) */}
-        <button
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "18px",
-            color: "#666",
-            cursor: "pointer",
-            position: "relative",
-          }}
-        >
-          <FaBell />
-          <span
+        {/* --- NOTIFICATION AREA --- */}
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setShowNotifMenu(!showNotifMenu)}
             style={{
-              position: "absolute",
-              top: "-5px",
-              right: "-5px",
-              background: "red",
-              color: "white",
-              fontSize: "10px",
-              width: "15px",
-              height: "15px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              background: "none",
+              border: "none",
+              fontSize: "18px",
+              color: "#666",
+              cursor: "pointer",
+              position: "relative",
             }}
           >
-            3
-          </span>
-        </button>
+            <FaBell />
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-5px",
+                  right: "-5px",
+                  background: "red",
+                  color: "white",
+                  fontSize: "10px",
+                  width: "15px",
+                  height: "15px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Dropdown Thông báo */}
+          {showNotifMenu && (
+            <div style={{
+              position: "absolute",
+              top: "120%",
+              right: "-50px",
+              width: "300px",
+              background: "white",
+              boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+              borderRadius: "8px",
+              border: "1px solid #eee",
+              maxHeight: "400px",
+              overflowY: "auto",
+              zIndex: 101
+            }}>
+              <div style={{ padding: "10px", borderBottom: "1px solid #eee", fontWeight: "bold" }}>Thông báo</div>
+              {notifications.length === 0 ? (
+                <div style={{ padding: "15px", textAlign: "center", color: "#888" }}>Không có thông báo</div>
+              ) : (
+                <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                  {notifications.map(n => (
+                    <li 
+                      key={n.id} 
+                      onClick={() => handleRead(n.id)}
+                      style={{ 
+                        padding: "10px", 
+                        borderBottom: "1px solid #f5f5f5", 
+                        background: n.is_read ? "white" : "#e8f5e9",
+                        cursor: "pointer" 
+                      }}
+                    >
+                      <div style={{ fontSize: "13px", color: "#333" }}>{n.message}</div>
+                      <div style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>
+                        {new Date(n.created_at).toLocaleString('vi-VN')}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* User Profile */}
         <div style={{ position: "relative" }}>
@@ -130,12 +213,10 @@ const AdminHeader = ({
               </span>
             </div>
 
-            {/* --- THAY THẾ ẢNH LỖI TẠI ĐÂY --- */}
-            {/* Dùng Icon thay vì ảnh via.placeholder.com bị lỗi */}
             <FaUserCircle size={40} color="#ccc" />
           </div>
 
-          {/* Dropdown Menu */}
+          {/* Dropdown Menu User */}
           {showUserMenu && (
             <div
               style={{
@@ -148,6 +229,7 @@ const AdminHeader = ({
                 width: "200px",
                 overflow: "hidden",
                 border: "1px solid #eee",
+                zIndex: 101
               }}
             >
               <div style={{ padding: "15px", borderBottom: "1px solid #eee" }}>

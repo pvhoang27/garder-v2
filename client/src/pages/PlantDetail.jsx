@@ -5,6 +5,7 @@ import axiosClient from "../api/axiosClient";
 // Components
 import PlantGallery from "../components/PlantGallery";
 import PlantInfo from "../components/PlantInfo";
+import CommentSection from "../components/CommentSection"; // Import Component Bình luận
 
 // Styles
 import "./PlantDetail.css";
@@ -78,6 +79,9 @@ const PlantDetail = () => {
         {/* CỘT PHẢI: THÔNG TIN CHI TIẾT */}
         <PlantInfo plant={plant} />
       </div>
+
+      {/* --- PHẦN BÌNH LUẬN --- */}
+      <CommentSection entityType="plant" entityId={plant.id} />
     </div>
   );
 };

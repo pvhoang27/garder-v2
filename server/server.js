@@ -25,13 +25,16 @@ app.use('/api/plants', require('./src/routes/plantRoutes'));
 app.use('/api/news', require('./src/routes/newsRoutes'));
 app.use('/api/contact', require('./src/routes/contactRoutes'));
 
-// --- SỬA DÒNG NÀY ---
 // Đổi từ 'popup' thành 'popups' để khớp với Frontend
 app.use('/api/popups', require('./src/routes/popupRoutes')); 
 app.use('/api/layout', require('./src/routes/layoutRoutes'));
 
 // Route quản lý User
 app.use('/api/users', require('./src/routes/userRoutes')); 
+
+// --- NEW ROUTES CHO COMMENT & NOTIFICATION ---
+app.use('/api/comments', require('./src/routes/commentRoutes'));
+app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 
 // Port
 const PORT = process.env.PORT || 5000;

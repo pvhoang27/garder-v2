@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
-import "./NewsDetail.css"; // Import CSS mới
+import CommentSection from "../components/CommentSection"; // Import Component Bình luận
+import "./NewsDetail.css";
 
 const NewsDetail = () => {
   const { id } = useParams();
@@ -71,6 +72,11 @@ const NewsDetail = () => {
           {news.content}
         </div>
       </article>
+      
+      {/* --- PHẦN BÌNH LUẬN --- */}
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <CommentSection entityType="news" entityId={news.id} />
+      </div>
     </div>
   );
 };
