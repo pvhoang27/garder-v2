@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import HomePage from "./pages/HomePage";
 import PlantDetail from "./pages/PlantDetail";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage"; // Import trang đăng ký
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
@@ -29,10 +30,10 @@ import Footer from "./components/Footer";
 // --- IMPORT LOGO ---
 import logo from "./assets/logo.png";
 
-import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
+import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
 
 // Component Navigation
-const Navigation = ({ isLoggedIn, onLogout }) => {
+const Navigation = ({ isLoggedIn, userRole, onLogout }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useTranslation(); 
@@ -82,16 +83,22 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
 
           {isLoggedIn ? (
             <>
-              <Link
-                to="/admin"
-                className="nav-link nav-btn-admin"
-                onClick={closeMenu}
-              >
-                {t("nav.admin")}
-              </Link>
+              {/* Chỉ hiện nút Admin nếu Role là admin */}
+              {userRole === 'admin' && (
+                <Link
+                  to="/admin"
+                  className="nav-link nav-btn-admin"
+                  onClick={closeMenu}
+                >
+                  {t("nav.admin")}
+                </Link>
+              )}
+              
+              {/* Hiển thị Avatar/Logout cho mọi user đã login */}
               <button
                 onClick={handleLogoutClick}
                 className="nav-link nav-btn-logout"
+                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
               >
                 <FaSignOutAlt /> {t("nav.logout")}
               </button>
@@ -116,18 +123,30 @@ const Navigation = ({ isLoggedIn, onLogout }) => {
 };
 
 // --- COMPONENT CONTENT WRAPPER ---
-const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
+const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) => {
   const location = useLocation();
   const { t } = useTranslation(); 
 
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
   const isAdminRoute = location.pathname.startsWith("/admin");
 
+  // Component bảo vệ Route Admin
+  const AdminRoute = ({ children }) => {
+    if (!isLoggedIn) {
+      return <Navigate to="/login" />;
+    }
+    if (userRole !== 'admin') {
+      // Nếu login rồi mà không phải admin thì đá về trang chủ
+      return <Navigate to="/" />;
+    }
+    return children;
+  };
+
   return (
     <>
       {/* Chỉ hiện Navigation nếu KHÔNG PHẢI trang admin */}
       {!isAdminRoute && (
-        <Navigation isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <Navigation isLoggedIn={isLoggedIn} userRole={userRole} onLogout={handleLogout} />
       )}
 
       {/* Popup quảng cáo */}
@@ -153,35 +172,34 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
 
           <Route path="/plant/:id" element={<PlantDetail />} />
           <Route path="/contact" element={<ContactPage />} />
+          
           <Route
             path="/login"
             element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
           />
+          {/* Thêm Route Đăng ký */}
+          <Route path="/register" element={<RegisterPage />} />
 
-          {/* Admin Routes */}
+          {/* Admin Routes - BẢO VỆ NGHIÊM NGẶT */}
           <Route
             path="/admin"
-            element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/login" />}
+            element={<AdminRoute><AdminDashboard /></AdminRoute>}
           />
           <Route
             path="/admin/add"
-            element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />}
+            element={<AdminRoute><AdminPlantForm /></AdminRoute>}
           />
           <Route
             path="/admin/edit/:id"
-            element={isLoggedIn ? <AdminPlantForm /> : <Navigate to="/login" />}
+            element={<AdminRoute><AdminPlantForm /></AdminRoute>}
           />
           <Route
             path="/admin/popup"
-            element={
-              isLoggedIn ? <AdminPopupConfig /> : <Navigate to="/login" />
-            }
+            element={<AdminRoute><AdminPopupConfig /></AdminRoute>}
           />
           <Route
             path="/admin/layout"
-            element={
-              isLoggedIn ? <AdminLayoutConfig /> : <Navigate to="/login" />
-            }
+            element={<AdminRoute><AdminLayoutConfig /></AdminRoute>}
           />
         </Routes>
       </div>
@@ -194,23 +212,37 @@ const AppContent = ({ isLoggedIn, handleLoginSuccess, handleLogout }) => {
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null); // Thêm state Role
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) setIsLoggedIn(true);
+    const userStr = localStorage.getItem("user");
+    
+    if (token && userStr) {
+      const user = JSON.parse(userStr);
+      setIsLoggedIn(true);
+      setUserRole(user.role || 'customer');
+    }
   }, []);
 
-  const handleLoginSuccess = () => setIsLoggedIn(true);
+  // Hàm này giờ nhận vào user object để update role
+  const handleLoginSuccess = (user) => {
+    setIsLoggedIn(true);
+    setUserRole(user?.role || 'customer');
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsLoggedIn(false);
+    setUserRole(null);
   };
 
   return (
     <BrowserRouter>
       <AppContent
         isLoggedIn={isLoggedIn}
+        userRole={userRole}
         handleLoginSuccess={handleLoginSuccess}
         handleLogout={handleLogout}
       />
