@@ -4,10 +4,11 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaCog,
+  FaSyncAlt, // Thêm icon reload thủ công
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axiosClient from "../../api/axiosClient"; // Import để gọi API
+import axiosClient from "../../api/axiosClient"; 
 
 const AdminHeader = ({
   isMobile,
@@ -18,43 +19,71 @@ const AdminHeader = ({
   title,
   breadcrumb,
 }) => {
-  // Lấy thông tin user từ localStorage
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user")) || {
     full_name: "Admin",
   };
 
-  // State cho thông báo
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const [isLoadingNotif, setIsLoadingNotif] = useState(false); // State loading
 
-  // Fetch thông báo
+  // Hàm tải thông báo
   const fetchNotifications = async () => {
+    // Không set loading true để tránh nháy giao diện khi tự động cập nhật
     try {
-      const res = await axiosClient.get("/notifications");
+      // Thêm Date.now() để tránh cache trình duyệt
+      const res = await axiosClient.get(`/notifications?t=${Date.now()}`);
       setNotifications(res.data.notifications);
       setUnreadCount(res.data.unreadCount);
     } catch (error) {
       console.error("Lỗi tải thông báo", error);
+    } finally {
+      setIsLoadingNotif(false);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
-    // Có thể set interval để tự động cập nhật mỗi 30s
-    const interval = setInterval(fetchNotifications, 30000);
+    fetchNotifications(); // Gọi ngay khi vào trang
+    
+    // --- CẬP NHẬT: GIẢM THỜI GIAN CHECK XUỐNG CÒN 5 GIÂY ---
+    const interval = setInterval(fetchNotifications, 5000);
+    
     return () => clearInterval(interval);
   }, []);
 
-  const handleRead = async (id) => {
+  const markAsRead = async (id) => {
     try {
       await axiosClient.put(`/notifications/${id}/read`);
-      // Cập nhật lại UI local cho nhanh
-      setNotifications(prev => prev.map(n => n.id === id ? {...n, is_read: 1} : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: 1 } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleNotificationClick = async (notif) => {
+    if (!notif.is_read) {
+      await markAsRead(notif.id);
+    }
+
+    if (notif.entity_type && notif.entity_id) {
+        if (notif.entity_type === 'plant') {
+            window.open(`/plant/${notif.entity_id}`, '_blank');
+        } else if (notif.entity_type === 'news') {
+            window.open(`/news/${notif.entity_id}`, '_blank');
+        }
+    }
+    setShowNotifMenu(false);
+  };
+
+  // Nút reload thủ công
+  const handleManualRefresh = () => {
+    setIsLoadingNotif(true);
+    fetchNotifications();
   };
 
   return (
@@ -100,7 +129,24 @@ const AdminHeader = ({
       </div>
 
       {/* Right: User Menu */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+        
+        {/* Nút Reload thủ công (nếu muốn check ngay lập tức) */}
+        <button 
+            onClick={handleManualRefresh}
+            title="Làm mới thông báo"
+            style={{
+                background: "none",
+                border: "none",
+                color: isLoadingNotif ? "#2e7d32" : "#999",
+                cursor: "pointer",
+                fontSize: "16px",
+                animation: isLoadingNotif ? "spin 1s linear infinite" : "none"
+            }}
+        >
+            <FaSyncAlt />
+        </button>
+
         {/* --- NOTIFICATION AREA --- */}
         <div style={{ position: "relative" }}>
           <button
@@ -108,10 +154,11 @@ const AdminHeader = ({
             style={{
               background: "none",
               border: "none",
-              fontSize: "18px",
+              fontSize: "20px", // Tăng size icon chút
               color: "#666",
               cursor: "pointer",
               position: "relative",
+              padding: "5px"
             }}
           >
             <FaBell />
@@ -119,20 +166,22 @@ const AdminHeader = ({
               <span
                 style={{
                   position: "absolute",
-                  top: "-5px",
-                  right: "-5px",
+                  top: "0",
+                  right: "0",
                   background: "red",
                   color: "white",
                   fontSize: "10px",
-                  width: "15px",
-                  height: "15px",
+                  fontWeight: "bold",
+                  minWidth: "16px",
+                  height: "16px",
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  border: "2px solid #fff"
                 }}
               >
-                {unreadCount}
+                {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </button>
@@ -142,34 +191,63 @@ const AdminHeader = ({
             <div style={{
               position: "absolute",
               top: "120%",
-              right: "-50px",
-              width: "300px",
+              right: "-60px", // Căn chỉnh lại cho đẹp
+              width: "350px",
               background: "white",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+              boxShadow: "0 5px 25px rgba(0,0,0,0.15)",
               borderRadius: "8px",
               border: "1px solid #eee",
-              maxHeight: "400px",
+              maxHeight: "450px",
               overflowY: "auto",
-              zIndex: 101
+              zIndex: 1000
             }}>
-              <div style={{ padding: "10px", borderBottom: "1px solid #eee", fontWeight: "bold" }}>Thông báo</div>
+              <div style={{ 
+                  padding: "15px", 
+                  borderBottom: "1px solid #eee", 
+                  fontWeight: "bold",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  background: "#f8f9fa"
+              }}>
+                  <span>Thông báo</span>
+                  <span 
+                    onClick={fetchNotifications} 
+                    style={{fontSize: "12px", color: "#2e7d32", cursor: "pointer"}}
+                  >
+                      Làm mới
+                  </span>
+              </div>
+
               {notifications.length === 0 ? (
-                <div style={{ padding: "15px", textAlign: "center", color: "#888" }}>Không có thông báo</div>
+                <div style={{ padding: "30px", textAlign: "center", color: "#888" }}>
+                    <p style={{marginBottom: "5px"}}>🔕</p>
+                    Không có thông báo mới
+                </div>
               ) : (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                   {notifications.map(n => (
                     <li 
                       key={n.id} 
-                      onClick={() => handleRead(n.id)}
+                      onClick={() => handleNotificationClick(n)}
                       style={{ 
-                        padding: "10px", 
-                        borderBottom: "1px solid #f5f5f5", 
+                        padding: "12px 15px", 
+                        borderBottom: "1px solid #f1f1f1", 
                         background: n.is_read ? "white" : "#e8f5e9",
-                        cursor: "pointer" 
+                        cursor: "pointer",
+                        transition: "background 0.2s",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "5px"
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#fafafa"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = n.is_read ? "white" : "#e8f5e9"}
                     >
-                      <div style={{ fontSize: "13px", color: "#333" }}>{n.message}</div>
-                      <div style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>
+                      <div style={{ fontSize: "14px", color: "#333", lineHeight: "1.4" }}>
+                          {/* Highlight từ khoá quan trọng nếu cần */}
+                          {n.message}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#999" }}>
                         {new Date(n.created_at).toLocaleString('vi-VN')}
                       </div>
                     </li>
@@ -216,7 +294,6 @@ const AdminHeader = ({
             <FaUserCircle size={40} color="#ccc" />
           </div>
 
-          {/* Dropdown Menu User */}
           {showUserMenu && (
             <div
               style={{
@@ -282,6 +359,14 @@ const AdminHeader = ({
           )}
         </div>
       </div>
+      
+      {/* CSS Animation cho icon refresh */}
+      <style>{`
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+      `}</style>
     </header>
   );
 };
