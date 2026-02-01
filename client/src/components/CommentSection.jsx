@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaPaperPlane, FaUserCircle, FaTrash } from "react-icons/fa"; // Thêm FaTrash
+import { FaPaperPlane, FaUserCircle, FaTrash } from "react-icons/fa";
 import "./CommentSection.css";
 
 const CommentSection = ({ entityType, entityId }) => {
@@ -9,7 +9,7 @@ const CommentSection = ({ entityType, entityId }) => {
   const [guestName, setGuestName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Lấy thông tin User hiện tại để check quyền Admin
+  // Lấy thông tin User hiện tại
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const isAdmin = currentUser?.role === 'admin'; 
 
@@ -47,21 +47,30 @@ const CommentSection = ({ entityType, entityId }) => {
         guest_name: currentUser ? currentUser.full_name : guestName,
       });
 
-      setContent("");
-      fetchComments();
+      setContent(""); // Xóa nội dung sau khi gửi
+      fetchComments(); // Tải lại danh sách
+      
+      if(!currentUser) {
+          alert("Bình luận thành công! Bạn cần đợi 5 phút để bình luận tiếp.");
+      }
+
     } catch (error) {
-      alert("Lỗi khi gửi bình luận");
+      // --- XỬ LÝ LỖI TẠI ĐÂY ---
+      if (error.response && error.response.status === 429) {
+          // Hiển thị thông báo chặn spam từ server
+          alert(error.response.data.message); 
+      } else {
+          alert("Lỗi khi gửi bình luận");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // --- HÀM XÓA BÌNH LUẬN (CHỈ ADMIN MỚI GỌI ĐƯỢC) ---
   const handleDelete = async (commentId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa bình luận này?")) {
         try {
             await axiosClient.delete(`/comments/${commentId}`);
-            // Xóa xong thì lọc bỏ khỏi danh sách hiển thị luôn cho nhanh
             setComments(comments.filter(c => c.id !== commentId));
         } catch (error) {
             console.error(error);
@@ -79,10 +88,11 @@ const CommentSection = ({ entityType, entityId }) => {
           <div style={{ marginBottom: "10px" }}>
             <input
               type="text"
-              placeholder="Tên của bạn..."
+              placeholder="Tên của bạn (Ẩn danh)..."
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               required
+              className="guest-name-input"
             />
           </div>
         )}
@@ -122,7 +132,6 @@ const CommentSection = ({ entityType, entityId }) => {
                   {new Date(cmt.created_at).toLocaleString('vi-VN')}
                 </span>
                 
-                {/* --- CHỈ HIỆN NÚT XÓA NẾU LÀ ADMIN --- */}
                 {isAdmin && (
                     <button 
                         className="btn-delete-comment"

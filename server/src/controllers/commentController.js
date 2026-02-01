@@ -1,10 +1,13 @@
 const db = require('../config/db');
 
-// 1. Lấy danh sách bình luận theo bài viết/cây (Cho trang chi tiết ở Client)
+// --- BỘ NHỚ TẠM ĐỂ LƯU THỜI GIAN BÌNH LUẬN CỦA KHÁCH ---
+// Cấu trúc: Map<IP_Address, Timestamp>
+const guestRateLimit = new Map();
+
+// 1. Lấy danh sách bình luận (Giữ nguyên)
 exports.getComments = async (req, res) => {
     try {
         const { entity_type, entity_id } = req.query;
-        // Join với bảng users để lấy tên/avatar nếu là thành viên đã đăng nhập
         const sql = `
             SELECT c.*, u.full_name as user_name, u.avatar 
             FROM comments c 
@@ -20,13 +23,35 @@ exports.getComments = async (req, res) => {
     }
 };
 
-// 2. Thêm bình luận mới & Tạo thông báo (CẬP NHẬT QUAN TRỌNG)
+// 2. Thêm bình luận (CÓ THÊM CHECK 5 PHÚT CHO KHÁCH)
 exports.addComment = async (req, res) => {
     try {
         const { user_id, guest_name, entity_type, entity_id, content } = req.body;
 
-        // Validate
+        // Validate nội dung
         if (!content) return res.status(400).json({ message: "Nội dung không được để trống" });
+
+        // --- LOGIC CHẶN SPAM CHO KHÁCH VÃNG LAI ---
+        if (!user_id) { 
+            // Lấy IP người dùng
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            const now = Date.now();
+            const limitTime = 5 * 60 * 1000; // 5 phút (đổi ra milliseconds)
+
+            if (guestRateLimit.has(ip)) {
+                const lastTime = guestRateLimit.get(ip);
+                if (now - lastTime < limitTime) {
+                    const minutesLeft = Math.ceil((limitTime - (now - lastTime)) / 60000);
+                    return res.status(429).json({ 
+                        message: `Bạn bình luận quá nhanh! Vui lòng đợi ${minutesLeft} phút nữa.` 
+                    });
+                }
+            }
+            // Cập nhật thời gian mới cho IP này
+            guestRateLimit.set(ip, now);
+        }
+        // ------------------------------------------
+
         const nameDisplay = guest_name || "Khách ẩn danh";
 
         // Insert vào bảng comments
@@ -35,9 +60,8 @@ exports.addComment = async (req, res) => {
             [user_id || null, nameDisplay, entity_type, entity_id, content]
         );
 
-        // Insert vào bảng notifications (KÈM entity_type VÀ entity_id ĐỂ CLICK LINK)
-        const notifMsg = `${guest_name || 'Một thành viên'} đã bình luận về ${entity_type === 'plant' ? 'cây cảnh' : 'tin tức'}: "${content.substring(0, 30)}..."`;
-        
+        // Insert thông báo cho Admin
+        const notifMsg = `${nameDisplay} đã bình luận về ${entity_type === 'plant' ? 'cây cảnh' : 'tin tức'}: "${content.substring(0, 30)}..."`;
         await db.query(
             "INSERT INTO notifications (message, type, entity_type, entity_id) VALUES (?, ?, ?, ?)",
             [notifMsg, 'comment', entity_type, entity_id]
@@ -50,10 +74,9 @@ exports.addComment = async (req, res) => {
     }
 };
 
-// 3. Lấy TẤT CẢ bình luận (Dành cho trang Admin quản lý)
+// 3. Admin lấy tất cả bình luận (Giữ nguyên)
 exports.getAllCommentsForAdmin = async (req, res) => {
     try {
-        // Join user để lấy tên hiển thị, sắp xếp mới nhất lên đầu
         const sql = `
             SELECT c.*, u.full_name as user_full_name
             FROM comments c
@@ -68,7 +91,7 @@ exports.getAllCommentsForAdmin = async (req, res) => {
     }
 };
 
-// 4. Xóa bình luận
+// 4. Admin xóa bình luận (Giữ nguyên)
 exports.deleteComment = async (req, res) => {
     try {
         const { id } = req.params;
