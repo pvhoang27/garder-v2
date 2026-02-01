@@ -4,11 +4,11 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaCog,
-  FaSyncAlt, // Thêm icon reload thủ công
+  FaCheckDouble, // Icon cho nút "Đọc tất cả"
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axiosClient from "../../api/axiosClient"; 
+import axiosClient from "../../api/axiosClient";
 
 const AdminHeader = ({
   isMobile,
@@ -27,29 +27,23 @@ const AdminHeader = ({
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
-  const [isLoadingNotif, setIsLoadingNotif] = useState(false); // State loading
 
   // Hàm tải thông báo
   const fetchNotifications = async () => {
-    // Không set loading true để tránh nháy giao diện khi tự động cập nhật
     try {
-      // Thêm Date.now() để tránh cache trình duyệt
+      // Thêm timestamp để tránh cache
       const res = await axiosClient.get(`/notifications?t=${Date.now()}`);
       setNotifications(res.data.notifications);
       setUnreadCount(res.data.unreadCount);
     } catch (error) {
       console.error("Lỗi tải thông báo", error);
-    } finally {
-      setIsLoadingNotif(false);
     }
   };
 
   useEffect(() => {
-    fetchNotifications(); // Gọi ngay khi vào trang
-    
-    // --- CẬP NHẬT: GIẢM THỜI GIAN CHECK XUỐNG CÒN 5 GIÂY ---
+    fetchNotifications();
+    // Tự động check mỗi 5 giây
     const interval = setInterval(fetchNotifications, 5000);
-    
     return () => clearInterval(interval);
   }, []);
 
@@ -62,6 +56,18 @@ const AdminHeader = ({
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  // --- HÀM MỚI: Đánh dấu tất cả đã đọc ---
+  const handleMarkAllRead = async () => {
+    try {
+      await axiosClient.put("/notifications/read-all");
+      // Cập nhật UI ngay lập tức
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: 1 })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Lỗi khi đánh dấu tất cả", error);
     }
   };
 
@@ -78,12 +84,6 @@ const AdminHeader = ({
         }
     }
     setShowNotifMenu(false);
-  };
-
-  // Nút reload thủ công
-  const handleManualRefresh = () => {
-    setIsLoadingNotif(true);
-    fetchNotifications();
   };
 
   return (
@@ -129,24 +129,8 @@ const AdminHeader = ({
       </div>
 
       {/* Right: User Menu */}
-      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
         
-        {/* Nút Reload thủ công (nếu muốn check ngay lập tức) */}
-        <button 
-            onClick={handleManualRefresh}
-            title="Làm mới thông báo"
-            style={{
-                background: "none",
-                border: "none",
-                color: isLoadingNotif ? "#2e7d32" : "#999",
-                cursor: "pointer",
-                fontSize: "16px",
-                animation: isLoadingNotif ? "spin 1s linear infinite" : "none"
-            }}
-        >
-            <FaSyncAlt />
-        </button>
-
         {/* --- NOTIFICATION AREA --- */}
         <div style={{ position: "relative" }}>
           <button
@@ -154,7 +138,7 @@ const AdminHeader = ({
             style={{
               background: "none",
               border: "none",
-              fontSize: "20px", // Tăng size icon chút
+              fontSize: "20px",
               color: "#666",
               cursor: "pointer",
               position: "relative",
@@ -191,7 +175,7 @@ const AdminHeader = ({
             <div style={{
               position: "absolute",
               top: "120%",
-              right: "-60px", // Căn chỉnh lại cho đẹp
+              right: "-60px",
               width: "350px",
               background: "white",
               boxShadow: "0 5px 25px rgba(0,0,0,0.15)",
@@ -211,12 +195,24 @@ const AdminHeader = ({
                   background: "#f8f9fa"
               }}>
                   <span>Thông báo</span>
-                  <span 
-                    onClick={fetchNotifications} 
-                    style={{fontSize: "12px", color: "#2e7d32", cursor: "pointer"}}
-                  >
-                      Làm mới
-                  </span>
+                  
+                  {/* NÚT ĐÁNH DẤU TẤT CẢ ĐÃ ĐỌC */}
+                  {unreadCount > 0 && (
+                    <span 
+                        onClick={handleMarkAllRead} 
+                        style={{
+                            fontSize: "12px", 
+                            color: "#2e7d32", 
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px"
+                        }}
+                        title="Đánh dấu tất cả là đã đọc"
+                    >
+                        <FaCheckDouble /> Đã đọc hết
+                    </span>
+                  )}
               </div>
 
               {notifications.length === 0 ? (
@@ -244,7 +240,6 @@ const AdminHeader = ({
                       onMouseLeave={(e) => e.currentTarget.style.background = n.is_read ? "white" : "#e8f5e9"}
                     >
                       <div style={{ fontSize: "14px", color: "#333", lineHeight: "1.4" }}>
-                          {/* Highlight từ khoá quan trọng nếu cần */}
                           {n.message}
                       </div>
                       <div style={{ fontSize: "11px", color: "#999" }}>
@@ -359,14 +354,6 @@ const AdminHeader = ({
           )}
         </div>
       </div>
-      
-      {/* CSS Animation cho icon refresh */}
-      <style>{`
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-      `}</style>
     </header>
   );
 };
