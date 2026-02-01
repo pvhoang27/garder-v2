@@ -1,18 +1,9 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
-const path = require('path'); // <--- Bắt buộc có dòng này
-const db = require('./src/config/db');
+const dotenv = require('dotenv');
+const path = require('path');
 
-// Import Routes
-const authRoutes = require('./src/routes/authRoutes');
-const categoryRoutes = require('./src/routes/categoryRoutes');
-const plantRoutes = require('./src/routes/plantRoutes'); // Giữ nguyên các route khác của bạn
-const layoutRoutes = require('./src/routes/layoutRoutes');
-const contactRoutes = require('./src/routes/contactRoutes');
-const newsRoutes = require('./src/routes/newsRoutes');
-const popupRoutes = require('./src/routes/popupRoutes');
-
+// Load env vars
 dotenv.config();
 
 const app = express();
@@ -21,21 +12,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- QUAN TRỌNG: CẤU HÌNH ĐỂ HIỂN THỊ ẢNH ---
-// Dòng này cho phép truy cập link http://localhost:3000/uploads/ten-anh.jpg
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
+// Cấu hình phục vụ file tĩnh (ảnh upload)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/plants', plantRoutes);
-app.use('/api/layout', layoutRoutes);
-app.use('/api/contacts', contactRoutes);
-app.use('/api/news', newsRoutes);
-app.use('/api/popups', popupRoutes);
+// Connect DB
+const db = require('./src/config/db');
 
-const PORT = process.env.PORT || 3000;
+// --- ROUTES ---
+app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/categories', require('./src/routes/categoryRoutes'));
+app.use('/api/plants', require('./src/routes/plantRoutes'));
+app.use('/api/news', require('./src/routes/newsRoutes'));
+app.use('/api/contact', require('./src/routes/contactRoutes'));
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// --- SỬA DÒNG NÀY ---
+// Đổi từ 'popup' thành 'popups' để khớp với Frontend
+app.use('/api/popups', require('./src/routes/popupRoutes')); 
+app.use('/api/layout', require('./src/routes/layoutRoutes'));
+
+// Route quản lý User
+app.use('/api/users', require('./src/routes/userRoutes')); 
+
+// Port
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
