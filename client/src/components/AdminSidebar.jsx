@@ -8,7 +8,8 @@ import {
   FaLayerGroup,
   FaTimes,
   FaHome,
-  FaNewspaper, // <--- Import icon báo chí
+  FaNewspaper,
+  FaComments, // <--- Import icon bình luận
 } from "react-icons/fa";
 
 const AdminSidebar = ({
@@ -138,12 +139,19 @@ const AdminSidebar = ({
           icon={<FaList />}
           label="Quản lý Danh mục"
         />
-        {/* --- MỤC MỚI: TIN TỨC --- */}
         <MenuButton
           active={activeTab === "news"}
           onClick={() => handleMenuClick("news")}
           icon={<FaNewspaper />}
           label="Quản lý Tin tức"
+        />
+        
+        {/* --- MỤC MỚI: BÌNH LUẬN --- */}
+        <MenuButton
+          active={activeTab === "comments"}
+          onClick={() => handleMenuClick("comments")}
+          icon={<FaComments />}
+          label="Quản lý Bình luận"
         />
         
         <MenuButton
