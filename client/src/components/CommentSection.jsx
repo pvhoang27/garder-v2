@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaPaperPlane, FaUserCircle } from "react-icons/fa";
-import "./CommentSection.css"; // Bạn có thể tạo file CSS riêng nếu cần
+import { FaPaperPlane, FaUserCircle, FaTrash } from "react-icons/fa"; // Thêm FaTrash
+import "./CommentSection.css";
 
 const CommentSection = ({ entityType, entityId }) => {
   const [comments, setComments] = useState([]);
@@ -9,8 +9,9 @@ const CommentSection = ({ entityType, entityId }) => {
   const [guestName, setGuestName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Lấy thông tin user hiện tại (nếu đã đăng nhập)
+  // Lấy thông tin User hiện tại để check quyền Admin
   const currentUser = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = currentUser?.role === 'admin'; 
 
   const fetchComments = async () => {
     try {
@@ -31,7 +32,6 @@ const CommentSection = ({ entityType, entityId }) => {
     e.preventDefault();
     if (!content.trim()) return;
 
-    // Nếu chưa đăng nhập thì bắt buộc nhập tên
     if (!currentUser && !guestName.trim()) {
       alert("Vui lòng nhập tên của bạn!");
       return;
@@ -46,9 +46,9 @@ const CommentSection = ({ entityType, entityId }) => {
         user_id: currentUser ? currentUser.id : null,
         guest_name: currentUser ? currentUser.full_name : guestName,
       });
-      
+
       setContent("");
-      fetchComments(); // Reload lại danh sách
+      fetchComments();
     } catch (error) {
       alert("Lỗi khi gửi bình luận");
     } finally {
@@ -56,12 +56,25 @@ const CommentSection = ({ entityType, entityId }) => {
     }
   };
 
+  // --- HÀM XÓA BÌNH LUẬN (CHỈ ADMIN MỚI GỌI ĐƯỢC) ---
+  const handleDelete = async (commentId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa bình luận này?")) {
+        try {
+            await axiosClient.delete(`/comments/${commentId}`);
+            // Xóa xong thì lọc bỏ khỏi danh sách hiển thị luôn cho nhanh
+            setComments(comments.filter(c => c.id !== commentId));
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi khi xóa bình luận");
+        }
+    }
+  }
+
   return (
-    <div style={{ marginTop: "40px", padding: "20px", background: "#f9f9f9", borderRadius: "8px" }}>
+    <div className="comment-section">
       <h3>Bình luận ({comments.length})</h3>
 
-      {/* Form bình luận */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
+      <form onSubmit={handleSubmit} className="comment-form">
         {!currentUser && (
           <div style={{ marginBottom: "10px" }}>
             <input
@@ -69,7 +82,6 @@ const CommentSection = ({ entityType, entityId }) => {
               placeholder="Tên của bạn..."
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
-              style={{ padding: "8px", width: "100%", maxWidth: "300px", border: "1px solid #ddd", borderRadius: "4px" }}
               required
             />
           </div>
@@ -79,39 +91,53 @@ const CommentSection = ({ entityType, entityId }) => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Viết bình luận của bạn..."
-            style={{ flex: 1, padding: "10px", border: "1px solid #ddd", borderRadius: "4px", minHeight: "60px" }}
             required
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
-            style={{ background: "#2e7d32", color: "white", border: "none", padding: "0 20px", borderRadius: "4px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" }}
           >
             <FaPaperPlane /> {loading ? "Gửi..." : "Gửi"}
           </button>
         </div>
       </form>
 
-      {/* Danh sách bình luận */}
       <div className="comment-list">
         {comments.map((cmt) => (
-          <div key={cmt.id} style={{ display: "flex", gap: "15px", marginBottom: "15px", borderBottom: "1px solid #eee", paddingBottom: "15px" }}>
-            <div style={{ fontSize: "30px", color: "#ccc" }}>
-               {/* Nếu có avatar user thì dùng, không thì dùng icon mặc định */}
-               <FaUserCircle />
+          <div key={cmt.id} className="comment-item">
+            <div className="comment-avatar">
+               {cmt.avatar ? (
+                   <img src={`http://localhost:3000${cmt.avatar}`} alt="avatar" />
+               ) : (
+                   <FaUserCircle />
+               )}
             </div>
-            <div>
-              <div style={{ fontWeight: "bold", color: "#333", marginBottom: "4px" }}>
-                {cmt.user_name || cmt.guest_name || "Khách ẩn danh"}
-                <span style={{ fontSize: "12px", color: "#999", marginLeft: "10px", fontWeight: "normal" }}>
+            <div className="comment-content-wrapper">
+              <div className="comment-header">
+                <span className="comment-author">
+                    {cmt.user_name || cmt.guest_name || "Khách ẩn danh"}
+                    {cmt.user_id && <span className="badge-member">Thành viên</span>}
+                </span>
+                <span className="comment-time">
                   {new Date(cmt.created_at).toLocaleString('vi-VN')}
                 </span>
+                
+                {/* --- CHỈ HIỆN NÚT XÓA NẾU LÀ ADMIN --- */}
+                {isAdmin && (
+                    <button 
+                        className="btn-delete-comment"
+                        onClick={() => handleDelete(cmt.id)}
+                        title="Xóa bình luận này"
+                    >
+                        <FaTrash />
+                    </button>
+                )}
               </div>
-              <div style={{ color: "#555" }}>{cmt.content}</div>
+              <div className="comment-body">{cmt.content}</div>
             </div>
           </div>
         ))}
-        {comments.length === 0 && <p style={{ color: "#777", fontStyle: "italic" }}>Chưa có bình luận nào. Hãy là người đầu tiên!</p>}
+        {comments.length === 0 && <p className="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên!</p>}
       </div>
     </div>
   );
