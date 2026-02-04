@@ -54,7 +54,7 @@ const Navigation = ({ isLoggedIn, userRole, onLogout }) => {
         <Link to="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img 
             src={logo} 
-            alt="Green Garden Logo" 
+            alt="Cây cảnh Xuân Thục Logo" 
             style={{ height: '40px', width: 'auto', objectFit: 'contain' }} 
           />
           <span>{t("nav.brand")}</span>

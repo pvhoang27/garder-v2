@@ -7,7 +7,7 @@ const resources = {
   en: {
     translation: {
       nav: {
-        brand: "Green Garden",
+        brand: "Xuan Thuc Garden",
         home: "Home",
         categories: "Categories",
         news: "News",
@@ -38,7 +38,7 @@ const resources = {
   vi: {
     translation: {
       nav: {
-        brand: "Green Garden",
+        brand: "Cây cảnh Xuân Thục",
         home: "Trang Chủ",
         categories: "Danh Mục",
         news: "Tin Tức",
