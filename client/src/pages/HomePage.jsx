@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
-import { FaSearch, FaLeaf, FaArrowRight, FaHeart, FaSpa } from "react-icons/fa";
+import { FaSearch, FaLeaf, FaArrowRight, FaHeart, FaSpa, FaFacebook, FaTiktok } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 // Components chức năng (Logic Admin)
@@ -441,6 +441,41 @@ const HomePage = () => {
                       </span>
                     </div>
                   </div>
+
+                  {/* [NEW] Social Media Buttons */}
+                  <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
+                    <a 
+                      href="https://fb.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-outline" 
+                      style={{
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        padding: '10px 20px',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <FaFacebook size={20} color="#1877F2"/> Facebook
+                    </a>
+                    <a 
+                      href="https://tiktok.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-outline" 
+                      style={{
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        padding: '10px 20px',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <FaTiktok size={20} color="#000000"/> TikTok
+                    </a>
+                  </div>
+
                 </div>
               </div>
             </div>

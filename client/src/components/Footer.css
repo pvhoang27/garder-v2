@@ -106,3 +106,22 @@
   color: #64748b;
   margin: 0;
 }
+
+/* Social Icons Styles */
+.footer-socials {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-link {
+  color: #6b7280; /* Màu xám nhạt giống text */
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-link:hover {
+  color: #16a34a; /* Màu xanh chủ đạo khi hover */
+}

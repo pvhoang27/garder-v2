@@ -1,23 +1,45 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { FaLeaf, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
-import "./Footer.css";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { FaLeaf, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaTiktok } from 'react-icons/fa';
+import './Footer.css';
 
 const Footer = () => {
   return (
     <footer className="site-footer">
       <div className="footer-container">
         <div className="footer-grid">
-          {/* Cột 1: Brand */}
+          {/* Cột 1: Brand (Về chúng tôi) */}
           <div className="footer-brand-col">
             <Link to="/" className="footer-brand-link">
               <FaLeaf className="footer-icon" size={24} />
-              <span className="footer-brand-name">Cây cảnh Xuân Thục</span>
+              <span className="footer-brand-name">Green Garden</span>
             </Link>
             <p className="footer-desc">
-              Bảo tàng số trưng bày bộ sưu tập cây cảnh nghệ thuật. Nơi lưu giữ
-              vẻ đẹp thiên nhiên qua từng tác phẩm.
+              Bảo tàng số trưng bày bộ sưu tập cây cảnh nghệ thuật. 
+              Nơi lưu giữ vẻ đẹp thiên nhiên qua từng tác phẩm.
             </p>
+            
+            {/* Social Media Buttons */}
+            <div className="footer-socials">
+              <a 
+                href="https://fb.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="social-link"
+                title="Facebook"
+              >
+                <FaFacebook size={24} />
+              </a>
+              <a 
+                href="https://tiktok.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="social-link"
+                title="TikTok"
+              >
+                <FaTiktok size={24} />
+              </a>
+            </div>
           </div>
 
           {/* Cột 2: Khám phá */}
@@ -31,7 +53,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/news" className="footer-link">
-                  Tin tức & Bài viết
+                   Tin tức & Bài viết
                 </Link>
               </li>
               <li>
@@ -48,30 +70,18 @@ const Footer = () => {
             <ul className="footer-links-list">
               <li className="footer-contact-item">
                 <FaPhoneAlt className="footer-icon" />
-                <span>0912 947 777 - 0913 561 755</span>
+                <span>0912 947 777</span>
               </li>
               <li className="footer-contact-item">
                 <FaEnvelope className="footer-icon" />
-                <span>vuxuanthang2908@gmail.com</span>
+                <span>contact@greengarden.vn</span>
               </li>
               <li className="footer-contact-item">
                 <FaMapMarkerAlt className="footer-icon" />
-                {/* Thêm tên quán cho rõ ràng */}
-                <span>
-                  Hoa lan cây cảnh Nam Định - Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại
-                  An, Vụ Bản, Nam Định
-                </span>
+                <span>123 Đường Cây Xanh, Quận 1, TP. Hồ Chí Minh</span>
               </li>
             </ul>
           </div>
-        </div>
-
-        {/* Bottom Copyright */}
-        <div className="footer-bottom">
-          <p className="footer-copyright">
-            © {new Date().getFullYear()} Cây cảnh Xuân Thục. All rights
-            reserved.
-          </p>
         </div>
       </div>
     </footer>
