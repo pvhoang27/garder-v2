@@ -156,7 +156,7 @@ const HomePage = () => {
             </h1>
 
             <p>
-              Chào mừng đến với Green Garden - nơi lưu giữ và trưng bày bộ sưu
+              Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu
               tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một
               tác phẩm được chăm sóc với tình yêu và sự tận tâm.
             </p>

@@ -7,8 +7,8 @@ const FloatingContact = () => {
   const [isVisible, setIsVisible] = useState(true);
 
   // Cập nhật số điện thoại chính mới (0913...)
-  const phoneNumber = "0913561755"; 
-  const zaloLink = "https://zalo.me/0913561755"; 
+  const phoneNumber = "0912947777"; 
+  const zaloLink = "https://zalo.me/0912947777"; 
 
   if (!isVisible) return null;
 

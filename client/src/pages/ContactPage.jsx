@@ -40,8 +40,8 @@ const ContactPage = () => {
     {
       icon: <FaPhoneAlt size={20} />,
       label: "Điện thoại",
-      value: "0913.561.755 - 0912.947.777",
-      href: "tel:0913561755", 
+      value: "0912.947.777 - 0913.561.755",
+      href: "tel:0912947777", 
     },
     {
       icon: <FaEnvelope size={20} />,
