@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -24,18 +25,12 @@ app.use('/api/categories', require('./src/routes/categoryRoutes'));
 app.use('/api/plants', require('./src/routes/plantRoutes'));
 app.use('/api/news', require('./src/routes/newsRoutes'));
 app.use('/api/contact', require('./src/routes/contactRoutes'));
-
-// Đổi từ 'popup' thành 'popups' để khớp với Frontend
 app.use('/api/popups', require('./src/routes/popupRoutes')); 
 app.use('/api/layout', require('./src/routes/layoutRoutes'));
-
-// Route quản lý User
 app.use('/api/users', require('./src/routes/userRoutes')); 
-
-// --- NEW ROUTES CHO COMMENT & NOTIFICATION ---
 app.use('/api/comments', require('./src/routes/commentRoutes'));
 app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 
-// Port
-const PORT = process.env.PORT || 5000;
+// Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000 (khớp với log của bạn)
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
