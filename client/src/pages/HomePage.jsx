@@ -21,7 +21,7 @@ const HomePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
-  
+
   // [NEW] State lưu danh sách bố cục từ Admin
   const [layouts, setLayouts] = useState([]);
 
@@ -52,7 +52,9 @@ const HomePage = () => {
     // 4. [NEW] Lấy danh sách bố cục Dynamic Sections
     axiosClient.get("/layout").then((res) => {
       // Sắp xếp theo sort_order trước khi lưu
-      const sortedLayouts = (res.data || []).sort((a, b) => a.sort_order - b.sort_order);
+      const sortedLayouts = (res.data || []).sort(
+        (a, b) => a.sort_order - b.sort_order,
+      );
       setLayouts(sortedLayouts);
     });
   }, []);
@@ -156,9 +158,9 @@ const HomePage = () => {
             </h1>
 
             <p>
-              Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu
-              tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một
-              tác phẩm được chăm sóc với tình yêu và sự tận tâm.
+              Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ
+              sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện,
+              một tác phẩm được chăm sóc với tình yêu và sự tận tâm.
             </p>
 
             {/* Search Box */}
@@ -328,17 +330,18 @@ const HomePage = () => {
 
           {/* [NEW] DYNAMIC SECTIONS (CÁC BỐ CỤC TỪ ADMIN) */}
           {/* Render xen kẽ màu nền để hài hòa */}
-          {layouts.map((layout, index) => (
-            layout.is_active && (
-              <DynamicSection 
-                key={layout.id} 
-                {...layout} 
-                paramValue={layout.value || layout.param_value} 
-                categories={categories}
-                index={index} // <--- QUAN TRỌNG: Truyền index để tính màu nền
-              />
-            )
-          ))}
+          {layouts.map(
+            (layout, index) =>
+              layout.is_active && (
+                <DynamicSection
+                  key={layout.id}
+                  {...layout}
+                  paramValue={layout.value || layout.param_value}
+                  categories={categories}
+                  index={index} // <--- QUAN TRỌNG: Truyền index để tính màu nền
+                />
+              ),
+          )}
 
           {/* ABOUT SECTION (NỀN TRẮNG) */}
           <section className="section">
@@ -376,8 +379,8 @@ const HomePage = () => {
                     className="text-gray"
                     style={{ lineHeight: 1.8, marginBottom: "20px" }}
                   >
-                    Green Garden được thành lập với niềm đam mê cây cảnh từ
-                    nhiều thế hệ trong gia đình. Mỗi cây trong bộ sưu tập đều
+                    Cây cảnh Xuân Thục được thành lập với niềm đam mê cây cảnh
+                    từ nhiều thế hệ trong gia đình. Mỗi cây trong bộ sưu tập đều
                     được chăm sóc tỉ mỉ, từ việc lựa chọn giống, uốn nắn dáng
                     thế đến chăm bón hàng ngày.
                   </p>

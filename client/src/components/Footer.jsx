@@ -52,7 +52,7 @@ const Footer = () => {
               </li>
               <li className="footer-contact-item">
                 <FaEnvelope className="footer-icon" />
-                <span>contact@greengarden.vn</span>
+                <span>vuxuanthang2908@gmail.com</span>
               </li>
               <li className="footer-contact-item">
                 <FaMapMarkerAlt className="footer-icon" />
