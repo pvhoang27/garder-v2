@@ -32,10 +32,18 @@ const CommentSection = ({ entityType, entityId }) => {
     e.preventDefault();
     if (!content.trim()) return;
 
+    // --- SỬA: Bắt buộc đăng nhập ---
+    if (!currentUser) {
+      alert("Vui lòng đăng nhập để bình luận!");
+      return;
+    }
+
+    /* --- COMMENT LẠI PHẦN KHÁCH ---
     if (!currentUser && !guestName.trim()) {
       alert("Vui lòng nhập tên của bạn!");
       return;
     }
+    */
 
     setLoading(true);
     try {
@@ -44,15 +52,18 @@ const CommentSection = ({ entityType, entityId }) => {
         entity_id: entityId,
         content: content,
         user_id: currentUser ? currentUser.id : null,
-        guest_name: currentUser ? currentUser.full_name : guestName,
+        // guest_name: currentUser ? currentUser.full_name : guestName, // CŨ
+        guest_name: currentUser.full_name, // MỚI: Chỉ lấy tên user
       });
 
       setContent(""); // Xóa nội dung sau khi gửi
       fetchComments(); // Tải lại danh sách
       
+      /* --- COMMENT LẠI THÔNG BÁO CHO KHÁCH ---
       if(!currentUser) {
           alert("Bình luận thành công! Bạn cần đợi 5 phút để bình luận tiếp.");
       }
+      */
 
     } catch (error) {
       // --- XỬ LÝ LỖI TẠI ĐÂY ---
@@ -84,7 +95,8 @@ const CommentSection = ({ entityType, entityId }) => {
       <h3>Bình luận ({comments.length})</h3>
 
       <form onSubmit={handleSubmit} className="comment-form">
-        {!currentUser && (
+        {/* --- COMMENT LẠI Ô NHẬP TÊN KHÁCH --- */}
+        {/* {!currentUser && (
           <div style={{ marginBottom: "10px" }}>
             <input
               type="text"
@@ -95,13 +107,17 @@ const CommentSection = ({ entityType, entityId }) => {
               className="guest-name-input"
             />
           </div>
-        )}
+        )} */}
+        
         <div style={{ display: "flex", gap: "10px" }}>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Viết bình luận của bạn..."
+            // Thay đổi placeholder để nhắc user đăng nhập
+            placeholder={currentUser ? "Viết bình luận của bạn..." : "Vui lòng đăng nhập để bình luận..."}
             required
+            // Có thể disable luôn nếu muốn chặn ngay từ giao diện
+            // disabled={!currentUser} 
           />
           <button
             type="submit"

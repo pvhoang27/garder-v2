@@ -23,7 +23,7 @@ exports.getComments = async (req, res) => {
     }
 };
 
-// 2. Thêm bình luận (CÓ THÊM CHECK 5 PHÚT CHO KHÁCH)
+// 2. Thêm bình luận (ĐÃ SỬA: CHỈ CHO PHÉP THÀNH VIÊN)
 exports.addComment = async (req, res) => {
     try {
         const { user_id, guest_name, entity_type, entity_id, content } = req.body;
@@ -31,7 +31,12 @@ exports.addComment = async (req, res) => {
         // Validate nội dung
         if (!content) return res.status(400).json({ message: "Nội dung không được để trống" });
 
-        // --- LOGIC CHẶN SPAM CHO KHÁCH VÃNG LAI ---
+        // --- SỬA: BẮT BUỘC PHẢI CÓ USER_ID (ĐĂNG NHẬP) ---
+        if (!user_id) {
+            return res.status(401).json({ message: "Bạn cần đăng nhập để bình luận." });
+        }
+
+        /* --- COMMENT LẠI LOGIC CHẶN SPAM CHO KHÁCH ---
         if (!user_id) { 
             // Lấy IP người dùng
             const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -50,14 +55,15 @@ exports.addComment = async (req, res) => {
             // Cập nhật thời gian mới cho IP này
             guestRateLimit.set(ip, now);
         }
-        // ------------------------------------------
+        ------------------------------------------ */
 
-        const nameDisplay = guest_name || "Khách ẩn danh";
+        // const nameDisplay = guest_name || "Khách ẩn danh";
+        const nameDisplay = guest_name; // Lấy tên từ user đã đăng nhập
 
         // Insert vào bảng comments
         await db.query(
             "INSERT INTO comments (user_id, guest_name, entity_type, entity_id, content) VALUES (?, ?, ?, ?, ?)",
-            [user_id || null, nameDisplay, entity_type, entity_id, content]
+            [user_id, nameDisplay, entity_type, entity_id, content]
         );
 
         // Insert thông báo cho Admin
