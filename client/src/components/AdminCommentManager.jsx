@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom"; // Bỏ nếu không dùng navigate nội bộ
 import axiosClient from "../api/axiosClient";
-import { Link } from "react-router-dom";
-import { FaTrash, FaExternalLinkAlt } from "react-icons/fa";
-import "./AdminCommentManager.css";
+import { FaTrash, FaCommentDots, FaEye } from "react-icons/fa"; 
+import "./AdminCommentManager.css"; 
 
 const AdminCommentManager = () => {
   const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Lấy dữ liệu khi vào trang
   const fetchComments = async () => {
+    setLoading(true);
     try {
-      const res = await axiosClient.get("/comments/admin/all");
+      const res = await axiosClient.get("/comments/admin-all");
       setComments(res.data);
-      setLoading(false);
     } catch (error) {
-      console.error("Lỗi lấy danh sách bình luận:", error);
+      console.error("Lỗi tải danh sách bình luận:", error);
+    } finally {
       setLoading(false);
     }
   };
@@ -24,85 +24,117 @@ const AdminCommentManager = () => {
     fetchComments();
   }, []);
 
-  // Xử lý xóa
+  const handleViewDetail = (type, id) => {
+      const url = type === 'plant' ? `/plant/${id}` : `/news/${id}`;
+      window.open(url, '_blank');
+  };
+
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa bình luận này?")) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa bình luận này không?")) {
       try {
         await axiosClient.delete(`/comments/${id}`);
-        // Xóa thành công thì lọc bỏ khỏi danh sách trên giao diện
-        setComments(comments.filter((c) => c.id !== id));
+        setComments(comments.filter((item) => item.id !== id));
+        alert("Đã xóa bình luận thành công!");
       } catch (error) {
-        alert("Lỗi khi xóa bình luận!");
+        console.error("Lỗi khi xóa:", error);
+        alert("Có lỗi xảy ra khi xóa bình luận.");
       }
     }
   };
 
-  if (loading) return <div>Đang tải dữ liệu...</div>;
-
   return (
-    <div className="admin-comment-manager">
-      <h2>Quản lý Bình luận</h2>
-      
-      {comments.length === 0 ? (
-        <p>Chưa có bình luận nào.</p>
-      ) : (
-        <table className="comment-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Người dùng</th>
-              <th>Nội dung</th>
-              <th>Loại</th>
-              <th>Thời gian</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {comments.map((cmt) => (
-              <tr key={cmt.id}>
-                <td>{cmt.id}</td>
-                <td>
-                  <strong>{cmt.user_full_name || cmt.guest_name || "Khách"}</strong>
-                  <br />
-                  <small style={{color: '#888'}}>{cmt.user_id ? "(Thành viên)" : "(Vãng lai)"}</small>
-                </td>
-                <td>
-                    <div className="comment-content" title={cmt.content}>
-                        {cmt.content}
-                    </div>
-                </td>
-                <td>
-                  {cmt.entity_type === "plant" ? (
-                    <span style={{ color: "green", fontWeight: "bold" }}>Cây cảnh</span>
-                  ) : (
-                    <span style={{ color: "blue", fontWeight: "bold" }}>Tin tức</span>
-                  )}
-                </td>
-                <td>{new Date(cmt.created_at).toLocaleString("vi-VN")}</td>
-                <td>
-                  {/* --- SỬA LỖI TẠI ĐÂY (plants -> plant) --- */}
-                  <Link 
-                    to={cmt.entity_type === "plant" ? `/plant/${cmt.entity_id}` : `/news/${cmt.entity_id}`}
-                    target="_blank"
-                    className="btn-view"
-                    title="Xem bài viết"
-                  >
-                    <FaExternalLinkAlt />
-                  </Link>
+    <div className="admin-content">
+      <div className="admin-header-section">
+        <h2><FaCommentDots /> Quản lý Bình Luận</h2>
+      </div>
 
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDelete(cmt.id)}
-                    title="Xóa bình luận"
-                  >
-                    <FaTrash />
-                  </button>
-                </td>
+      <div className="table-responsive">
+        {loading ? (
+          <p>Đang tải dữ liệu...</p>
+        ) : (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                {/* SET WIDTH ĐỂ KHÔNG BỊ LỆCH */}
+                <th className="col-center" style={{ width: "60px" }}>ID</th>
+                <th style={{ width: "180px" }}>Người dùng</th>
+                <th>Nội dung</th> {/* Cột này để tự do co giãn */}
+                <th style={{ width: "200px" }}>Mục (Entity)</th>
+                <th className="col-center" style={{ width: "150px" }}>Thời gian</th>
+                <th className="col-center" style={{ width: "100px" }}>Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {comments.map((comment) => (
+                <tr key={comment.id}>
+                  <td className="col-center">#{comment.id}</td>
+                  <td>
+                    <div style={{ fontWeight: "bold", color: "#2c3e50" }}>
+                      {comment.user_full_name || comment.guest_name || "Ẩn danh"}
+                    </div>
+                    {comment.user_id && <span className="badge-user">Thành viên</span>}
+                  </td>
+                  <td>
+                      <div style={{ lineHeight: "1.5", color: "#555" }}>
+                        {comment.content}
+                      </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <span className={`badge-type ${comment.entity_type}`}>
+                            {comment.entity_type === 'plant' ? 'Cây cảnh' : 'Tin tức'}
+                        </span>
+                        
+                        <span 
+                            className="entity-name-display" 
+                            onClick={() => handleViewDetail(comment.entity_type, comment.entity_id)}
+                            title="Mở bài viết trong tab mới"
+                        >
+                            {comment.entity_type === 'plant' 
+                                ? (comment.plant_name || "ID: " + comment.entity_id) 
+                                : (comment.news_title || "ID: " + comment.entity_id)
+                            }
+                        </span>
+                    </div>
+                  </td>
+                  <td className="col-center">
+                      {new Date(comment.created_at).toLocaleString("vi-VN", {
+                          day: '2-digit', month: '2-digit', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                      })}
+                  </td>
+                  <td className="col-center">
+                    <div className="action-buttons">
+                        <button
+                          className="btn-action btn-view"
+                          onClick={() => handleViewDetail(comment.entity_type, comment.entity_id)}
+                          title="Xem chi tiết (Tab mới)"
+                        >
+                          <FaEye />
+                        </button>
+
+                        <button
+                          className="btn-action btn-delete"
+                          onClick={() => handleDelete(comment.id)}
+                          title="Xóa bình luận"
+                        >
+                          <FaTrash />
+                        </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {comments.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="no-comments">
+                    Chưa có bình luận nào.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };
