@@ -31,6 +31,9 @@ app.use('/api/users', require('./src/routes/userRoutes'));
 app.use('/api/comments', require('./src/routes/commentRoutes'));
 app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 
-// Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000 (khớp với log của bạn)
+// [MỚI] Route thống kê
+app.use('/api/dashboard', require('./src/routes/dashboardRoutes')); 
+
+// Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -34,10 +34,15 @@ exports.getAllPlants = async (req, res) => {
   }
 };
 
-// 2. Chi tiết (Đã cập nhật để lấy thêm Attributes)
+// 2. Chi tiết (Đã cập nhật để TĂNG VIEW và lấy Attributes)
 exports.getPlantById = async (req, res) => {
   try {
     const plantId = req.params.id;
+
+    // --- [MỚI] Tăng lượt xem lên 1 ---
+    await db.query("UPDATE plants SET view_count = view_count + 1 WHERE id = ?", [plantId]);
+    // ---------------------------------
+
     const sql = `
       SELECT p.*, c.name as category_name 
       FROM plants p 
@@ -58,12 +63,12 @@ exports.getPlantById = async (req, res) => {
     );
     plant.media = imageRows;
 
-    // --- LẤY THÊM CÁC THUỘC TÍNH ĐỘNG (NEW) ---
+    // --- LẤY THÊM CÁC THUỘC TÍNH ĐỘNG ---
     const [attrRows] = await db.query(
       "SELECT * FROM plant_attributes WHERE plant_id = ?",
       [plantId],
     );
-    plant.attributes = attrRows; // Trả về dạng [{ key: 'Cao', value: '1m' }, ...]
+    plant.attributes = attrRows; 
 
     res.json(plant);
   } catch (error) {
@@ -72,12 +77,12 @@ exports.getPlantById = async (req, res) => {
   }
 };
 
-// 3. THÊM CÂY MỚI (Có xử lý Attributes và Price)
+// 3. THÊM CÂY MỚI
 exports.createPlant = async (req, res) => {
   try {
     const {
       name,
-      price, // <--- THÊM GIÁ
+      price,
       category_id,
       age,
       scientific_name,
@@ -92,7 +97,7 @@ exports.createPlant = async (req, res) => {
       : null;
 
     const featuredVal = is_featured === "true" || is_featured === "1" ? 1 : 0;
-    const priceVal = price ? parseInt(price) : 0; // Xử lý giá
+    const priceVal = price ? parseInt(price) : 0; 
 
     // Insert bảng plants
     const sqlPlant = `INSERT INTO plants (name, price, category_id, age, scientific_name, description, care_instruction, thumbnail, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -109,9 +114,9 @@ exports.createPlant = async (req, res) => {
     ]);
     const newPlantId = result.insertId;
 
-    // --- XỬ LÝ ATTRIBUTES (NEW) ---
+    // --- XỬ LÝ ATTRIBUTES ---
     if (attributes) {
-      const parsedAttrs = JSON.parse(attributes); // Client gửi dạng chuỗi JSON
+      const parsedAttrs = JSON.parse(attributes);
       if (Array.isArray(parsedAttrs) && parsedAttrs.length > 0) {
         const attrValues = parsedAttrs.map((item) => [
           newPlantId,
@@ -147,13 +152,13 @@ exports.createPlant = async (req, res) => {
   }
 };
 
-// 4. UPDATE CÂY (Có xử lý Attributes và Price)
+// 4. UPDATE CÂY
 exports.updatePlant = async (req, res) => {
   try {
     const plantId = req.params.id;
     const {
       name,
-      price, // <--- THÊM GIÁ
+      price,
       category_id,
       age,
       scientific_name,
@@ -188,7 +193,7 @@ exports.updatePlant = async (req, res) => {
 
     await db.query(sql, params);
 
-    // --- XỬ LÝ ATTRIBUTES (NEW) ---
+    // --- XỬ LÝ ATTRIBUTES ---
     // 1. Xóa hết attributes cũ
     await db.query("DELETE FROM plant_attributes WHERE plant_id = ?", [
       plantId,

@@ -9,7 +9,8 @@ import {
   FaTimes,
   FaHome,
   FaNewspaper,
-  FaComments, // <--- Import icon bình luận
+  FaComments,
+  FaChartPie // <--- Thêm icon
 } from "react-icons/fa";
 
 const AdminSidebar = ({
@@ -127,6 +128,14 @@ const AdminSidebar = ({
 
       {/* --- MENU SCROLLABLE --- */}
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
+        {/* --- MỤC MỚI: THỐNG KÊ --- */}
+        <MenuButton
+          active={activeTab === "dashboard"}
+          onClick={() => handleMenuClick("dashboard")}
+          icon={<FaChartPie />}
+          label="Thống kê chung"
+        />
+
         <MenuButton
           active={activeTab === "plants"}
           onClick={() => handleMenuClick("plants")}
@@ -146,7 +155,6 @@ const AdminSidebar = ({
           label="Quản lý Tin tức"
         />
         
-        {/* --- MỤC MỚI: BÌNH LUẬN --- */}
         <MenuButton
           active={activeTab === "comments"}
           onClick={() => handleMenuClick("comments")}
