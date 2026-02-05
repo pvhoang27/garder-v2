@@ -7,17 +7,17 @@ const RegisterPage = () => {
     const [formData, setFormData] = useState({
         username: '', password: '', confirmPassword: '', full_name: '', email: '', phone: ''
     });
-    const [error, setError] = useState(''); // State lưu lỗi
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setError(''); // Xóa lỗi khi người dùng bắt đầu nhập lại
+        setError(''); 
     };
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        setError(''); // Reset lỗi trước khi submit
+        setError('');
 
         if (formData.password !== formData.confirmPassword) {
             return setError("Mật khẩu xác nhận không khớp!");
@@ -34,21 +34,19 @@ const RegisterPage = () => {
         }
 
         try {
-            const res = await axiosClient.post('/auth/register-customer', {
+            await axiosClient.post('/auth/register-customer', {
                 username: formData.username,
                 password: formData.password,
                 full_name: formData.full_name,
                 email: formData.email,
                 phone: formData.phone
             });
-            // Với thành công, có thể dùng alert 1 lần hoặc dùng toast, 
-            // nhưng ở đây ta alert nhẹ rồi chuyển trang, hoặc bỏ alert tuỳ ý bạn.
-            // Để chắc chắn user biết đã đk thành công, ta vẫn giữ alert success hoặc chuyển luôn.
-            alert(res.data.message); 
-            navigate('/login');
+            
+            // THAY ĐỔI Ở ĐÂY: Không alert nữa, chuyển hướng kèm tin nhắn
+            navigate('/login', { state: { message: "Đăng ký thành công! Vui lòng đăng nhập." } });
+            
         } catch (err) {
             console.error(err);
-            // Hiển thị lỗi từ server trả về hoặc lỗi mặc định
             setError(err.response?.data?.message || 'Đăng ký thất bại!');
         }
     };
@@ -61,23 +59,17 @@ const RegisterPage = () => {
                 </div>
                 <h2 style={{ textAlign: 'center', color: '#2e7d32', marginBottom: '20px' }}>Đăng Ký</h2>
                 
-                {/* Khu vực hiển thị lỗi */}
+                {/* Hiển thị lỗi (Màu đỏ) */}
                 {error && (
                     <div style={{ 
-                        backgroundColor: '#ffebee', 
-                        color: '#c62828', 
-                        padding: '10px', 
-                        borderRadius: '4px', 
-                        marginBottom: '15px',
-                        textAlign: 'center',
-                        fontSize: '14px',
-                        border: '1px solid #ef9a9a'
+                        backgroundColor: '#ffebee', color: '#c62828', padding: '10px', 
+                        borderRadius: '4px', marginBottom: '15px', textAlign: 'center',
+                        fontSize: '14px', border: '1px solid #ef9a9a'
                     }}>
                         {error}
                     </div>
                 )}
 
-                {/* Các input form */}
                 {['full_name', 'email', 'phone', 'username', 'password', 'confirmPassword'].map((field, index) => (
                     <div key={index} style={{ marginBottom: '12px' }}>
                         <input 
