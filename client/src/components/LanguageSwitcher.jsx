@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FaGlobe, FaChevronDown, FaCheck } from "react-icons/fa";
+import { FaChevronDown, FaCheck } from "react-icons/fa"; // Đã bỏ FaGlobe
 
 // Định nghĩa danh sách ngôn ngữ và cờ
 const LANGUAGES = [
@@ -107,9 +107,19 @@ const LanguageSwitcher = () => {
           font-weight: 500;
         }
 
+        /* Class chung cho cờ trong dropdown */
         .flag-icon {
           width: 20px;
           height: 15px;
+          object-fit: cover;
+          border-radius: 2px;
+          box-shadow: 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        /* Class riêng cho cờ ở nút chính (có thể chỉnh to hơn xíu nếu muốn) */
+        .flag-main {
+          width: 24px;
+          height: 16px;
           object-fit: cover;
           border-radius: 2px;
           box-shadow: 0 0 2px rgba(0,0,0,0.2);
@@ -121,13 +131,17 @@ const LanguageSwitcher = () => {
         }
       `}</style>
 
-      {/* Nút bấm chính */}
+      {/* Nút bấm chính - Đã thay FaGlobe bằng img cờ */}
       <div
         className="lang-btn"
         onClick={() => setIsOpen(!isOpen)}
         title="Đổi ngôn ngữ / Change Language"
       >
-        <FaGlobe style={{ color: "#2e7d32", fontSize: "1.1rem" }} />
+        <img 
+          src={currentLang.flag} 
+          alt={currentLang.label} 
+          className="flag-main" 
+        />
         <span style={{ fontWeight: 500 }}>
           {currentLang.code.toUpperCase()}
         </span>
