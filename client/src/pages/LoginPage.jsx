@@ -27,7 +27,9 @@ const LoginPage = ({ onLoginSuccess }) => {
         try {
             const res = await axiosClient.post('/auth/login', { username, password });
             
-            localStorage.setItem('token', res.data.token);
+            // [ĐÃ XÓA] localStorage.setItem('token', res.data.token); -> Token giờ nằm trong Cookie
+            
+            // Vẫn lưu thông tin user (tên, role) để hiển thị giao diện
             localStorage.setItem('user', JSON.stringify(res.data.user));
             
             if (onLoginSuccess) {
@@ -98,7 +100,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                     />
                 </div>
 
-                {/* --- ĐÃ THÊM LINK QUÊN MẬT KHẨU --- */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
                     <Link to="/forgot-password" style={{ color: '#2e7d32', fontSize: '0.9rem', textDecoration: 'none' }}>
                         Quên mật khẩu?

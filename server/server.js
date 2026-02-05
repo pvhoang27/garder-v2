@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const cookieParser = require('cookie-parser'); // [MỚI]
 
 // Load env vars
 dotenv.config();
@@ -10,8 +11,14 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+// [SỬA] Cấu hình CORS chặt chẽ để dùng được Cookie
+app.use(cors({
+    origin: 'http://localhost:5173', // Chỉ định chính xác domain Frontend (Vite mặc định 5173)
+    credentials: true // Cho phép gửi cookie
+}));
+
 app.use(express.json());
+app.use(cookieParser()); // [MỚI] Middleware đọc cookie
 
 // Cấu hình phục vụ file tĩnh (ảnh upload)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

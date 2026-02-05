@@ -1,18 +1,22 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-    // Lấy token từ header (Authorization: Bearer <token>)
-    const authHeader = req.header('Authorization');
+    let token;
 
-    if (!authHeader) {
-        return res.status(401).json({ message: 'Không có quyền truy cập (Thiếu Token)' });
+    // 1. Ưu tiên lấy token từ Cookie (HttpOnly)
+    if (req.cookies && req.cookies.token) {
+        token = req.cookies.token;
+    } 
+    // 2. Dự phòng: Lấy từ Header (nếu cần test bằng Postman hoặc mobile app)
+    else if (req.header('Authorization')) {
+        const authHeader = req.header('Authorization');
+        if (authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        }
     }
 
-    // Tách chữ "Bearer" ra để lấy token
-    const token = authHeader.split(' ')[1];
-
     if (!token) {
-        return res.status(401).json({ message: 'Token không hợp lệ' });
+        return res.status(401).json({ message: 'Không có quyền truy cập (Thiếu Token)' });
     }
 
     try {

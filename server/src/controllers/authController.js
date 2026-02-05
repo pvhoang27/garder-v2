@@ -110,7 +110,7 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
-// 4. Đăng nhập (ĐÃ FIX LOGIC CHECK XÁC THỰC)
+// 4. Đăng nhập (ĐÃ FIX ĐỂ LƯU COOKIE)
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -121,9 +121,6 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Sai tài khoản hoặc mật khẩu' });
 
-        // --- ĐOẠN SỬA ---
-        // Ép kiểu về số (Number) để so sánh cho chắc chắn
-        // Nếu là customer VÀ (is_verified không phải là 1) -> Chặn
         if (user.role === 'customer' && Number(user.is_verified) !== 1) {
             return res.status(403).json({ message: 'Tài khoản chưa kích hoạt. Vui lòng kiểm tra email!' });
         }
@@ -134,9 +131,17 @@ exports.login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
+        // [MỚI] Lưu token vào Cookie HttpOnly
+        res.cookie('token', token, {
+            httpOnly: true, // Chặn JS client đọc (chống XSS)
+            secure: false,  // Để false nếu chạy localhost (http), lên production (https) thì để true
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 1 ngày
+        });
+
         res.json({ 
             message: 'Đăng nhập thành công', 
-            token, 
+            // Không gửi token về body nữa
             user: { id: user.id, full_name: user.full_name, role: user.role || 'customer' } 
         });
 
@@ -144,6 +149,12 @@ exports.login = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Lỗi server' });
     }
+};
+
+// [MỚI] Đăng xuất - Xóa cookie
+exports.logout = (req, res) => {
+    res.clearCookie('token');
+    res.json({ message: 'Đăng xuất thành công' });
 };
 
 // 5. Quên mật khẩu - Gửi OTP
