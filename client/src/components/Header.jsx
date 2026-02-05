@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
+import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes, FaUserCircle, FaCog } from "react-icons/fa";
 import LanguageSwitcher from "./LanguageSwitcher";
 import logo from "../assets/logo.png"; // Lưu ý đường dẫn import logo (lên 1 cấp cha)
 
@@ -18,7 +18,7 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
     navigate("/");
     setIsMobileMenuOpen(false);
     setShowUserMenu(false);
-    // alert(t("common.success_logout")); // Có thể bỏ alert nếu muốn trải nghiệm mượt hơn
+    // alert(t("common.success_logout")); 
   };
 
   const closeMenu = () => {
@@ -64,17 +64,7 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
 
           {isLoggedIn ? (
             <>
-              {/* Admin Link */}
-              {userRole === 'admin' && (
-                <Link
-                  to="/admin"
-                  className="nav-link nav-btn-admin"
-                  onClick={closeMenu}
-                  style={{ whiteSpace: 'nowrap' }}
-                >
-                  {t("nav.admin")}
-                </Link>
-              )}
+              {/* Đã xóa nút Admin ở đây, chuyển vào trong dropdown */}
               
               {/* User Profile Dropdown */}
               <div style={{ position: 'relative', marginLeft: isMobileMenuOpen ? '0' : '10px' }}>
@@ -94,11 +84,9 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
                   onMouseLeave={(e) => !showUserMenu && (e.currentTarget.style.background = 'transparent')}
+                  title={user.full_name || "Tài khoản"} 
                 >
                    <FaUserCircle size={24} color="#2e7d32" />
-                   <span style={{ fontWeight: '600', color: '#333', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.full_name || "Thành viên"}
-                   </span>
                 </div>
 
                 {showUserMenu && (
@@ -123,6 +111,29 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
                         @{user.username || 'user'}
                       </p>
                     </div>
+
+                    {/* MỤC QUẢN TRỊ (Chỉ hiện nếu là admin) */}
+                    {userRole === 'admin' && (
+                      <Link 
+                        to="/admin" 
+                        onClick={closeMenu}
+                        style={{
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '10px', 
+                            padding: '12px 15px', 
+                            textDecoration: 'none', 
+                            color: '#333',
+                            fontSize: '14px',
+                            background: 'white',
+                            borderBottom: '1px solid #eee' // Ngăn cách với nút đăng xuất
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+                         <FaCog /> {t("nav.admin")}
+                      </Link>
+                    )}
 
                     <div 
                       onClick={handleLogoutClick}
