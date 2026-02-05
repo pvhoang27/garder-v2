@@ -142,3 +142,96 @@ exports.login = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 };
+
+// 5. Quên mật khẩu - Gửi OTP
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: 'Vui lòng nhập email' });
+
+        // Kiểm tra email có tồn tại không
+        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (users.length === 0) {
+            // Bảo mật: Không báo lỗi chi tiết "Email không tồn tại" để tránh dò user
+            // Nhưng với project học tập/nhỏ có thể báo rõ.
+            return res.status(404).json({ message: 'Email không tồn tại trong hệ thống' });
+        }
+
+        // Tạo OTP ngẫu nhiên 6 số
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Thời gian hết hạn: hiện tại + 15 phút (tính bằng ms)
+        const expires = Date.now() + 15 * 60 * 1000; 
+
+        // Lưu OTP vào DB
+        await db.query('UPDATE users SET reset_otp = ?, reset_otp_expires = ? WHERE email = ?', [otp, expires, email]);
+
+        // Gửi email
+        const mailOptions = {
+            from: '"Garder Shop" <no-reply@garder.com>',
+            to: email,
+            subject: 'Mã OTP đặt lại mật khẩu',
+            html: `
+                <h3>Yêu cầu đặt lại mật khẩu</h3>
+                <p>Mã xác thực (OTP) của bạn là: <b style="font-size: 24px; color: #d32f2f;">${otp}</b></p>
+                <p>Mã này sẽ hết hạn sau 15 phút.</p>
+                <p>Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+            `
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("Lỗi gửi mail:", err);
+                return res.status(500).json({ message: 'Không thể gửi email. Thử lại sau.' });
+            }
+            console.log("OTP Email sent: " + info.response);
+            res.json({ message: 'Mã OTP đã được gửi đến email của bạn.' });
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
+// 6. Đặt lại mật khẩu (Verify OTP + New Pass)
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin' });
+        }
+
+        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (users.length === 0) return res.status(404).json({ message: 'Người dùng không tồn tại' });
+
+        const user = users[0];
+
+        // Kiểm tra OTP
+        if (user.reset_otp !== otp) {
+            return res.status(400).json({ message: 'Mã OTP không chính xác' });
+        }
+
+        // Kiểm tra thời gian hết hạn
+        if (Date.now() > user.reset_otp_expires) {
+            return res.status(400).json({ message: 'Mã OTP đã hết hạn. Vui lòng lấy mã mới.' });
+        }
+
+        // Hash mật khẩu mới
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Cập nhật mật khẩu và xóa OTP
+        await db.query(
+            'UPDATE users SET password = ?, reset_otp = NULL, reset_otp_expires = NULL WHERE email = ?', 
+            [hashedPassword, email]
+        );
+
+        res.json({ message: 'Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};

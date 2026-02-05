@@ -12,6 +12,7 @@ import HomePage from "./pages/HomePage";
 import PlantDetail from "./pages/PlantDetail";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage"; // <--- ĐÃ THÊM IMPORT
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
@@ -25,7 +26,7 @@ import AdminLayoutConfig from "./pages/AdminLayoutConfig";
 import PopupBanner from "./components/PopupBanner";
 import FloatingContact from "./components/FloatingContact"; 
 import Footer from "./components/Footer"; 
-import Header from "./components/Header"; // <--- IMPORT COMPONENT MỚI
+import Header from "./components/Header"; 
 
 // --- COMPONENT CONTENT WRAPPER ---
 const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) => {
@@ -84,6 +85,9 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
             element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
           />
           <Route path="/register" element={<RegisterPage />} />
+          
+          {/* --- ĐÃ THÊM ROUTE QUÊN MẬT KHẨU --- */}
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

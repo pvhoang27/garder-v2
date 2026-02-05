@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom'; // Thêm useLocation
+import { useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 
 const LoginPage = ({ onLoginSuccess }) => {
@@ -13,11 +13,10 @@ const LoginPage = ({ onLoginSuccess }) => {
     // Lấy tin nhắn thành công từ state (nếu có), ví dụ từ trang Register chuyển qua
     const [successMsg, setSuccessMsg] = useState(location.state?.message || '');
 
-    // Nếu người dùng bắt đầu nhập liệu, ẩn thông báo thành công đi cho đỡ vướng (tuỳ chọn)
+    // Nếu người dùng bắt đầu nhập liệu, ẩn thông báo thành công đi cho đỡ vướng
     const handleInputChange = (setter) => (e) => {
         setter(e.target.value);
         setError('');
-        // setSuccessMsg(''); // Bỏ comment dòng này nếu muốn ẩn thông báo xanh khi user gõ phím
     };
 
     const handleLogin = async (e) => {
@@ -87,7 +86,7 @@ const LoginPage = ({ onLoginSuccess }) => {
                     />
                 </div>
 
-                <div style={{ marginBottom: '30px' }}>
+                <div style={{ marginBottom: '10px' }}>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Mật khẩu:</label>
                     <input 
                         type="password" 
@@ -97,6 +96,13 @@ const LoginPage = ({ onLoginSuccess }) => {
                         required 
                         placeholder="Nhập password..." 
                     />
+                </div>
+
+                {/* --- ĐÃ THÊM LINK QUÊN MẬT KHẨU --- */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                    <Link to="/forgot-password" style={{ color: '#2e7d32', fontSize: '0.9rem', textDecoration: 'none' }}>
+                        Quên mật khẩu?
+                    </Link>
                 </div>
 
                 <button type="submit" style={{ width: '100%', padding: '12px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>ĐĂNG NHẬP</button>

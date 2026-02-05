@@ -7,4 +7,8 @@ router.post('/register-customer', authController.registerCustomer); // Đăng k�
 router.post('/login', authController.login);                  // Đăng nhập
 router.get('/verify-email', authController.verifyEmail);      // Link xác thực từ email
 
+// Routes quên mật khẩu (OTP)
+router.post('/forgot-password', authController.forgotPassword); // Gửi OTP
+router.post('/reset-password', authController.resetPassword);   // Check OTP và đổi pass
+
 module.exports = router;
