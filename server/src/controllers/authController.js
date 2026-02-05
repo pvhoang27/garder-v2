@@ -60,19 +60,19 @@ exports.registerCustomer = async (req, res) => {
         );
 
         // --- Tự động lấy Port Server đang chạy ---
-        // process.env.PORT nếu có, nếu không thì mặc định 3000
         const port = process.env.PORT || 3000; 
         const verifyUrl = `http://localhost:${port}/api/auth/verify-email?token=${verificationToken}`;
 
         const mailOptions = {
-            from: '"Garder Shop" <no-reply@garder.com>',
+            from: '"Cây cảnh Xuân Thục" <no-reply@garder.com>', 
             to: email,
-            subject: 'Xác thực tài khoản Garder',
+            subject: 'Xác thực tài khoản - Cây cảnh Xuân Thục',
             html: `
                 <h3>Xin chào ${full_name},</h3>
-                <p>Cảm ơn bạn đã đăng ký. Vui lòng click vào link dưới để kích hoạt tài khoản:</p>
+                <p>Cảm ơn bạn đã đăng ký tài khoản tại <b>Cây cảnh Xuân Thục</b>. Vui lòng click vào link dưới để kích hoạt tài khoản:</p>
                 <a href="${verifyUrl}" style="background: #2e7d32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">XÁC THỰC NGAY</a>
                 <p>Link này có hiệu lực 24h.</p>
+                <p>Trân trọng,<br>Đội ngũ Cây cảnh Xuân Thục</p>
             `
         };
 
@@ -101,7 +101,7 @@ exports.verifyEmail = async (req, res) => {
         const user = users[0];
         await db.query('UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?', [user.id]);
 
-        // Redirect về Client (Giữ nguyên nếu Frontend chạy port 5173)
+        // Redirect về Client
         res.redirect('http://localhost:5173/login?verified=true'); 
 
     } catch (error) {
@@ -110,7 +110,7 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
-// 4. Đăng nhập
+// 4. Đăng nhập (ĐÃ FIX LOGIC CHECK XÁC THỰC)
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -121,7 +121,10 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Sai tài khoản hoặc mật khẩu' });
 
-        if (user.role === 'customer' && user.is_verified === 0) {
+        // --- ĐOẠN SỬA ---
+        // Ép kiểu về số (Number) để so sánh cho chắc chắn
+        // Nếu là customer VÀ (is_verified không phải là 1) -> Chặn
+        if (user.role === 'customer' && Number(user.is_verified) !== 1) {
             return res.status(403).json({ message: 'Tài khoản chưa kích hoạt. Vui lòng kiểm tra email!' });
         }
 
@@ -149,33 +152,28 @@ exports.forgotPassword = async (req, res) => {
         const { email } = req.body;
         if (!email) return res.status(400).json({ message: 'Vui lòng nhập email' });
 
-        // Kiểm tra email có tồn tại không
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
         if (users.length === 0) {
-            // Bảo mật: Không báo lỗi chi tiết "Email không tồn tại" để tránh dò user
-            // Nhưng với project học tập/nhỏ có thể báo rõ.
             return res.status(404).json({ message: 'Email không tồn tại trong hệ thống' });
         }
 
-        // Tạo OTP ngẫu nhiên 6 số
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // Thời gian hết hạn: hiện tại + 15 phút (tính bằng ms)
         const expires = Date.now() + 15 * 60 * 1000; 
 
-        // Lưu OTP vào DB
         await db.query('UPDATE users SET reset_otp = ?, reset_otp_expires = ? WHERE email = ?', [otp, expires, email]);
 
-        // Gửi email
         const mailOptions = {
-            from: '"Garder Shop" <no-reply@garder.com>',
+            from: '"Cây cảnh Xuân Thục" <no-reply@garder.com>',
             to: email,
-            subject: 'Mã OTP đặt lại mật khẩu',
+            subject: 'Mã OTP đặt lại mật khẩu - Cây cảnh Xuân Thục',
             html: `
                 <h3>Yêu cầu đặt lại mật khẩu</h3>
+                <p>Xin chào, chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại <b>Cây cảnh Xuân Thục</b>.</p>
                 <p>Mã xác thực (OTP) của bạn là: <b style="font-size: 24px; color: #d32f2f;">${otp}</b></p>
                 <p>Mã này sẽ hết hạn sau 15 phút.</p>
                 <p>Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+                <hr>
+                <p style="font-size: 12px; color: #666;">Cây cảnh Xuân Thục - Mang thiên nhiên vào không gian sống của bạn.</p>
             `
         };
 
@@ -208,21 +206,17 @@ exports.resetPassword = async (req, res) => {
 
         const user = users[0];
 
-        // Kiểm tra OTP
         if (user.reset_otp !== otp) {
             return res.status(400).json({ message: 'Mã OTP không chính xác' });
         }
 
-        // Kiểm tra thời gian hết hạn
         if (Date.now() > user.reset_otp_expires) {
             return res.status(400).json({ message: 'Mã OTP đã hết hạn. Vui lòng lấy mã mới.' });
         }
 
-        // Hash mật khẩu mới
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        // Cập nhật mật khẩu và xóa OTP
         await db.query(
             'UPDATE users SET password = ?, reset_otp = NULL, reset_otp_expires = NULL WHERE email = ?', 
             [hashedPassword, email]
