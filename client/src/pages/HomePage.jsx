@@ -263,7 +263,8 @@ const HomePage = () => {
               </div>
 
               <div className="category-grid">
-                {categories.map((cat, index) => (
+                {/* Chỉ lấy 4 danh mục đầu tiên */}
+                {categories.slice(0, 4).map((cat, index) => (
                   <div
                     key={cat.id}
                     className="category-card"
@@ -291,6 +292,15 @@ const HomePage = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Nút Xem tất cả được chuyển xuống dưới và căn giữa */}
+              {categories.length > 4 && (
+                <div style={{ textAlign: "center", marginTop: "40px" }}>
+                  <Link to="/categories" className="btn btn-outline">
+                    Xem tất cả danh mục <FaArrowRight />
+                  </Link>
+                </div>
+              )}
             </div>
           </section>
 
