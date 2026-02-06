@@ -35,6 +35,7 @@ const HomePage = () => {
   );
   
   const isShowAll = searchParams.get("show_all") === "true";
+  const isFeatured = searchParams.get("is_featured") === "true"; // [NEW] Lấy flag nổi bật
   // [NEW] Lấy layout_id từ URL để lọc bộ sưu tập
   const layoutIdParam = searchParams.get("layout_id");
 
@@ -107,8 +108,9 @@ const HomePage = () => {
   // 1. Có từ khóa tìm kiếm
   // 2. Có chọn danh mục
   // 3. Bấm "Xem tất cả" (show_all)
-  // 4. [NEW] Đang xem chi tiết một bộ sưu tập (layout_id)
-  const isSearching = searchTerm !== "" || selectedCategory !== "" || isShowAll || !!layoutIdParam;
+  // 4. Đang xem chi tiết một bộ sưu tập (layout_id)
+  // 5. [NEW] Đang xem danh sách nổi bật (isFeatured)
+  const isSearching = searchTerm !== "" || selectedCategory !== "" || isShowAll || !!layoutIdParam || isFeatured;
 
   const filteredPlants = allPlants.filter((plant) => {
     const matchesKeyword = plant.name
@@ -120,11 +122,19 @@ const HomePage = () => {
     const matchesCategory = selectedCategory
       ? plant.category_id == selectedCategory
       : true;
-    return matchesKeyword && matchesCategory;
+
+    // [NEW] Lọc theo cây nổi bật nếu có param is_featured
+    const matchesFeatured = isFeatured 
+      ? (plant.is_featured == 1 || plant.is_featured === true) 
+      : true;
+
+    return matchesKeyword && matchesCategory && matchesFeatured;
   });
 
-  // Lấy danh sách cây nổi bật (cho section Landing Page)
-  const featuredPlants = allPlants.slice(0, 4);
+  // [FIXED] Lấy danh sách cây nổi bật (cho section Landing Page) - Phải lọc is_featured = 1
+  const featuredPlants = allPlants
+    .filter(p => p.is_featured == 1 || p.is_featured === true)
+    .slice(0, 4);
 
   // --- COMPONENT CARD ---
   const PlantCard = ({ plant }) => {
@@ -162,6 +172,7 @@ const HomePage = () => {
   // Helper lấy tiêu đề trang kết quả
   const getResultTitle = () => {
       if (isShowAll) return "Tất cả cây cảnh";
+      if (isFeatured) return "Cây cảnh nổi bật"; // [NEW] Tiêu đề cho trang nổi bật
       if (layoutIdParam) {
           // Tìm tên layout hiện tại
           const currentLayout = layouts.find(l => l.id == layoutIdParam);
@@ -261,7 +272,7 @@ const HomePage = () => {
 
       {/* 3. NỘI DUNG CHÍNH (ĐIỀU KIỆN RENDER) */}
       {isSearching ? (
-        /* --- GIAO DIỆN KẾT QUẢ TÌM KIẾM / XEM TẤT CẢ / BỘ SƯU TẬP --- */
+        /* --- GIAO DIỆN KẾT QUẢ TÌM KIẾM / XEM TẤT CẢ / BỘ SƯU TẬP / NỔI BẬT --- */
         <div className="container section">
           <div className="section-header">
             <h2 className="section-title">
@@ -289,7 +300,7 @@ const HomePage = () => {
           )}
           
           {/* Nút quay lại trang chủ */}
-          {(isShowAll || layoutIdParam) && (
+          {(isShowAll || layoutIdParam || isFeatured) && (
              <div style={{textAlign: 'center', marginTop: '40px'}}>
                 <Link to="/" className="btn btn-outline">Quay lại trang chủ</Link>
              </div>
@@ -361,8 +372,9 @@ const HomePage = () => {
                   </div>
                   <h2 className="section-title">Cây cảnh tiêu biểu</h2>
                 </div>
+                {/* [FIXED] Link này giờ sẽ lọc theo is_featured=true */}
                 <Link
-                  to="/?show_all=true"
+                  to="/?is_featured=true"
                   className="btn btn-outline"
                   style={{ background: "white" }}
                 >
