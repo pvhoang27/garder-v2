@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
-import { FaSearch, FaLeaf, FaArrowRight, FaHeart, FaSpa, FaFacebook, FaTiktok } from "react-icons/fa";
+import { FaSearch, FaLeaf, FaArrowRight, FaHeart, FaSpa, FaFacebook, FaTiktok, FaEye, FaComment } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 // Components chức năng
@@ -21,6 +21,11 @@ const HomePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
+  
+  // --- STATE CHO SECTION TRENDING (XU HƯỚNG) ---
+  const [trendingPlants, setTrendingPlants] = useState([]);
+  const [trendingFilter, setTrendingFilter] = useState("views"); // 'views' | 'comments'
+  const [loadingTrending, setLoadingTrending] = useState(false);
 
   // State lưu danh sách bố cục từ Admin
   const [layouts, setLayouts] = useState([]);
@@ -35,8 +40,7 @@ const HomePage = () => {
   );
   
   const isShowAll = searchParams.get("show_all") === "true";
-  const isFeatured = searchParams.get("is_featured") === "true"; // [NEW] Lấy flag nổi bật
-  // [NEW] Lấy layout_id từ URL để lọc bộ sưu tập
+  const isFeatured = searchParams.get("is_featured") === "true";
   const layoutIdParam = searchParams.get("layout_id");
 
   useEffect(() => {
@@ -48,16 +52,14 @@ const HomePage = () => {
     // 2. Lấy Danh mục
     axiosClient.get("/categories").then((res) => setCategories(res.data));
 
-    // 3. [FIXED] Lấy danh sách cây (Xử lý logic bộ sưu tập)
+    // 3. Lấy danh sách cây (Xử lý logic bộ sưu tập)
     const fetchPlants = async () => {
         setLoading(true);
         try {
             if (layoutIdParam) {
-                // Nếu đang xem chi tiết bộ sưu tập -> Gọi API lấy cây của layout đó
                 const res = await axiosClient.get(`/layout/${layoutIdParam}/plants`);
                 setAllPlants(res.data);
             } else {
-                // Mặc định lấy tất cả cây
                 const res = await axiosClient.get("/plants");
                 setAllPlants(res.data);
             }
@@ -76,7 +78,24 @@ const HomePage = () => {
       );
       setLayouts(sortedLayouts);
     });
-  }, [layoutIdParam]); // [IMPORTANT] Chạy lại khi layout_id thay đổi
+  }, [layoutIdParam]);
+
+  // 5. [NEW] Effect riêng cho phần Trending
+  useEffect(() => {
+    const fetchTrending = async () => {
+      setLoadingTrending(true);
+      try {
+        // Gọi API với tham số sort_by và giới hạn 4 hoặc 8 cây
+        const res = await axiosClient.get(`/plants?sort_by=${trendingFilter}&limit=4`);
+        setTrendingPlants(res.data);
+      } catch (error) {
+        console.error("Error fetching trending plants", error);
+      } finally {
+        setLoadingTrending(false);
+      }
+    };
+    fetchTrending();
+  }, [trendingFilter]); // Chạy lại khi đổi bộ lọc
 
   useEffect(() => {
     const catId = searchParams.get("category_id");
@@ -103,13 +122,6 @@ const HomePage = () => {
     return `http://localhost:3000${path}`;
   };
 
-  // --- LOGIC LỌC & HIỂN THỊ ---
-  // Điều kiện hiển thị giao diện List (Searching mode):
-  // 1. Có từ khóa tìm kiếm
-  // 2. Có chọn danh mục
-  // 3. Bấm "Xem tất cả" (show_all)
-  // 4. Đang xem chi tiết một bộ sưu tập (layout_id)
-  // 5. [NEW] Đang xem danh sách nổi bật (isFeatured)
   const isSearching = searchTerm !== "" || selectedCategory !== "" || isShowAll || !!layoutIdParam || isFeatured;
 
   const filteredPlants = allPlants.filter((plant) => {
@@ -117,13 +129,10 @@ const HomePage = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     
-    // Nếu đang ở chế độ xem bộ sưu tập (layoutIdParam) thì api đã lọc rồi, 
-    // category_id ở đây chỉ lọc thêm nếu người dùng chọn dropdown
     const matchesCategory = selectedCategory
       ? plant.category_id == selectedCategory
       : true;
 
-    // [NEW] Lọc theo cây nổi bật nếu có param is_featured
     const matchesFeatured = isFeatured 
       ? (plant.is_featured == 1 || plant.is_featured === true) 
       : true;
@@ -131,13 +140,12 @@ const HomePage = () => {
     return matchesKeyword && matchesCategory && matchesFeatured;
   });
 
-  // [FIXED] Lấy danh sách cây nổi bật (cho section Landing Page) - Phải lọc is_featured = 1
   const featuredPlants = allPlants
     .filter(p => p.is_featured == 1 || p.is_featured === true)
     .slice(0, 4);
 
   // --- COMPONENT CARD ---
-  const PlantCard = ({ plant }) => {
+  const PlantCard = ({ plant, showStats = false }) => {
     const catName =
       categories.find((c) => c.id === plant.category_id)?.name || "Indoor";
 
@@ -156,6 +164,29 @@ const HomePage = () => {
                   "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
               }}
             />
+             {/* Nếu showStats = true thì hiển thị icon tương ứng với bộ lọc hiện tại */}
+             {showStats && (
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'rgba(0,0,0,0.6)',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: '20px',
+                fontSize: '0.8rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}>
+                {trendingFilter === 'views' ? <FaEye /> : <FaComment />}
+                <span>
+                  {trendingFilter === 'views' 
+                    ? (plant.view_count || 0) 
+                    : (plant.comment_count || 0)}
+                </span>
+              </div>
+            )}
           </div>
           <div className="plant-content">
             <span className="plant-category">{catName}</span>
@@ -169,12 +200,10 @@ const HomePage = () => {
     );
   };
 
-  // Helper lấy tiêu đề trang kết quả
   const getResultTitle = () => {
       if (isShowAll) return "Tất cả cây cảnh";
-      if (isFeatured) return "Cây cảnh nổi bật"; // [NEW] Tiêu đề cho trang nổi bật
+      if (isFeatured) return "Cây cảnh nổi bật"; 
       if (layoutIdParam) {
-          // Tìm tên layout hiện tại
           const currentLayout = layouts.find(l => l.id == layoutIdParam);
           return currentLayout ? `Bộ sưu tập: ${currentLayout.title}` : "Bộ sưu tập";
       }
@@ -272,7 +301,6 @@ const HomePage = () => {
 
       {/* 3. NỘI DUNG CHÍNH (ĐIỀU KIỆN RENDER) */}
       {isSearching ? (
-        /* --- GIAO DIỆN KẾT QUẢ TÌM KIẾM / XEM TẤT CẢ / BỘ SƯU TẬP / NỔI BẬT --- */
         <div className="container section">
           <div className="section-header">
             <h2 className="section-title">
@@ -299,7 +327,6 @@ const HomePage = () => {
             </div>
           )}
           
-          {/* Nút quay lại trang chủ */}
           {(isShowAll || layoutIdParam || isFeatured) && (
              <div style={{textAlign: 'center', marginTop: '40px'}}>
                 <Link to="/" className="btn btn-outline">Quay lại trang chủ</Link>
@@ -359,6 +386,71 @@ const HomePage = () => {
             </div>
           </section>
 
+          {/* --- [NEW SECTION] TRENDING PLANTS (CÂY ĐƯỢC QUAN TÂM NHIỀU NHẤT) --- */}
+          <section className="section bg-light-green" style={{ background: '#f9fcf5' }}>
+            <div className="container">
+              <div className="section-header flex-between" style={{ alignItems: 'center' }}>
+                <div>
+                   <h2 className="section-title">Xu hướng quan tâm</h2>
+                   <p className="section-desc">Những tác phẩm thu hút sự chú ý của cộng đồng</p>
+                </div>
+                
+                {/* Bộ lọc Views/Comments */}
+                <div style={{ display: 'flex', gap: '10px', background: '#fff', padding: '5px', borderRadius: '30px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                  <button 
+                    onClick={() => setTrendingFilter('views')}
+                    style={{
+                      border: 'none',
+                      background: trendingFilter === 'views' ? '#4ca771' : 'transparent',
+                      color: trendingFilter === 'views' ? '#fff' : '#666',
+                      padding: '8px 20px',
+                      borderRadius: '25px',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      transition: 'all 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <FaEye /> Xem nhiều nhất
+                  </button>
+                  <button 
+                    onClick={() => setTrendingFilter('comments')}
+                    style={{
+                      border: 'none',
+                      background: trendingFilter === 'comments' ? '#4ca771' : 'transparent',
+                      color: trendingFilter === 'comments' ? '#fff' : '#666',
+                      padding: '8px 20px',
+                      borderRadius: '25px',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      transition: 'all 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <FaComment /> Thảo luận sôi nổi
+                  </button>
+                </div>
+              </div>
+
+              {loadingTrending ? (
+                 <div style={{textAlign: 'center', padding: '40px'}}>Đang tải xu hướng...</div>
+              ) : (
+                <div className="plant-grid">
+                  {trendingPlants.length > 0 ? trendingPlants.map((plant) => (
+                    <PlantCard key={plant.id} plant={plant} showStats={true} />
+                  )) : (
+                    <p style={{width: '100%', textAlign: 'center', color: '#888'}}>Chưa có dữ liệu xu hướng</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+          {/* ------------------------------------------------------------------- */}
+
           {/* FEATURED PLANTS SECTION (Cây nổi bật) */}
           <section className="section bg-secondary">
             <div className="container">
@@ -372,7 +464,6 @@ const HomePage = () => {
                   </div>
                   <h2 className="section-title">Cây cảnh tiêu biểu</h2>
                 </div>
-                {/* [FIXED] Link này giờ sẽ lọc theo is_featured=true */}
                 <Link
                   to="/?is_featured=true"
                   className="btn btn-outline"

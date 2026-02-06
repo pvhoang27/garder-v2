@@ -1,11 +1,14 @@
 const db = require("../config/db");
 
-// 1. Lấy danh sách (Giữ nguyên)
+// 1. Lấy danh sách (Đã sửa lỗi SQL đếm comment)
 exports.getAllPlants = async (req, res) => {
   try {
-    const { keyword, category_id, is_featured } = req.query;
+    const { keyword, category_id, is_featured, sort_by, limit } = req.query;
+    
+    // [FIXED] Sửa lại logic đếm comment dựa trên entity_id và entity_type
     let sql = `
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+            (SELECT COUNT(*) FROM comments WHERE comments.entity_id = p.id AND comments.entity_type = 'plant') as comment_count
             FROM plants p 
             LEFT JOIN categories c ON p.category_id = c.id
             WHERE 1=1 
@@ -25,11 +28,27 @@ exports.getAllPlants = async (req, res) => {
       params.push(is_featured === "true" || is_featured === "1" ? 1 : 0);
     }
 
-    sql += ` ORDER BY p.created_at DESC`;
+    // --- XỬ LÝ SẮP XẾP ---
+    if (sort_by === 'views') {
+        // Sắp xếp theo lượt xem giảm dần
+        sql += ` ORDER BY p.view_count DESC`;
+    } else if (sort_by === 'comments') {
+        // Sắp xếp theo số lượt bình luận giảm dần
+        sql += ` ORDER BY comment_count DESC`;
+    } else {
+        // Mặc định: Cây mới nhất
+        sql += ` ORDER BY p.created_at DESC`;
+    }
+
+    // --- GIỚI HẠN SỐ LƯỢNG (nếu có) ---
+    if (limit) {
+        sql += ` LIMIT ${parseInt(limit)}`;
+    }
+
     const [rows] = await db.query(sql, params);
     res.json(rows);
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi getAllPlants:", error); // Log lỗi chi tiết ra terminal để dễ debug
     res.status(500).json({ message: "Lỗi server" });
   }
 };
@@ -40,6 +59,7 @@ exports.getPlantById = async (req, res) => {
     const plantId = req.params.id;
 
     // --- [MỚI] Tăng lượt xem lên 1 ---
+    // Lưu ý: Đảm bảo bảng plants của bạn đã có cột view_count (INT default 0)
     await db.query("UPDATE plants SET view_count = view_count + 1 WHERE id = ?", [plantId]);
     // ---------------------------------
 
@@ -100,6 +120,7 @@ exports.createPlant = async (req, res) => {
     const priceVal = price ? parseInt(price) : 0; 
 
     // Insert bảng plants
+    // [Lưu ý] Nếu DB của bạn chưa set default cho view_count, hãy thêm view_count vào đây với giá trị 0
     const sqlPlant = `INSERT INTO plants (name, price, category_id, age, scientific_name, description, care_instruction, thumbnail, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const [result] = await db.query(sqlPlant, [
       name,
