@@ -4,11 +4,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import { FaSearch, FaLeaf, FaArrowRight, FaHeart, FaSpa, FaFacebook, FaTiktok } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
-// Components chức năng (Logic Admin)
+// Components chức năng
 import BackgroundEffect from "../components/BackgroundEffect";
 import FloatingContact from "../components/FloatingContact";
 import PopupBanner from "../components/PopupBanner";
-import DynamicSection from "../components/DynamicSection"; // [NEW] Import DynamicSection
+import DynamicSection from "../components/DynamicSection";
 
 // Styles
 import "./HomePage.css";
@@ -22,20 +22,24 @@ const HomePage = () => {
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
 
-  // [NEW] State lưu danh sách bố cục từ Admin
+  // State lưu danh sách bố cục từ Admin
   const [layouts, setLayouts] = useState([]);
 
   // State Admin Control
   const [globalEffect, setGlobalEffect] = useState("none");
 
-  // State tìm kiếm
+  // State tìm kiếm & filter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get("category_id") || "",
   );
+  
+  const isShowAll = searchParams.get("show_all") === "true";
+  // [NEW] Lấy layout_id từ URL để lọc bộ sưu tập
+  const layoutIdParam = searchParams.get("layout_id");
 
   useEffect(() => {
-    // 1. Lấy Hiệu ứng (Admin Control)
+    // 1. Lấy Hiệu ứng
     axiosClient.get("/layout/effect").then((res) => {
       if (res.data.effect) setGlobalEffect(res.data.effect);
     });
@@ -43,21 +47,35 @@ const HomePage = () => {
     // 2. Lấy Danh mục
     axiosClient.get("/categories").then((res) => setCategories(res.data));
 
-    // 3. Lấy tất cả cây
-    axiosClient.get("/plants").then((res) => {
-      setAllPlants(res.data);
-      setLoading(false);
-    });
+    // 3. [FIXED] Lấy danh sách cây (Xử lý logic bộ sưu tập)
+    const fetchPlants = async () => {
+        setLoading(true);
+        try {
+            if (layoutIdParam) {
+                // Nếu đang xem chi tiết bộ sưu tập -> Gọi API lấy cây của layout đó
+                const res = await axiosClient.get(`/layout/${layoutIdParam}/plants`);
+                setAllPlants(res.data);
+            } else {
+                // Mặc định lấy tất cả cây
+                const res = await axiosClient.get("/plants");
+                setAllPlants(res.data);
+            }
+        } catch (error) {
+            console.error("Error fetching plants", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchPlants();
 
-    // 4. [NEW] Lấy danh sách bố cục Dynamic Sections
+    // 4. Lấy bố cục Dynamic Sections
     axiosClient.get("/layout").then((res) => {
-      // Sắp xếp theo sort_order trước khi lưu
       const sortedLayouts = (res.data || []).sort(
         (a, b) => a.sort_order - b.sort_order,
       );
       setLayouts(sortedLayouts);
     });
-  }, []);
+  }, [layoutIdParam]); // [IMPORTANT] Chạy lại khi layout_id thay đổi
 
   useEffect(() => {
     const catId = searchParams.get("category_id");
@@ -84,23 +102,31 @@ const HomePage = () => {
     return `http://localhost:3000${path}`;
   };
 
-  // --- LOGIC LỌC ---
-  const isSearching = searchTerm !== "" || selectedCategory !== "";
+  // --- LOGIC LỌC & HIỂN THỊ ---
+  // Điều kiện hiển thị giao diện List (Searching mode):
+  // 1. Có từ khóa tìm kiếm
+  // 2. Có chọn danh mục
+  // 3. Bấm "Xem tất cả" (show_all)
+  // 4. [NEW] Đang xem chi tiết một bộ sưu tập (layout_id)
+  const isSearching = searchTerm !== "" || selectedCategory !== "" || isShowAll || !!layoutIdParam;
 
   const filteredPlants = allPlants.filter((plant) => {
     const matchesKeyword = plant.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+    
+    // Nếu đang ở chế độ xem bộ sưu tập (layoutIdParam) thì api đã lọc rồi, 
+    // category_id ở đây chỉ lọc thêm nếu người dùng chọn dropdown
     const matchesCategory = selectedCategory
       ? plant.category_id == selectedCategory
       : true;
     return matchesKeyword && matchesCategory;
   });
 
-  // Lấy danh sách cây nổi bật (8 cây mới nhất)
-  const featuredPlants = allPlants.slice(0, 8);
+  // Lấy danh sách cây nổi bật (cho section Landing Page)
+  const featuredPlants = allPlants.slice(0, 4);
 
-  // --- COMPONENT CARD (Dùng chung) ---
+  // --- COMPONENT CARD ---
   const PlantCard = ({ plant }) => {
     const catName =
       categories.find((c) => c.id === plant.category_id)?.name || "Indoor";
@@ -133,16 +159,26 @@ const HomePage = () => {
     );
   };
 
+  // Helper lấy tiêu đề trang kết quả
+  const getResultTitle = () => {
+      if (isShowAll) return "Tất cả cây cảnh";
+      if (layoutIdParam) {
+          // Tìm tên layout hiện tại
+          const currentLayout = layouts.find(l => l.id == layoutIdParam);
+          return currentLayout ? `Bộ sưu tập: ${currentLayout.title}` : "Bộ sưu tập";
+      }
+      return t("home.search_results");
+  }
+
   return (
     <div className="home-page-container">
-      {/* 1. CÁC TÍNH NĂNG NỔI (ADMIN CONTROL) */}
+      {/* 1. CÁC TÍNH NĂNG NỔI */}
       <BackgroundEffect effectType={globalEffect} />
       <PopupBanner />
       <FloatingContact />
 
-      {/* 2. HERO SECTION (BANNER) */}
+      {/* 2. HERO SECTION */}
       <section className="hero-section">
-        {/* Background Blobs */}
         <div className="hero-blob blob-1"></div>
         <div className="hero-blob blob-2"></div>
 
@@ -190,7 +226,7 @@ const HomePage = () => {
             </div>
 
             <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
-              <Link to="/gallery" className="btn btn-primary">
+              <Link to="/?show_all=true" className="btn btn-primary">
                 Khám phá ngay <FaArrowRight />
               </Link>
               <Link to="/contact" className="btn btn-outline">
@@ -223,18 +259,22 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* 3. NỘI DUNG CHÍNH */}
+      {/* 3. NỘI DUNG CHÍNH (ĐIỀU KIỆN RENDER) */}
       {isSearching ? (
-        /* --- GIAO DIỆN KẾT QUẢ TÌM KIẾM --- */
+        /* --- GIAO DIỆN KẾT QUẢ TÌM KIẾM / XEM TẤT CẢ / BỘ SƯU TẬP --- */
         <div className="container section">
           <div className="section-header">
-            <h2 className="section-title">{t("home.search_results")}</h2>
+            <h2 className="section-title">
+              {getResultTitle()}
+            </h2>
             <p className="section-desc">
               Tìm thấy {filteredPlants.length} kết quả phù hợp
             </p>
           </div>
 
-          {filteredPlants.length === 0 ? (
+          {loading ? (
+              <p style={{textAlign: 'center'}}>Đang tải dữ liệu...</p>
+          ) : filteredPlants.length === 0 ? (
             <div
               style={{ textAlign: "center", padding: "50px", color: "#666" }}
             >
@@ -247,9 +287,16 @@ const HomePage = () => {
               ))}
             </div>
           )}
+          
+          {/* Nút quay lại trang chủ */}
+          {(isShowAll || layoutIdParam) && (
+             <div style={{textAlign: 'center', marginTop: '40px'}}>
+                <Link to="/" className="btn btn-outline">Quay lại trang chủ</Link>
+             </div>
+          )}
         </div>
       ) : (
-        /* --- GIAO DIỆN LANDING PAGE (ĐẸP) --- */
+        /* --- GIAO DIỆN LANDING PAGE (TRANG CHỦ MẶC ĐỊNH) --- */
         <>
           {/* CATEGORIES SECTION */}
           <section className="section">
@@ -263,7 +310,6 @@ const HomePage = () => {
               </div>
 
               <div className="category-grid">
-                {/* Chỉ lấy 4 danh mục đầu tiên */}
                 {categories.slice(0, 4).map((cat, index) => (
                   <div
                     key={cat.id}
@@ -276,7 +322,6 @@ const HomePage = () => {
                     <div className="category-overlay">
                       <h3 className="category-name">{cat.name}</h3>
                     </div>
-                    {/* Placeholder ảnh cho danh mục */}
                     <img
                       src={
                         [
@@ -293,7 +338,6 @@ const HomePage = () => {
                 ))}
               </div>
 
-              {/* Nút Xem tất cả được chuyển xuống dưới và căn giữa */}
               {categories.length > 4 && (
                 <div style={{ textAlign: "center", marginTop: "40px" }}>
                   <Link to="/categories" className="btn btn-outline">
@@ -304,7 +348,7 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* FEATURED PLANTS SECTION (Cây nổi bật - HARDCODED - NỀN XÁM) */}
+          {/* FEATURED PLANTS SECTION (Cây nổi bật) */}
           <section className="section bg-secondary">
             <div className="container">
               <div className="section-header flex-between">
@@ -318,7 +362,7 @@ const HomePage = () => {
                   <h2 className="section-title">Cây cảnh tiêu biểu</h2>
                 </div>
                 <Link
-                  to="/gallery"
+                  to="/?show_all=true"
                   className="btn btn-outline"
                   style={{ background: "white" }}
                 >
@@ -338,8 +382,7 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* [NEW] DYNAMIC SECTIONS (CÁC BỐ CỤC TỪ ADMIN) */}
-          {/* Render xen kẽ màu nền để hài hòa */}
+          {/* DYNAMIC SECTIONS */}
           {layouts.map(
             (layout, index) =>
               layout.is_active && (
@@ -348,12 +391,12 @@ const HomePage = () => {
                   {...layout}
                   paramValue={layout.value || layout.param_value}
                   categories={categories}
-                  index={index} // <--- QUAN TRỌNG: Truyền index để tính màu nền
+                  index={index}
                 />
               ),
           )}
 
-          {/* ABOUT SECTION (NỀN TRẮNG) */}
+          {/* ABOUT SECTION */}
           <section className="section">
             <div className="container">
               <div className="about-grid">
@@ -452,8 +495,8 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  {/* [NEW] Social Media Buttons */}
-                  <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
+                   {/* Social Media Buttons */}
+                   <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
                     <a 
                       href="https://fb.com" 
                       target="_blank" 
@@ -485,7 +528,6 @@ const HomePage = () => {
                       <FaTiktok size={20} color="#000000"/> TikTok
                     </a>
                   </div>
-
                 </div>
               </div>
             </div>
