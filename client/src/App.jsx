@@ -8,11 +8,13 @@ import {
 } from "react-router-dom";
 
 // --- IMPORT CÁC TRANG (PAGES) ---
-import HomePage from "./pages/HomePage";
+// SỬA DÒNG NÀY: Trỏ thẳng vào file index trong thư mục HomePage
+import HomePage from "./pages/HomePage/index";
+
 import PlantDetail from "./pages/PlantDetail";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage"; // <--- ĐÃ THÊM IMPORT
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPlantForm from "./components/AdminPlantForm";
 import ContactPage from "./pages/ContactPage";
@@ -86,7 +88,6 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
           />
           <Route path="/register" element={<RegisterPage />} />
           
-          {/* --- ĐÃ THÊM ROUTE QUÊN MẬT KHẨU --- */}
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* Admin Routes */}

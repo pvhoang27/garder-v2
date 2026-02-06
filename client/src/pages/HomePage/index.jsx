@@ -123,6 +123,17 @@ const HomePage = () => {
     }
   };
 
+  // --- HÀM HELPER LẤY ẢNH DANH MỤC ---
+  const getCategoryImageUrl = (imageName) => {
+    if (!imageName) {
+      // Ảnh mặc định nếu không có ảnh
+      return "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80";
+    }
+    if (imageName.startsWith("http")) return imageName;
+    // Đường dẫn ảnh từ server (tương tự như AdminCategoryManager)
+    return `http://localhost:3000/uploads/${imageName}`;
+  };
+
   const isSearching =
     searchTerm !== "" ||
     selectedCategory !== "" ||
@@ -207,7 +218,7 @@ const HomePage = () => {
               </div>
 
               <div className="category-grid">
-                {categories.slice(0, 4).map((cat, index) => (
+                {categories.slice(0, 4).map((cat) => (
                   <div
                     key={cat.id}
                     className="category-card"
@@ -219,17 +230,15 @@ const HomePage = () => {
                     <div className="category-overlay">
                       <h3 className="category-name">{cat.name}</h3>
                     </div>
+                    {/* Đã sửa lại phần src để lấy ảnh thật */}
                     <img
-                      src={
-                        [
-                          "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80",
-                          "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?auto=format&fit=crop&w=600&q=80",
-                          "https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?auto=format&fit=crop&w=600&q=80",
-                          "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=600&q=80",
-                        ][index % 4]
-                      }
+                      src={getCategoryImageUrl(cat.image)}
                       alt={cat.name}
                       className="category-img"
+                      onError={(e) => {
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80";
+                      }}
                     />
                   </div>
                 ))}
