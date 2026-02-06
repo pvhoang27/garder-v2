@@ -8,7 +8,8 @@ exports.getAllUsers = async (req, res) => {
             return res.status(403).json({ message: 'Bạn không có quyền truy cập' });
         }
 
-        const [users] = await db.query('SELECT id, username, full_name, role, created_at FROM users ORDER BY created_at DESC');
+        // [CẬP NHẬT] Thêm trường last_login vào câu lệnh SELECT
+        const [users] = await db.query('SELECT id, username, full_name, role, created_at, last_login FROM users ORDER BY created_at DESC');
         res.json(users);
     } catch (error) {
         console.error(error);

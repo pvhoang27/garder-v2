@@ -110,7 +110,7 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
-// 4. Đăng nhập (ĐÃ FIX ĐỂ LƯU COOKIE)
+// 4. Đăng nhập (ĐÃ FIX ĐỂ LƯU COOKIE & CẬP NHẬT LAST_LOGIN)
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -124,6 +124,9 @@ exports.login = async (req, res) => {
         if (user.role === 'customer' && Number(user.is_verified) !== 1) {
             return res.status(403).json({ message: 'Tài khoản chưa kích hoạt. Vui lòng kiểm tra email!' });
         }
+
+        // --- Cập nhật thời gian đăng nhập cuối cùng ---
+        await db.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
 
         const token = jwt.sign(
             { id: user.id, username: user.username, role: user.role || 'customer' }, 

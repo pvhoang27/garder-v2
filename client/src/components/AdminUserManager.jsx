@@ -71,6 +71,8 @@ const AdminUserManager = () => {
               <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>Tài khoản</th>
               <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>Quyền hạn</th>
               <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>Ngày tạo</th>
+              {/* [CẬP NHẬT] Thêm header cho Ngày truy cập cuối */}
+              <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>Truy cập cuối</th>
               <th style={{ padding: "12px", borderBottom: "2px solid #ddd", textAlign: "center" }}>Hành động</th>
             </tr>
           </thead>
@@ -100,6 +102,13 @@ const AdminUserManager = () => {
                 </td>
                 <td style={{ padding: "12px", fontSize: "13px", color: "#666" }}>
                     {new Date(user.created_at).toLocaleDateString("vi-VN")}
+                </td>
+                {/* [CẬP NHẬT] Hiển thị ngày truy cập cuối */}
+                <td style={{ padding: "12px", fontSize: "13px", color: "#666" }}>
+                    {user.last_login 
+                      ? new Date(user.last_login).toLocaleString("vi-VN") 
+                      : <span style={{ color: "#aaa", fontStyle: "italic" }}>Chưa đăng nhập</span>
+                    }
                 </td>
                 <td style={{ padding: "12px", textAlign: "center" }}>
                   <button
