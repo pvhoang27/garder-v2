@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaUser, FaEnvelope, FaPhone, FaCalendarAlt, FaSave, FaPen } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaPhone, FaCalendarAlt, FaSave, FaPen, FaIdCard } from "react-icons/fa";
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);
@@ -44,9 +44,12 @@ const ProfilePage = () => {
             setIsEditing(false);
             fetchProfile(); // Refresh data
             
-            // Cập nhật lại localStorage nếu cần thiết để Header hiển thị đúng tên ngay lập tức
+            // Cập nhật lại localStorage để Header hiển thị đúng tên mới ngay lập tức
             const currentUser = JSON.parse(localStorage.getItem('user')) || {};
             localStorage.setItem('user', JSON.stringify({ ...currentUser, full_name: formData.full_name }));
+            
+            // Dispatch event để Header tự update (nếu cần thiết, hoặc reload trang)
+            window.dispatchEvent(new Event("storage"));
             
         } catch (error) {
             alert(error.response?.data?.message || "Có lỗi xảy ra");
@@ -87,6 +90,7 @@ const ProfilePage = () => {
                         }}>
                             <FaUser size={40} color="#2e7d32" />
                         </div>
+                        {/* Tên hiển thị to dưới avatar */}
                         <h2 style={{ margin: '10px 0 5px', color: '#333' }}>{user.full_name}</h2>
                         <span style={{ 
                             background: user.role === 'admin' ? '#d32f2f' : '#2e7d32', 
@@ -122,14 +126,16 @@ const ProfilePage = () => {
 
                     {isEditing ? (
                         <form onSubmit={handleSubmit}>
+                            {/* CHỈ CHO PHÉP SỬA FULL NAME VÀ PHONE */}
                             <div style={{ marginBottom: '15px' }}>
-                                <label style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Họ và tên</label>
+                                <label style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Họ và tên (Full Name)</label>
                                 <input 
                                     type="text" 
                                     name="full_name"
                                     value={formData.full_name}
                                     onChange={handleChange}
                                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
+                                    placeholder="Nhập họ và tên của bạn"
                                     required
                                 />
                             </div>
@@ -141,10 +147,15 @@ const ProfilePage = () => {
                                     value={formData.phone}
                                     onChange={handleChange}
                                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
+                                    placeholder="Nhập số điện thoại"
                                     required
                                 />
                             </div>
-                            <div style={{ display: 'flex', gap: '10px' }}>
+                            
+                            {/* Username bị ẩn hoặc hiển thị dạng read-only nếu muốn, ở đây tôi ẩn đi để tập trung vào việc sửa */}
+                            {/* <p style={{fontSize: '12px', color: '#888', fontStyle: 'italic'}}>* Tên đăng nhập và Email không thể thay đổi.</p> */}
+
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                                 <button 
                                     type="submit"
                                     style={{
@@ -167,33 +178,46 @@ const ProfilePage = () => {
                             </div>
                         </form>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        // Grid hiển thị thông tin
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                            {/* [MỚI] Thêm mục Họ và tên vào đây cho rõ ràng */}
                             <div style={infoItemStyle}>
-                                <FaUser color="#888" />
+                                <FaIdCard color="#888" size={20} />
                                 <div>
-                                    <small style={{display:'block', color:'#888'}}>Tên đăng nhập</small>
-                                    <strong>{user.username}</strong>
+                                    <small style={{display:'block', color:'#888', marginBottom:'2px'}}>Họ và tên</small>
+                                    <strong style={{fontSize: '15px'}}>{user.full_name}</strong>
                                 </div>
                             </div>
+
                             <div style={infoItemStyle}>
-                                <FaEnvelope color="#888" />
+                                <FaUser color="#888" size={18} />
                                 <div>
-                                    <small style={{display:'block', color:'#888'}}>Email</small>
-                                    <strong>{user.email}</strong>
+                                    <small style={{display:'block', color:'#888', marginBottom:'2px'}}>Tên đăng nhập</small>
+                                    <strong style={{fontSize: '15px'}}>{user.username}</strong>
                                 </div>
                             </div>
+
                             <div style={infoItemStyle}>
-                                <FaPhone color="#888" />
+                                <FaEnvelope color="#888" size={18} />
                                 <div>
-                                    <small style={{display:'block', color:'#888'}}>Số điện thoại</small>
-                                    <strong>{user.phone || "Chưa cập nhật"}</strong>
+                                    <small style={{display:'block', color:'#888', marginBottom:'2px'}}>Email</small>
+                                    <strong style={{fontSize: '15px', wordBreak: 'break-all'}}>{user.email}</strong>
                                 </div>
                             </div>
+
                             <div style={infoItemStyle}>
-                                <FaCalendarAlt color="#888" />
+                                <FaPhone color="#888" size={18} />
                                 <div>
-                                    <small style={{display:'block', color:'#888'}}>Ngày tham gia</small>
-                                    <strong>{new Date(user.created_at).toLocaleDateString('vi-VN')}</strong>
+                                    <small style={{display:'block', color:'#888', marginBottom:'2px'}}>Số điện thoại</small>
+                                    <strong style={{fontSize: '15px'}}>{user.phone || "Chưa cập nhật"}</strong>
+                                </div>
+                            </div>
+
+                            <div style={infoItemStyle}>
+                                <FaCalendarAlt color="#888" size={18} />
+                                <div>
+                                    <small style={{display:'block', color:'#888', marginBottom:'2px'}}>Ngày tham gia</small>
+                                    <strong style={{fontSize: '15px'}}>{new Date(user.created_at).toLocaleDateString('vi-VN')}</strong>
                                 </div>
                             </div>
                         </div>
@@ -209,9 +233,10 @@ const infoItemStyle = {
     alignItems: 'center',
     gap: '15px',
     padding: '15px',
-    background: '#f9f9f9',
-    borderRadius: '8px',
-    border: '1px solid #eee'
+    background: '#f8f9fa',
+    borderRadius: '10px',
+    border: '1px solid #eee',
+    transition: 'transform 0.2s',
 };
 
 export default ProfilePage;
