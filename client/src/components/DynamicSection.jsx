@@ -46,6 +46,8 @@ const DynamicSection = ({ id, title, type, paramValue, categories, index }) => {
   };
 
   // Tính màu nền xen kẽ
+  // index chẵn (0, 2...) -> false (Nền trắng) -> Card màu xanh (#f7fee7)
+  // index lẻ (1, 3...) -> true (Nền xanh) -> Card màu trắng (#ffffff)
   const isGrayBg = index % 2 !== 0; 
 
   if (displayPlants.length === 0) return null;
@@ -82,7 +84,11 @@ const DynamicSection = ({ id, title, type, paramValue, categories, index }) => {
                   to={`/plant/${plant.id}`}
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <div className="plant-item-card" style={{ background: "white" }}>
+                  <div 
+                    className="plant-item-card" 
+                    // LOGIC ZIGZAG: Nền Section Xanh -> Card Trắng | Nền Section Trắng -> Card Xanh
+                    style={{ background: isGrayBg ? "#ffffff" : "#f7fee7" }} 
+                  >
                     <div className="plant-img-wrapper">
                       <img
                         src={getImageUrl(plant.thumbnail)}
