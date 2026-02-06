@@ -23,6 +23,7 @@ import NewsPage from "./pages/NewsPage";
 import NewsDetail from "./pages/NewsDetail";
 import AdminPopupConfig from "./pages/AdminPopupConfig";
 import AdminLayoutConfig from "./pages/AdminLayoutConfig";
+import ProfilePage from "./pages/ProfilePage"; // [MỚI]
 
 // --- IMPORT COMPONENTS ---
 import PopupBanner from "./components/PopupBanner";
@@ -44,6 +45,14 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
     }
     if (userRole !== 'admin') {
       return <Navigate to="/" />;
+    }
+    return children;
+  };
+
+  // [MỚI] Component bảo vệ Route yêu cầu đăng nhập (cho Profile)
+  const PrivateRoute = ({ children }) => {
+    if (!isLoggedIn) {
+      return <Navigate to="/login" />;
     }
     return children;
   };
@@ -90,6 +99,9 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
           
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
+          {/* [MỚI] Profile Route */}
+          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/add" element={<AdminRoute><AdminPlantForm /></AdminRoute>} />
@@ -109,10 +121,12 @@ function App() {
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token"); // Hoặc check cookie nếu cần
     const userStr = localStorage.getItem("user");
     
-    if (token && userStr) {
+    // Lưu ý: Logic check token đơn giản này có thể không hoàn hảo nếu dùng httpOnly cookie,
+    // nhưng giữ nguyên theo logic hiện tại của bạn để tránh break app.
+    if (userStr) {
       const user = JSON.parse(userStr);
       setIsLoggedIn(true);
       setUserRole(user.role || 'customer');

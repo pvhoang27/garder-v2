@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaSignOutAlt, FaSignInAlt, FaBars, FaTimes, FaUserCircle, FaCog } from "react-icons/fa";
+import {
+  FaSignOutAlt,
+  FaSignInAlt,
+  FaBars,
+  FaTimes,
+  FaUserCircle,
+  FaCog,
+  FaUser,
+} from "react-icons/fa";
 import LanguageSwitcher from "./LanguageSwitcher";
 import logo from "../assets/logo.png"; // Lưu ý đường dẫn import logo (lên 1 cấp cha)
 
@@ -18,7 +26,7 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
     navigate("/");
     setIsMobileMenuOpen(false);
     setShowUserMenu(false);
-    // alert(t("common.success_logout")); 
+    // alert(t("common.success_logout"));
   };
 
   const closeMenu = () => {
@@ -30,15 +38,25 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
     <nav className="navbar">
       <div className="container navbar-container">
         {/* Logo */}
-        <Link to="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <img 
-            src={logo} 
-            alt="Logo" 
-            style={{ height: '40px', width: 'auto', objectFit: 'contain' }} 
+        <Link
+          to="/"
+          className="nav-logo"
+          onClick={closeMenu}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            textDecoration: "none",
+          }}
+        >
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ height: "40px", width: "auto", objectFit: "contain" }}
           />
-          <span style={{ whiteSpace: 'nowrap' }}>{t("nav.brand")}</span>
+          <span style={{ whiteSpace: "nowrap" }}>{t("nav.brand")}</span>
         </Link>
-        
+
         {/* Mobile Toggle Button */}
         <div
           className="mobile-icon"
@@ -64,91 +82,157 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
 
           {isLoggedIn ? (
             <>
-              {/* Đã xóa nút Admin ở đây, chuyển vào trong dropdown */}
-              
               {/* User Profile Dropdown */}
-              <div style={{ position: 'relative', marginLeft: isMobileMenuOpen ? '0' : '10px' }}>
-                <div 
+              <div
+                style={{
+                  position: "relative",
+                  marginLeft: isMobileMenuOpen ? "0" : "10px",
+                }}
+              >
+                <div
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    cursor: 'pointer',
-                    padding: '6px 10px',
-                    borderRadius: '20px',
-                    background: showUserMenu ? '#f0f0f0' : 'transparent',
-                    userSelect: 'none',
-                    border: '1px solid transparent',
-                    transition: 'all 0.2s'
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                    padding: "6px 10px",
+                    borderRadius: "20px",
+                    background: showUserMenu ? "#f0f0f0" : "transparent",
+                    userSelect: "none",
+                    border: "1px solid transparent",
+                    transition: "all 0.2s",
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                  onMouseLeave={(e) => !showUserMenu && (e.currentTarget.style.background = 'transparent')}
-                  title={user.full_name || "Tài khoản"} 
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#f5f5f5")
+                  }
+                  onMouseLeave={(e) =>
+                    !showUserMenu &&
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                  title={user.full_name || "Tài khoản"}
                 >
-                   <FaUserCircle size={24} color="#2e7d32" />
+                  <FaUserCircle size={24} color="#2e7d32" />
                 </div>
 
                 {showUserMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '120%',
-                    right: isMobileMenuOpen ? 'auto' : '0',
-                    left: isMobileMenuOpen ? '0' : 'auto',
-                    width: '220px',
-                    background: 'white',
-                    boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    border: '1px solid #eee',
-                    zIndex: 1000
-                  }}>
-                    <div style={{ padding: '15px', borderBottom: '1px solid #eee', background: '#f9f9f9' }}>
-                      <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "120%",
+                      right: isMobileMenuOpen ? "auto" : "0",
+                      left: isMobileMenuOpen ? "0" : "auto",
+                      width: "220px",
+                      background: "white",
+                      boxShadow: "0 5px 15px rgba(0,0,0,0.15)",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      border: "1px solid #eee",
+                      zIndex: 1000,
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "15px",
+                        borderBottom: "1px solid #eee",
+                        background: "#f9f9f9",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          fontWeight: "bold",
+                          fontSize: "14px",
+                          color: "#333",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
                         {user.full_name}
                       </p>
-                      <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#666' }}>
-                        @{user.username || 'user'}
+                      <p
+                        style={{
+                          margin: "2px 0 0 0",
+                          fontSize: "12px",
+                          color: "#666",
+                        }}
+                      >
+                        @{user.username || "user"}
                       </p>
                     </div>
 
+                    {/* [MỚI] Link trang cá nhân */}
+                    <Link
+                      to="/profile"
+                      onClick={closeMenu}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "12px 15px",
+                        textDecoration: "none",
+                        color: "#333",
+                        fontSize: "14px",
+                        background: "white",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#f5f5f5")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "white")
+                      }
+                    >
+                      <FaUser /> Trang cá nhân
+                    </Link>
+
                     {/* MỤC QUẢN TRỊ (Chỉ hiện nếu là admin) */}
-                    {userRole === 'admin' && (
-                      <Link 
-                        to="/admin" 
+                    {userRole === "admin" && (
+                      <Link
+                        to="/admin"
                         onClick={closeMenu}
                         style={{
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '10px', 
-                            padding: '12px 15px', 
-                            textDecoration: 'none', 
-                            color: '#333',
-                            fontSize: '14px',
-                            background: 'white',
-                            borderBottom: '1px solid #eee' // Ngăn cách với nút đăng xuất
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          padding: "12px 15px",
+                          textDecoration: "none",
+                          color: "#333",
+                          fontSize: "14px",
+                          background: "white",
+                          borderBottom: "1px solid #eee", // Ngăn cách với nút đăng xuất
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = "#f5f5f5")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "white")
+                        }
                       >
-                         <FaCog /> {t("nav.admin")}
+                        <FaCog /> {t("nav.admin")}
                       </Link>
                     )}
 
-                    <div 
+                    <div
                       onClick={handleLogoutClick}
                       style={{
-                        padding: '12px 15px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        color: '#d32f2f',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        background: 'white'
+                        padding: "12px 15px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        color: "#d32f2f",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        background: "white",
+                        borderTop:
+                          userRole !== "admin" ? "1px solid #eee" : "none",
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#ffebee'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#ffebee")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "white")
+                      }
                     >
                       <FaSignOutAlt /> {t("nav.logout")}
                     </div>
@@ -161,14 +245,17 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
               to="/login"
               className="nav-link nav-btn-login"
               onClick={closeMenu}
-              style={{ whiteSpace: 'nowrap' }}
+              style={{ whiteSpace: "nowrap" }}
             >
               <FaSignInAlt /> {t("nav.login")}
             </Link>
           )}
-          
-          <div className="nav-link" style={{display: 'flex', alignItems: 'center'}}>
-             <LanguageSwitcher />
+
+          <div
+            className="nav-link"
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <LanguageSwitcher />
           </div>
         </div>
       </div>
