@@ -5,7 +5,7 @@ import axiosClient from "../api/axiosClient";
 // Components
 import PlantGallery from "../components/PlantGallery";
 import PlantInfo from "../components/PlantInfo";
-import CommentSection from "../components/CommentSection"; // Import Component Bình luận
+import CommentSection from "../components/CommentSection";
 
 // Styles
 import "./PlantDetail.css";
@@ -31,6 +31,36 @@ const PlantDetail = () => {
         setLoading(false);
       });
   }, [id]);
+
+  // --- LOGIC LƯU LỊCH SỬ XEM (MỚI THÊM) ---
+  useEffect(() => {
+    if (plant) {
+      // 1. Lấy danh sách cũ từ localStorage
+      const viewedItems = JSON.parse(localStorage.getItem("recently_viewed") || "[]");
+
+      // 2. Tạo object chứa thông tin cần thiết để hiển thị Card (không lưu tất cả để nhẹ bộ nhớ)
+      const newItem = {
+        id: plant.id,
+        name: plant.name,
+        thumbnail: plant.thumbnail,
+        price: plant.price,
+        category_id: plant.category_id,
+        view_count: plant.view_count
+      };
+
+      // 3. Lọc bỏ trùng lặp (nếu đã có cây này rồi thì xóa đi để đưa lên đầu)
+      const filteredItems = viewedItems.filter(item => item.id !== plant.id);
+
+      // 4. Thêm vào đầu danh sách
+      filteredItems.unshift(newItem);
+
+      // 5. Giới hạn chỉ lưu 8 cây gần nhất
+      const finalItems = filteredItems.slice(0, 8);
+
+      // 6. Lưu lại
+      localStorage.setItem("recently_viewed", JSON.stringify(finalItems));
+    }
+  }, [plant]);
 
   if (loading)
     return (

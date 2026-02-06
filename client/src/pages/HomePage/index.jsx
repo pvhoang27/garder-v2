@@ -15,6 +15,7 @@ import HeroSection from "./components/HeroSection";
 import SearchResults from "./components/SearchResults";
 import TrendingSection from "./components/TrendingSection";
 import FeaturedSection from "./components/FeaturedSection";
+import RecentlyViewedSection from "./components/RecentlyViewedSection"; // <--- IMPORT MỚI
 import AboutSection from "./components/AboutSection";
 import CtaSection from "./components/CtaSection";
 
@@ -269,6 +270,10 @@ const HomePage = () => {
             featuredPlants={featuredPlants}
             categories={categories}
           />
+
+          {/* --- SECTION ĐÃ XEM GẦN ĐÂY (MỚI THÊM) --- */}
+          {/* Chỉ hiển thị khi có dữ liệu trong localStorage, component tự xử lý */}
+          <RecentlyViewedSection categories={categories} />
 
           {/* DYNAMIC SECTIONS */}
           {layouts.map(
