@@ -7,7 +7,8 @@ const FeaturedSection = ({ loading, featuredPlants, categories }) => {
   return (
     <section className="section bg-secondary">
       <div className="container">
-        <div className="section-header flex-between">
+        {/* 1. HEADER: Xóa flex-between và xóa nút Link ở đây */}
+        <div className="section-header">
           <div>
             <div
               className="badge"
@@ -17,15 +18,9 @@ const FeaturedSection = ({ loading, featuredPlants, categories }) => {
             </div>
             <h2 className="section-title">Cây cảnh tiêu biểu</h2>
           </div>
-          <Link
-            to="/?is_featured=true"
-            className="btn btn-outline"
-            style={{ background: "white" }}
-          >
-            Xem tất cả <FaArrowRight />
-          </Link>
         </div>
 
+        {/* CONTENT GRID */}
         {loading ? (
           <p>Loading...</p>
         ) : (
@@ -35,6 +30,17 @@ const FeaturedSection = ({ loading, featuredPlants, categories }) => {
             ))}
           </div>
         )}
+
+        {/* 2. FOOTER: Đưa nút Xem tất cả xuống dưới cùng cho đồng bộ */}
+        <div style={{ textAlign: "center", marginTop: "40px" }}>
+          <Link
+            to="/?is_featured=true"
+            className="btn btn-outline"
+            style={{ background: "white" }}
+          >
+            Xem tất cả <FaArrowRight />
+          </Link>
+        </div>
       </div>
     </section>
   );
