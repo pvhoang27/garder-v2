@@ -9,6 +9,10 @@ router.put('/profile', authMiddleware, userController.updateProfile);
 
 // Các route quản lý User (Admin)
 router.get('/', authMiddleware, userController.getAllUsers);
+
+// Route lấy chi tiết 1 user theo ID (Dành cho admin xem chi tiết)
+router.get('/:id', authMiddleware, userController.getUserById);
+
 router.delete('/:id', authMiddleware, userController.deleteUser);
 router.put('/:id/role', authMiddleware, userController.updateUserRole);
 

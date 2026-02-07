@@ -51,7 +51,7 @@ exports.updateUserRole = async (req, res) => {
     }
 };
 
-// [MỚI] 4. Lấy thông tin cá nhân (Profile)
+// [MỚI] 4. Lấy thông tin cá nhân (Profile - Cho chính user đó)
 exports.getProfile = async (req, res) => {
     try {
         // req.user.id có được từ authMiddleware
@@ -93,5 +93,29 @@ exports.updateProfile = async (req, res) => {
     } catch (error) {
         console.error("Update Profile Error:", error);
         res.status(500).json({ message: 'Lỗi server khi cập nhật thông tin' });
+    }
+};
+
+// [MỚI - ADMIN] 6. Lấy chi tiết user theo ID (Cho Admin xem)
+exports.getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Bạn không có quyền truy cập' });
+        }
+
+        const [users] = await db.query(
+            'SELECT id, username, full_name, email, phone, role, created_at, last_login FROM users WHERE id = ?', 
+            [id]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        }
+
+        res.json(users[0]);
+    } catch (error) {
+        console.error("Get User Detail Error:", error);
+        res.status(500).json({ message: 'Lỗi server' });
     }
 };
