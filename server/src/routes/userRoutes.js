@@ -3,16 +3,17 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// [MỚI] Các route cho trang cá nhân (Profile) - Đặt TRƯỚC các route có tham số :id
+// Các route cho trang cá nhân (Profile)
 router.get('/profile', authMiddleware, userController.getProfile);
 router.put('/profile', authMiddleware, userController.updateProfile);
 
 // Các route quản lý User (Admin)
 router.get('/', authMiddleware, userController.getAllUsers);
 
-// Route lấy chi tiết 1 user theo ID (Dành cho admin xem chi tiết)
-router.get('/:id', authMiddleware, userController.getUserById);
+// [MỚI] Route Import Users (Đặt trước /:id để tránh conflict)
+router.post('/import', authMiddleware, userController.importUsers);
 
+router.get('/:id', authMiddleware, userController.getUserById);
 router.delete('/:id', authMiddleware, userController.deleteUser);
 router.put('/:id/role', authMiddleware, userController.updateUserRole);
 
