@@ -54,8 +54,9 @@ exports.updateNews = async (req, res) => {
 
         params.push(req.params.id);
 
+        // Thêm updated_at = NOW() để cập nhật thời gian sửa
         await db.query(
-            `UPDATE news SET title = ?, summary = ?, content = ? ${imageQuery} WHERE id = ?`,
+            `UPDATE news SET title = ?, summary = ?, content = ?, updated_at = NOW() ${imageQuery} WHERE id = ?`,
             params
         );
 

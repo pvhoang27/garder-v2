@@ -77,6 +77,7 @@ const AdminNewsManager = ({ isMobile }) => {
               <th style={{ padding: "12px", textAlign: "left" }}>Hình ảnh</th>
               <th style={{ padding: "12px", textAlign: "left" }}>Tiêu đề</th>
               <th style={{ padding: "12px", textAlign: "left" }}>Ngày tạo</th>
+              <th style={{ padding: "12px", textAlign: "left" }}>Ngày cập nhật</th>
               <th style={{ padding: "12px", textAlign: "center" }}>Hành động</th>
             </tr>
           </thead>
@@ -99,6 +100,10 @@ const AdminNewsManager = ({ isMobile }) => {
                 </td>
                 <td style={{ padding: "12px" }}>
                     {new Date(news.created_at).toLocaleDateString('vi-VN')}
+                </td>
+                <td style={{ padding: "12px", fontSize: "0.9rem", color: "#555" }}>
+                    {/* Hiển thị đầy đủ ngày giờ: HH:mm:ss dd/mm/yyyy */}
+                    {news.updated_at ? new Date(news.updated_at).toLocaleString('vi-VN') : ""}
                 </td>
                 <td style={{ padding: "12px", textAlign: "center" }}>
                   <button onClick={() => handleEdit(news)} style={{ marginRight: "10px", background: "none", border: "none", color: "#f39c12", cursor: "pointer", fontSize: "16px" }} title="Sửa">
