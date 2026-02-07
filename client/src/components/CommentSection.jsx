@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaPaperPlane, FaUserCircle, FaTrash } from "react-icons/fa";
+import { FaPaperPlane, FaUserCircle, FaTrash, FaReply } from "react-icons/fa";
 import "./CommentSection.css";
 
 const CommentSection = ({ entityType, entityId }) => {
   const [comments, setComments] = useState([]);
-  const [content, setContent] = useState("");
-  const [guestName, setGuestName] = useState("");
+  const [content, setContent] = useState(""); // Nội dung comment chính
+  const [replyContent, setReplyContent] = useState(""); // Nội dung reply
+  const [replyingTo, setReplyingTo] = useState(null); // ID của comment đang được reply
   const [loading, setLoading] = useState(false);
 
   // Lấy thông tin User hiện tại
@@ -28,47 +29,42 @@ const CommentSection = ({ entityType, entityId }) => {
     if (entityId) fetchComments();
   }, [entityId, entityType]);
 
-  const handleSubmit = async (e) => {
+  // Xử lý gửi comment (cả comment gốc và reply)
+  const handleSubmit = async (e, parentId = null) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    
+    // Xác định nội dung cần gửi (Root hay Reply)
+    const contentToSend = parentId ? replyContent : content;
 
-    // --- SỬA: Bắt buộc đăng nhập ---
+    if (!contentToSend.trim()) return;
+
     if (!currentUser) {
       alert("Vui lòng đăng nhập để bình luận!");
       return;
     }
-
-    /* --- COMMENT LẠI PHẦN KHÁCH ---
-    if (!currentUser && !guestName.trim()) {
-      alert("Vui lòng nhập tên của bạn!");
-      return;
-    }
-    */
 
     setLoading(true);
     try {
       await axiosClient.post("/comments", {
         entity_type: entityType,
         entity_id: entityId,
-        content: content,
-        user_id: currentUser ? currentUser.id : null,
-        // guest_name: currentUser ? currentUser.full_name : guestName, // CŨ
-        guest_name: currentUser.full_name, // MỚI: Chỉ lấy tên user
+        content: contentToSend,
+        user_id: currentUser.id,
+        guest_name: currentUser.full_name,
+        parent_id: parentId // Gửi kèm parent_id nếu có
       });
 
-      setContent(""); // Xóa nội dung sau khi gửi
-      fetchComments(); // Tải lại danh sách
-      
-      /* --- COMMENT LẠI THÔNG BÁO CHO KHÁCH ---
-      if(!currentUser) {
-          alert("Bình luận thành công! Bạn cần đợi 5 phút để bình luận tiếp.");
+      // Reset form sau khi gửi thành công
+      if (parentId) {
+        setReplyContent("");
+        setReplyingTo(null);
+      } else {
+        setContent("");
       }
-      */
-
+      
+      fetchComments(); // Tải lại danh sách
     } catch (error) {
-      // --- XỬ LÝ LỖI TẠI ĐÂY ---
       if (error.response && error.response.status === 429) {
-          // Hiển thị thông báo chặn spam từ server
           alert(error.response.data.message); 
       } else {
           alert("Lỗi khi gửi bình luận");
@@ -82,6 +78,7 @@ const CommentSection = ({ entityType, entityId }) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa bình luận này?")) {
         try {
             await axiosClient.delete(`/comments/${commentId}`);
+            // Lọc bỏ comment đã xóa khỏi state ngay lập tức
             setComments(comments.filter(c => c.id !== commentId));
         } catch (error) {
             console.error(error);
@@ -90,79 +87,128 @@ const CommentSection = ({ entityType, entityId }) => {
     }
   }
 
+  // --- LOGIC HIỂN THỊ CÂY BÌNH LUẬN --- //
+  
+  // Lấy danh sách comment gốc (không có parent_id)
+  const rootComments = comments.filter(c => !c.parent_id);
+
+  // Hàm đệ quy hoặc lọc để lấy replies của một comment cha
+  const getReplies = (parentId) => {
+      return comments
+        .filter(c => c.parent_id === parentId)
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Reply cũ nhất lên đầu
+  };
+
+  // --- SỬA LỖI: Chuyển thành hàm render thay vì Component con ---
+  const renderCommentItem = (comment, isReply = false) => {
+    const replies = getReplies(comment.id);
+    const isReplying = replyingTo === comment.id;
+
+    return (
+        <div key={comment.id} className={`comment-wrapper ${isReply ? "is-reply" : ""}`}>
+            <div className="comment-item">
+                <div className="comment-avatar">
+                {comment.avatar ? (
+                    <img src={`http://localhost:3000${comment.avatar}`} alt="avatar" />
+                ) : (
+                    <FaUserCircle />
+                )}
+                </div>
+                <div className="comment-content-wrapper">
+                    <div className="comment-header">
+                        <span className="comment-author">
+                            {comment.user_name || comment.guest_name || "Khách ẩn danh"}
+                            {comment.user_id && <span className="badge-member">Thành viên</span>}
+                        </span>
+                        <span className="comment-time">
+                            {new Date(comment.created_at).toLocaleString('vi-VN')}
+                        </span>
+                        
+                        {/* Nút hành động */}
+                        <div className="comment-actions">
+                             {/* Nút Trả lời: Chỉ hiện ở comment gốc hoặc tùy nhu cầu */}
+                            <button 
+                                className="btn-reply" 
+                                onClick={() => {
+                                    if(!currentUser) return alert("Vui lòng đăng nhập để trả lời!");
+                                    // Reset nội dung khi mở form reply mới
+                                    if (replyingTo !== comment.id) setReplyContent("");
+                                    setReplyingTo(isReplying ? null : comment.id);
+                                }}
+                            >
+                                <FaReply /> Trả lời
+                            </button>
+
+                            {isAdmin && (
+                                <button 
+                                    className="btn-delete-comment"
+                                    onClick={() => handleDelete(comment.id)}
+                                    title="Xóa bình luận này"
+                                >
+                                    <FaTrash />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <div className="comment-body">{comment.content}</div>
+
+                    {/* FORM TRẢ LỜI (Chỉ hiện khi đang reply comment này) */}
+                    {isReplying && (
+                        <form onSubmit={(e) => handleSubmit(e, comment.id)} className="reply-form">
+                            <textarea
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                placeholder={`Trả lời ${comment.user_name || "người dùng"}...`}
+                                autoFocus
+                                required
+                            />
+                            <div className="reply-actions">
+                                <button type="button" className="btn-cancel" onClick={() => setReplyingTo(null)}>Hủy</button>
+                                <button type="submit" disabled={loading}>
+                                    {loading ? "Đang gửi..." : "Gửi trả lời"}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
+            </div>
+
+            {/* Hiển thị danh sách phản hồi (Replies) - Gọi đệ quy hàm render */}
+            {replies.length > 0 && (
+                <div className="replies-list">
+                    {replies.map(reply => renderCommentItem(reply, true))}
+                </div>
+            )}
+        </div>
+    );
+  };
+
   return (
     <div className="comment-section">
       <h3>Bình luận ({comments.length})</h3>
 
-      <form onSubmit={handleSubmit} className="comment-form">
-        {/* --- COMMENT LẠI Ô NHẬP TÊN KHÁCH --- */}
-        {/* {!currentUser && (
-          <div style={{ marginBottom: "10px" }}>
-            <input
-              type="text"
-              placeholder="Tên của bạn (Ẩn danh)..."
-              value={guestName}
-              onChange={(e) => setGuestName(e.target.value)}
-              required
-              className="guest-name-input"
-            />
-          </div>
-        )} */}
-        
+      {/* Form bình luận chính (Gốc) */}
+      <form onSubmit={(e) => handleSubmit(e, null)} className="comment-form">
         <div style={{ display: "flex", gap: "10px" }}>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            // Thay đổi placeholder để nhắc user đăng nhập
             placeholder={currentUser ? "Viết bình luận của bạn..." : "Vui lòng đăng nhập để bình luận..."}
             required
-            // Có thể disable luôn nếu muốn chặn ngay từ giao diện
-            // disabled={!currentUser} 
           />
-          <button
-            type="submit"
-            disabled={loading}
-          >
+          <button type="submit" disabled={loading}>
             <FaPaperPlane /> {loading ? "Gửi..." : "Gửi"}
           </button>
         </div>
       </form>
 
       <div className="comment-list">
-        {comments.map((cmt) => (
-          <div key={cmt.id} className="comment-item">
-            <div className="comment-avatar">
-               {cmt.avatar ? (
-                   <img src={`http://localhost:3000${cmt.avatar}`} alt="avatar" />
-               ) : (
-                   <FaUserCircle />
-               )}
-            </div>
-            <div className="comment-content-wrapper">
-              <div className="comment-header">
-                <span className="comment-author">
-                    {cmt.user_name || cmt.guest_name || "Khách ẩn danh"}
-                    {cmt.user_id && <span className="badge-member">Thành viên</span>}
-                </span>
-                <span className="comment-time">
-                  {new Date(cmt.created_at).toLocaleString('vi-VN')}
-                </span>
-                
-                {isAdmin && (
-                    <button 
-                        className="btn-delete-comment"
-                        onClick={() => handleDelete(cmt.id)}
-                        title="Xóa bình luận này"
-                    >
-                        <FaTrash />
-                    </button>
-                )}
-              </div>
-              <div className="comment-body">{cmt.content}</div>
-            </div>
-          </div>
-        ))}
-        {comments.length === 0 && <p className="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên!</p>}
+        {rootComments.length > 0 ? (
+            rootComments.map((cmt) => renderCommentItem(cmt))
+        ) : (
+            <p className="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+        )}
       </div>
     </div>
   );

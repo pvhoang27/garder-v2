@@ -4,6 +4,7 @@ const db = require('../config/db');
 exports.getComments = async (req, res) => {
     try {
         const { entity_type, entity_id } = req.query;
+        // Lấy thêm parent_id từ database
         const sql = `
             SELECT c.*, u.full_name as user_name, u.avatar 
             FROM comments c 
@@ -22,7 +23,8 @@ exports.getComments = async (req, res) => {
 // 2. Thêm bình luận (BẮT BUỘC ĐĂNG NHẬP)
 exports.addComment = async (req, res) => {
     try {
-        const { user_id, guest_name, entity_type, entity_id, content } = req.body;
+        // Thêm parent_id vào destructuring
+        const { user_id, guest_name, entity_type, entity_id, content, parent_id } = req.body;
 
         if (!content) return res.status(400).json({ message: "Nội dung không được để trống" });
 
@@ -34,10 +36,10 @@ exports.addComment = async (req, res) => {
         // Lấy tên hiển thị từ guest_name (đã được client gửi là full_name của user)
         const nameDisplay = guest_name;
 
-        // Insert vào bảng comments
+        // Insert vào bảng comments (Thêm cột parent_id)
         await db.query(
-            "INSERT INTO comments (user_id, guest_name, entity_type, entity_id, content) VALUES (?, ?, ?, ?, ?)",
-            [user_id, nameDisplay, entity_type, entity_id, content]
+            "INSERT INTO comments (user_id, guest_name, entity_type, entity_id, content, parent_id) VALUES (?, ?, ?, ?, ?, ?)",
+            [user_id, nameDisplay, entity_type, entity_id, content, parent_id || null]
         );
 
         // Tạo thông báo cho Admin
@@ -80,6 +82,7 @@ exports.getAllCommentsForAdmin = async (req, res) => {
 exports.deleteComment = async (req, res) => {
     try {
         const { id } = req.params;
+        // Lưu ý: Nếu xóa cha thì DB nên thiết lập ON DELETE CASCADE, hoặc xử lý code xóa con
         await db.query("DELETE FROM comments WHERE id = ?", [id]);
         res.json({ message: "Đã xóa bình luận" });
     } catch (error) {
