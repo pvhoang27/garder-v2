@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaComment } from "react-icons/fa";
 
-const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'views' }) => {
+const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'views', cardStyle = {} }) => {
   const catName = categories.find((c) => c.id === plant.category_id)?.name || "Indoor";
 
   const getImageUrl = (path) => {
@@ -17,7 +17,7 @@ const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'vie
       to={`/plant/${plant.id}`}
       style={{ textDecoration: "none", color: "inherit" }}
     >
-      <div className="plant-item-card">
+      <div className="plant-item-card" style={cardStyle}>
         <div className="plant-img-wrapper">
           <img
             src={getImageUrl(plant.thumbnail)}

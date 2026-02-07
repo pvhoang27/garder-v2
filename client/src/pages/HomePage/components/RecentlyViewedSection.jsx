@@ -2,22 +2,29 @@ import React, { useEffect, useState } from "react";
 import PlantCard from "./PlantCard";
 import { FaHistory } from "react-icons/fa";
 
-const RecentlyViewedSection = ({ categories }) => {
+const RecentlyViewedSection = ({ categories, data }) => {
   const [viewedPlants, setViewedPlants] = useState([]);
 
   useEffect(() => {
-    // Lấy dữ liệu từ localStorage khi component mount
-    const stored = localStorage.getItem("recently_viewed");
-    if (stored) {
-      setViewedPlants(JSON.parse(stored));
+    // Nếu có data từ props (HomePage truyền xuống) thì dùng luôn
+    if (data) {
+      setViewedPlants(data);
+    } else {
+      // Fallback: Nếu không truyền props thì tự lấy từ localStorage (như code cũ)
+      const stored = localStorage.getItem("recently_viewed");
+      if (stored) {
+        setViewedPlants(JSON.parse(stored));
+      }
     }
-  }, []);
+  }, [data]);
 
   // Nếu chưa xem gì thì không hiển thị section này
   if (viewedPlants.length === 0) return null;
 
   return (
-    <section className="section bg-light-green" style={{ background: "#fdfdfd", borderTop: "1px solid #eee" }}>
+    // Xóa class bg-light-green và style background để Section có nền Trắng (mặc định)
+    // Để tương phản với FeaturedSection (Nền Xanh) ở trên
+    <section className="section" style={{ borderTop: "1px solid #eee" }}>
       <div className="container">
         <div className="section-header">
           <h2 className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -35,8 +42,10 @@ const RecentlyViewedSection = ({ categories }) => {
               key={plant.id}
               plant={plant}
               categories={categories}
-              // Có thể ẩn stats nếu muốn gọn, hoặc để true
-              showStats={false} 
+              showStats={false}
+              // TRUYỀN MÀU NỀN CHO CARD:
+              // Vì Section nền Trắng, nên Card phải nền Xanh (#f7fee7) để Zigzag
+              cardStyle={{ background: "#f7fee7" }}
             />
           ))}
         </div>

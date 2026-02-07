@@ -42,6 +42,9 @@ const HomePage = () => {
   // State Admin Control
   const [globalEffect, setGlobalEffect] = useState("none");
 
+  // --- STATE MỚI ĐỂ CHECK ZIGZAG (RECENTLY VIEWED) ---
+  const [recentPlants, setRecentPlants] = useState([]);
+
   // State tìm kiếm & filter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
@@ -87,9 +90,15 @@ const HomePage = () => {
       );
       setLayouts(sortedLayouts);
     });
+
+    // 5. [FIX ZIGZAG] Check localStorage ngay khi vào trang chủ
+    const storedRecent = localStorage.getItem("recently_viewed");
+    if (storedRecent) {
+      setRecentPlants(JSON.parse(storedRecent));
+    }
   }, [layoutIdParam]);
 
-  // 5. Effect riêng cho phần Trending
+  // 6. Effect riêng cho phần Trending
   useEffect(() => {
     const fetchTrending = async () => {
       setLoadingTrending(true);
@@ -174,6 +183,13 @@ const HomePage = () => {
     return t("home.search_results");
   };
 
+  // [LOGIC ZIGZAG QUAN TRỌNG]
+  // Featured (luôn là Nền Xanh)
+  // Nếu có Recent (Recent là Nền Trắng) -> Dynamic kế tiếp phải là Nền Xanh (Index Lẻ: 1, 3...)
+  // Nếu KHÔNG có Recent -> Featured (Xanh) -> Dynamic kế tiếp phải là Nền Trắng (Index Chẵn: 0, 2...)
+  const hasRecent = recentPlants.length > 0;
+  const startDynamicIndex = hasRecent ? 1 : 0;
+
   return (
     <div className="home-page-container">
       {/* CÁC TÍNH NĂNG NỔI */}
@@ -207,7 +223,7 @@ const HomePage = () => {
       ) : (
         /* --- GIAO DIỆN LANDING PAGE (TRANG CHỦ MẶC ĐỊNH) --- */
         <>
-          {/* CATEGORIES SECTION */}
+          {/* CATEGORIES SECTION (Trắng) */}
           <section className="section">
             <div className="container">
               <div className="section-header">
@@ -255,7 +271,7 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* TRENDING PLANTS */}
+          {/* TRENDING PLANTS (Trắng) */}
           <TrendingSection
             trendingPlants={trendingPlants}
             loadingTrending={loadingTrending}
@@ -264,16 +280,19 @@ const HomePage = () => {
             categories={categories}
           />
 
-          {/* FEATURED PLANTS */}
+          {/* FEATURED PLANTS (Background XANH - Card TRẮNG) */}
           <FeaturedSection
             loading={loading}
             featuredPlants={featuredPlants}
             categories={categories}
           />
 
-          {/* --- SECTION ĐÃ XEM GẦN ĐÂY (MỚI THÊM) --- */}
-          {/* Chỉ hiển thị khi có dữ liệu trong localStorage, component tự xử lý */}
-          <RecentlyViewedSection categories={categories} />
+          {/* --- SECTION ĐÃ XEM GẦN ĐÂY (Background TRẮNG - Card XANH) --- */}
+          {/* Truyền data vào để component hiển thị, không cần load lại từ localStorage */}
+          <RecentlyViewedSection
+            categories={categories}
+            data={recentPlants}
+          />
 
           {/* DYNAMIC SECTIONS */}
           {layouts.map(
@@ -284,7 +303,8 @@ const HomePage = () => {
                   {...layout}
                   paramValue={layout.value || layout.param_value}
                   categories={categories}
-                  index={index}
+                  // Điều chỉnh index bắt đầu dựa trên việc có Section Recent hay không
+                  index={index + startDynamicIndex}
                 />
               )
           )}
