@@ -389,6 +389,10 @@
   font-weight: 600;
   margin: 0 0 8px 0;
   color: var(--text-dark);
+  /* Sửa lỗi tên dài xuống dòng */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .plant-price {

@@ -55,7 +55,8 @@ const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'vie
         </div>
         <div className="plant-content">
           <span className="plant-category">{catName}</span>
-          <h4 className="plant-title">{plant.name}</h4>
+          {/* Thêm title={plant.name} ở đây để hiện tooltip khi hover */}
+          <h4 className="plant-title" title={plant.name}>{plant.name}</h4>
           <div className="plant-price">
             {Number(plant.price).toLocaleString()} ₫
           </div>
