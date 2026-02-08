@@ -14,6 +14,8 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --font-serif: "Times New Roman", serif; /* Giả lập font có chân */
   --font-sans: system-ui, -apple-system, sans-serif;
+  --tooltip-bg: #1a2e05;
+  --tooltip-text: #ffffff;
 }
 
 /* Reset cơ bản cho trang Home */
@@ -337,17 +339,22 @@
 .plant-item-card {
   background: white;
   border-radius: var(--border-radius-md);
-  overflow: hidden;
+  /* SỬA LỖI: Bỏ overflow hidden ở card để Tooltip có thể bay ra ngoài */
+  /* overflow: hidden; -> Đã xóa */
   border: 1px solid #f3f4f6;
   transition: all 0.3s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1; /* Mặc định */
 }
 
+/* Khi hover, đưa card lên lớp cao nhất để Tooltip đè lên các card khác */
 .plant-item-card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-5px);
+  z-index: 50;
 }
 
 .plant-img-wrapper {
@@ -355,6 +362,9 @@
   overflow: hidden;
   position: relative;
   background: #f9fafb;
+  /* SỬA LỖI: Thêm border-radius cho ảnh vì card đã bỏ overflow:hidden */
+  border-top-left-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-md);
 }
 
 .plant-img-wrapper img {
@@ -384,16 +394,69 @@
   margin-bottom: 8px;
 }
 
+/* === SỬA LỖI: Tách Wrapper và Title === */
+/* Wrapper chịu trách nhiệm chứa Tooltip (ko bị cắt) */
+.plant-title-wrapper {
+  position: relative;
+  margin-bottom: 8px;
+  /* Quan trọng: không được có overflow:hidden ở đây */
+  width: 100%;
+}
+
+/* Title chịu trách nhiệm cắt chữ "..." */
 .plant-title {
   font-size: 1.125rem;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0;
   color: var(--text-dark);
-  /* Sửa lỗi tên dài xuống dòng */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: help;
 }
+
+/* Chuyển logic Tooltip sang Wrapper */
+.plant-title-wrapper:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: normal;
+  width: max-content;
+  max-width: 250px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  animation: fadeInTooltip 0.2s ease-in-out forwards;
+}
+
+.plant-title-wrapper:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 90%; /* Sát mép dưới tooltip */
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--tooltip-bg) transparent transparent transparent;
+  z-index: 100;
+  opacity: 0;
+  animation: fadeInTooltip 0.2s ease-in-out forwards;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translate(-50%, 5px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+/* ===================================== */
 
 .plant-price {
   font-size: 1.125rem;

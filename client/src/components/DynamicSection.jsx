@@ -2,25 +2,25 @@ import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link } from "react-router-dom";
 import { FaArrowRight, FaSpa } from "react-icons/fa";
+// Import component PlantCard (đã chứa logic fix tên dài + tooltip + xử lý ảnh)
+import PlantCard from "../pages/HomePage/components/PlantCard";
 
 const DynamicSection = ({ id, title, type, paramValue, categories, index }) => {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // --- GIỮ NGUYÊN LOGIC FETCH DATA ---
   useEffect(() => {
     const fetchPlants = async () => {
       try {
         setLoading(true);
         if (type === "manual") {
-          // [FIX] Gọi đúng API lấy cây thuộc layout này (Backend đã có getLayoutPlants)
           const res = await axiosClient.get(`/layout/${id}/plants`);
           setPlants(res.data);
         } else if (type === "category" && paramValue) {
-          // Lấy cây theo danh mục
           const res = await axiosClient.get(`/plants?category_id=${paramValue}`);
           setPlants(res.data);
         } else {
-           // Mặc định (fallback)
            const res = await axiosClient.get("/plants");
            setPlants(res.data);
         }
@@ -34,30 +34,21 @@ const DynamicSection = ({ id, title, type, paramValue, categories, index }) => {
     fetchPlants();
   }, [type, paramValue, id]);
 
-  // [LEADER REQUIREMENT] Chỉ lấy tối đa 4 cây hiển thị ở trang chủ
+  // --- GIỮ NGUYÊN LOGIC LIMIT 4 CÂY ---
   const displayPlants = plants.slice(0, 4);
 
-  // Helper xử lý ảnh
-  const getImageUrl = (path) => {
-    if (!path)
-      return "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
-    if (path.startsWith("http")) return path;
-    return `http://localhost:3000${path}`;
-  };
-
-  // Tính màu nền xen kẽ
-  // index chẵn (0, 2...) -> false (Nền trắng) -> Card màu xanh (#f7fee7)
-  // index lẻ (1, 3...) -> true (Nền xanh) -> Card màu trắng (#ffffff)
+  // --- GIỮ NGUYÊN LOGIC MÀU NỀN ZIGZAG ---
+  // index chẵn -> Card xanh
+  // index lẻ -> Card trắng
   const isGrayBg = index % 2 !== 0; 
 
   if (displayPlants.length === 0) return null;
 
-  // Xác định link "Xem tất cả" dựa trên loại section
+  // --- GIỮ NGUYÊN LOGIC LINK VIEW ALL ---
   let viewAllLink = "/?show_all=true";
   if (type === 'category' && paramValue) {
       viewAllLink = `/?category_id=${paramValue}`;
   } else if (type === 'manual') {
-      // [FIX] Truyền layout_id về trang chủ để lọc đúng bộ sưu tập
       viewAllLink = `/?layout_id=${id}`; 
   }
 
@@ -77,37 +68,17 @@ const DynamicSection = ({ id, title, type, paramValue, categories, index }) => {
         {/* Grid Plants */}
         <div className="plant-grid">
           {displayPlants.map((plant) => {
-             const catName = categories.find((c) => c.id === plant.category_id)?.name || "Bonsai";
              return (
-                <Link
+               // --- THAY THẾ ĐOẠN HTML CŨ BẰNG COMPONENT PLANTCARD ---
+               // Logic hiển thị ảnh, tên cây, giá tiền nằm hết trong PlantCard
+               // Logic tooltip và cắt chữ tên dài cũng nằm trong PlantCard
+               <PlantCard 
                   key={plant.id}
-                  to={`/plant/${plant.id}`}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <div 
-                    className="plant-item-card" 
-                    // LOGIC ZIGZAG: Nền Section Xanh -> Card Trắng | Nền Section Trắng -> Card Xanh
-                    style={{ background: isGrayBg ? "#ffffff" : "#f7fee7" }} 
-                  >
-                    <div className="plant-img-wrapper">
-                      <img
-                        src={getImageUrl(plant.thumbnail)}
-                        alt={plant.name}
-                        onError={(e) => {
-                          e.target.src =
-                            "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
-                        }}
-                      />
-                    </div>
-                    <div className="plant-content">
-                      <span className="plant-category">{catName}</span>
-                      <h4 className="plant-title">{plant.name}</h4>
-                      <div className="plant-price">
-                        {Number(plant.price).toLocaleString()} ₫
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+                  plant={plant}
+                  categories={categories}
+                  // Truyền style vào để giữ logic màu nền zigzag của bạn
+                  cardStyle={{ background: isGrayBg ? "#ffffff" : "#f7fee7" }}
+               />
              );
           })}
         </div>

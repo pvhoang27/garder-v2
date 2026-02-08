@@ -55,8 +55,13 @@ const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'vie
         </div>
         <div className="plant-content">
           <span className="plant-category">{catName}</span>
-          {/* Thêm title={plant.name} ở đây để hiện tooltip khi hover */}
-          <h4 className="plant-title" title={plant.name}>{plant.name}</h4>
+          
+          {/* --- SỬA TẠI ĐÂY: Dùng Wrapper để giữ Tooltip không bị cắt --- */}
+          <div className="plant-title-wrapper" data-title={plant.name}>
+             <h4 className="plant-title">{plant.name}</h4>
+          </div>
+          {/* ----------------------------------------------------------- */}
+
           <div className="plant-price">
             {Number(plant.price).toLocaleString()} ₫
           </div>
