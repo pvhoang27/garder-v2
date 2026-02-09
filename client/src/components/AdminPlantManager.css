@@ -12,24 +12,60 @@
   color: #333;
 }
 
-/* Button Add */
-.btn-add {
-  background: #2e7d32;
-  color: white;
+/* Actions Group (Container cho các nút) */
+.admin-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Shared Button Styles cho Header */
+.btn-add,
+.btn-export,
+.btn-import {
   padding: 10px 15px;
   border-radius: 5px;
   border: none;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   cursor: pointer;
   height: 40px;
   font-size: 14px;
-  transition: background 0.2s;
+  color: white;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-add:active,
+.btn-export:active,
+.btn-import:active {
+  transform: translateY(1px);
+}
+
+/* Button Add Specific */
+.btn-add {
+  background: #2e7d32; /* Dark Green */
 }
 
 .btn-add:hover {
   background: #1b5e20;
+}
+
+/* Button Export Specific */
+.btn-export {
+  background-color: #28a745; /* Green */
+}
+
+.btn-export:hover {
+  background-color: #218838;
+}
+
+/* Button Import Specific */
+.btn-import {
+  background-color: #17a2b8; /* Info Teal */
+}
+
+.btn-import:hover {
+  background-color: #138496;
 }
 
 /* Modal Form Container */
@@ -108,7 +144,7 @@
   font-weight: 500;
 }
 
-/* Action Buttons */
+/* Action Buttons (Trong bảng) */
 .action-group {
   display: flex;
   gap: 8px;
@@ -149,7 +185,13 @@
     font-size: 1.2rem;
   }
   
+  /* Ẩn chữ trong nút khi ở mobile */
   .btn-text {
     display: none;
+  }
+  
+  /* Điều chỉnh khoảng cách nút trên mobile */
+  .btn-add, .btn-export, .btn-import {
+    padding: 10px; /* Giảm padding ngang để nút gọn hơn */
   }
 }

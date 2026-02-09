@@ -15,7 +15,7 @@ import "./AdminPlantManager.css";
 const AdminPlantManager = ({ isMobile }) => {
   const [plants, setPlants] = useState([]);
   const [categories, setCategories] = useState([]);
-  
+
   // Modal States
   const [editingPlant, setEditingPlant] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -25,7 +25,7 @@ const AdminPlantManager = ({ isMobile }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  
+
   // --- STATE MỚI CHO BỘ LỌC NGÀY ---
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -98,7 +98,7 @@ const AdminPlantManager = ({ isMobile }) => {
       const response = await axiosClient.get("/plants/data/export", {
         responseType: "blob", // Quan trọng để nhận file
       });
-      
+
       // Tạo link download giả
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -145,8 +145,10 @@ const AdminPlantManager = ({ isMobile }) => {
   const filteredPlants = plants
     .filter((p) => {
       // 1. Lọc theo tên
-      const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
+      const matchSearch = p.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
       // 2. Lọc theo danh mục
       const matchCategory =
         filterCategory === "all" ||
@@ -193,7 +195,7 @@ const AdminPlantManager = ({ isMobile }) => {
   const totalPages = Math.ceil(filteredPlants.length / itemsPerPage);
   const currentPlants = filteredPlants.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   useEffect(() => {
@@ -204,24 +206,28 @@ const AdminPlantManager = ({ isMobile }) => {
     <div>
       <div className="admin-header">
         <h2 className="admin-title">🌿 Danh Sách Cây</h2>
-        <div className="admin-actions" style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handleExport} className="btn-action btn-export" style={{ backgroundColor: '#28a745', color: 'white', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <FaFileExport /> Export
+
+        <div className="admin-actions">
+          {/* Nút Export */}
+          <button onClick={handleExport} className="btn-export">
+            <FaFileExport /> <span className="btn-text">Xuất Excel</span>
           </button>
-          
-          <button onClick={handleImportClick} className="btn-action btn-import" style={{ backgroundColor: '#17a2b8', color: 'white', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <FaFileImport /> Import
+
+          {/* Nút Import */}
+          <button onClick={handleImportClick} className="btn-import">
+            <FaFileImport /> <span className="btn-text">Nhập Excel</span>
           </button>
-          
+
           {/* Input file ẩn */}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept=".xlsx, .xls" 
-            style={{ display: 'none' }} 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls"
+            style={{ display: "none" }}
           />
 
+          {/* Nút Thêm Mới */}
           <button
             onClick={() => {
               setEditingPlant(null);
@@ -239,7 +245,10 @@ const AdminPlantManager = ({ isMobile }) => {
         <div className="modal-form-overlay">
           <div className="modal-header">
             <h3>{editingPlant ? "Sửa Cây" : "Thêm Cây"}</h3>
-            <button onClick={() => setShowForm(false)} className="btn-close-modal">
+            <button
+              onClick={() => setShowForm(false)}
+              className="btn-close-modal"
+            >
               &times;
             </button>
           </div>
@@ -266,14 +275,14 @@ const AdminPlantManager = ({ isMobile }) => {
         sortBy={sortBy}
         setSortBy={setSortBy}
         categories={categories}
-        startDate={startDate} 
-        setStartDate={setStartDate} 
-        endDate={endDate} 
-        setEndDate={setEndDate} 
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
       />
 
       {/* COMPONENT: TABLE */}
-      <PlantTable 
+      <PlantTable
         plants={currentPlants}
         onView={handleViewDetails}
         onEdit={handleEditClick}
