@@ -246,85 +246,125 @@ exports.exportPlants = async (req, res) => {
   }
 };
 
-// ... (Các đoạn code khác giữ nguyên)
-
-// 8. IMPORT PLANTS FROM EXCEL
+// 8. IMPORT PLANTS FROM EXCEL (Phiên bản Fix Lỗi Thông Báo)
 exports.importPlants = async (req, res) => {
   try {
     console.log("--- BẮT ĐẦU IMPORT ---");
     if (!req.file) {
-      console.log("Lỗi: Không có file được gửi lên");
       return res.status(400).json({ message: "Vui lòng upload file Excel (.xlsx)" });
     }
 
-    console.log("File path:", req.file.path); 
-
-    // Đọc file
     const workbook = xlsx.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0]; // Lấy sheet đầu tiên
+    const sheetName = workbook.SheetNames[0]; 
     const sheet = workbook.Sheets[sheetName];
+    // raw: false để thư viện tự parse định dạng số/ngày nếu có thể
+    const data = xlsx.utils.sheet_to_json(sheet, { raw: false }); 
     
-    // Convert sheet sang JSON
-    const data = xlsx.utils.sheet_to_json(sheet);
-    console.log("Số lượng dòng tìm thấy:", data.length);
+    console.log("Số dòng tìm thấy:", data.length);
 
     let successCount = 0;
     let failCount = 0;
+    const errorDetails = [];
 
-    for (const row of data) {
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const rowIndex = i + 2; // +2 vì Excel có header
+
+      // --- 1. CHUẨN HÓA DỮ LIỆU ---
+      // Lấy giá trị, nếu undefined thì gán mặc định để tránh crash
+      const name = (row["Tên Cây"] || row["name"] || "").toString().trim();
+      let price = row["Giá"] || row["price"] || "0";
+      const description = row["Mô tả"] || row["description"] || "";
+      const category_id = row["CategoryID"] || row["category_id"] || 1; 
+      const scientific_name = row["Tên Khoa Học"] || row["scientific_name"] || "";
+      const age = row["Tuổi"] || row["age"] || "";
+      const care_instruction = row["HD Chăm sóc"] || row["care_instruction"] || "";
+      let is_featured = row["Nổi bật"] || row["is_featured"] || "0";
+
+      // --- 2. VALIDATION CƠ BẢN (Check tay trước) ---
+      
+      // Lỗi 1: Tên trống
+      if (!name) {
+         errorDetails.push(`Dòng ${rowIndex}: Tên cây đang để trống.`);
+         failCount++; continue;
+      }
+
+      // Lỗi 2: Giá không phải số
+      // Xóa dấu phẩy, chấm trong chuỗi giá (VD: "100,000" -> "100000")
+      price = price.toString().replace(/,/g, "").replace(/\./g, "");
+      if (isNaN(price) || Number(price) < 0) {
+         errorDetails.push(`Dòng ${rowIndex}: Cột 'Giá' chứa giá trị không hợp lệ ("${row["Giá"] || row["price"]}"). Phải là số dương.`);
+         failCount++; continue;
+      }
+
+      // Lỗi 3: Category ID không phải số
+      if (isNaN(category_id)) {
+         errorDetails.push(`Dòng ${rowIndex}: 'CategoryID' phải là số ID (VD: 1, 2). Giá trị hiện tại: "${category_id}"`);
+         failCount++; continue;
+      }
+
+      // Chuẩn hóa Nổi bật
+      let featuredVal = 0;
+      const featStr = is_featured.toString().toLowerCase();
+      if (featStr === "1" || featStr === "true" || featStr === "có" || featStr === "yes") featuredVal = 1;
+
       try {
-        // Log dòng đang đọc để debug
-        // console.log("Đọc dòng:", row);
-
-        const name = row["Tên Cây"] || row["name"];
-        const price = row["Giá"] || row["price"] || 0;
-        const description = row["Mô tả"] || row["description"] || "";
-        // Lưu ý: Nếu user ko nhập ID danh mục, mặc định cho = 1 (hoặc null tùy logic của bạn)
-        const category_id = row["CategoryID"] || row["category_id"] || 1; 
-        const scientific_name = row["Tên Khoa Học"] || row["scientific_name"] || "";
-        const age = row["Tuổi"] || row["age"] || "";
-        const care_instruction = row["HD Chăm sóc"] || row["care_instruction"] || "";
-        const is_featured = row["Nổi bật"] || row["is_featured"] || 0;
-
-        if (!name) { 
-           console.log("-> Bỏ qua vì thiếu tên");
-           failCount++; 
-           continue; 
-        }
-
+        // --- 3. THỰC THI SQL & BẮT LỖI CSDL ---
         const sql = `INSERT INTO plants (name, price, category_id, scientific_name, age, description, care_instruction, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         
         await db.query(sql, [
-          name, 
-          price, 
-          category_id, 
-          scientific_name, 
-          age, 
-          description, 
-          care_instruction, 
-          is_featured
+          name, Number(price), category_id, scientific_name, age, description, care_instruction, featuredVal
         ]);
         
         successCount++;
+
       } catch (err) {
-        console.error("-> Lỗi SQL tại dòng này:", err.message);
+        // --- 4. DỊCH LỖI SQL SANG TIẾNG VIỆT ---
+        console.error(`[SQL Error Line ${rowIndex}]`, err.message); // Log cho Dev
+
+        let friendlyMsg = `Dòng ${rowIndex}: Lỗi không xác định (${err.code || 'Unknown'}).`;
+
+        if (err.code === 'ER_DUP_ENTRY') {
+            // Lỗi trùng lặp (thường là trùng tên nếu cột name có unique, hoặc trùng ID)
+            friendlyMsg = `Dòng ${rowIndex}: Cây tên "${name}" đã tồn tại trong hệ thống (Trùng tên).`;
+        } 
+        else if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.code === 'ER_NO_REFERENCED_ROW') {
+            // Lỗi khóa ngoại (Category ID không tồn tại trong bảng categories)
+            friendlyMsg = `Dòng ${rowIndex}: Mã danh mục (CategoryID: ${category_id}) không tồn tại trong hệ thống.`;
+        } 
+        else if (err.code === 'ER_DATA_TOO_LONG') {
+            // Dữ liệu quá dài so với giới hạn cột
+            friendlyMsg = `Dòng ${rowIndex}: Dữ liệu quá dài (Có thể tên, mô tả hoặc hướng dẫn quá số ký tự cho phép).`;
+        } 
+        else if (err.code === 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD') {
+            // Sai kiểu dữ liệu (VD: nhập chữ vào cột số mà thoát được check ở trên)
+            friendlyMsg = `Dòng ${rowIndex}: Sai định dạng dữ liệu (Kiểm tra lại cột Giá hoặc Tuổi).`;
+        }
+        else if (err.code === 'ER_BAD_NULL_ERROR') {
+             friendlyMsg = `Dòng ${rowIndex}: Thiếu thông tin bắt buộc (Database từ chối nhận giá trị trống).`;
+        }
+        else {
+             // Nếu không thuộc các mã trên, in message gốc nhưng rút gọn
+             friendlyMsg = `Dòng ${rowIndex}: Lỗi dữ liệu - ${err.sqlMessage || err.message}`;
+        }
+
+        errorDetails.push(friendlyMsg);
         failCount++;
       }
     }
 
-    // Xóa file tạm
     if (req.file.path) fs.unlinkSync(req.file.path);
-
-    console.log(`Kết quả: Thành công ${successCount}, Lỗi ${failCount}`);
     
+    // Trả về kết quả
     res.json({ 
-      message: `Import hoàn tất! Thành công: ${successCount}, Lỗi: ${failCount}`,
+      message: `Xử lý xong.`,
       successCount,
-      failCount
+      failCount,
+      errorDetails 
     });
 
   } catch (error) {
     console.error("Lỗi FATAL server:", error);
-    res.status(500).json({ message: "Lỗi server khi xử lý file" });
+    res.status(500).json({ message: "Lỗi hệ thống nghiêm trọng khi đọc file Excel. Vui lòng kiểm tra lại file." });
   }
 };
