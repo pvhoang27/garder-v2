@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaFileExport, FaFileImport } from "react-icons/fa"; // Thêm icon
 
 // Components
 import AdminPlantForm from "./AdminPlantForm";
@@ -32,6 +32,9 @@ const AdminPlantManager = ({ isMobile }) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  // Ref cho input file import
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchPlants();
@@ -89,7 +92,56 @@ const AdminPlantManager = ({ isMobile }) => {
     window.scrollTo(0, 0);
   };
 
-  // --- LOGIC FILTER & SORT (ĐÃ CẬP NHẬT NGÀY) ---
+  // --- IMPORT / EXPORT HANDLERS ---
+  const handleExport = async () => {
+    try {
+      const response = await axiosClient.get("/plants/data/export", {
+        responseType: "blob", // Quan trọng để nhận file
+      });
+      
+      // Tạo link download giả
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "plants_export.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error("Lỗi export:", error);
+      alert("Lỗi khi xuất file!");
+    }
+  };
+
+  const handleImportClick = () => {
+    // Kích hoạt input file ẩn
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axiosClient.post("/plants/data/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert(res.data.message);
+      fetchPlants(); // Load lại danh sách sau khi import
+    } catch (error) {
+      console.error("Lỗi import:", error);
+      alert("Lỗi khi nhập file!");
+    } finally {
+      // Reset input để có thể chọn lại cùng 1 file nếu muốn
+      e.target.value = null;
+    }
+  };
+  // ------------------------------
+
+  // --- LOGIC FILTER & SORT ---
   const filteredPlants = plants
     .filter((p) => {
       // 1. Lọc theo tên
@@ -101,11 +153,10 @@ const AdminPlantManager = ({ isMobile }) => {
         p.category_id === parseInt(filterCategory) ||
         p.category_name === filterCategory;
 
-      // 3. Lọc theo ngày (MỚI)
+      // 3. Lọc theo ngày
       let matchDate = true;
       if (startDate || endDate) {
         const plantDate = new Date(p.created_at);
-        // Reset giờ của ngày tạo về 00:00:00 để so sánh chính xác ngày
         plantDate.setHours(0, 0, 0, 0);
 
         if (startDate) {
@@ -153,15 +204,34 @@ const AdminPlantManager = ({ isMobile }) => {
     <div>
       <div className="admin-header">
         <h2 className="admin-title">🌿 Danh Sách Cây</h2>
-        <button
-          onClick={() => {
-            setEditingPlant(null);
-            setShowForm(true);
-          }}
-          className="btn-add"
-        >
-          <FaPlus /> <span className="btn-text">Thêm Mới</span>
-        </button>
+        <div className="admin-actions" style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleExport} className="btn-action btn-export" style={{ backgroundColor: '#28a745', color: 'white', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <FaFileExport /> Export
+          </button>
+          
+          <button onClick={handleImportClick} className="btn-action btn-import" style={{ backgroundColor: '#17a2b8', color: 'white', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <FaFileImport /> Import
+          </button>
+          
+          {/* Input file ẩn */}
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept=".xlsx, .xls" 
+            style={{ display: 'none' }} 
+          />
+
+          <button
+            onClick={() => {
+              setEditingPlant(null);
+              setShowForm(true);
+            }}
+            className="btn-add"
+          >
+            <FaPlus /> <span className="btn-text">Thêm Mới</span>
+          </button>
+        </div>
       </div>
 
       {/* COMPONENT: FORM ADD/EDIT */}
@@ -187,7 +257,7 @@ const AdminPlantManager = ({ isMobile }) => {
         isMobile={isMobile}
       />
 
-      {/* COMPONENT: TOOLBAR (Đã truyền thêm props ngày) */}
+      {/* COMPONENT: TOOLBAR */}
       <PlantToolbar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -196,10 +266,10 @@ const AdminPlantManager = ({ isMobile }) => {
         sortBy={sortBy}
         setSortBy={setSortBy}
         categories={categories}
-        startDate={startDate} // MỚI
-        setStartDate={setStartDate} // MỚI
-        endDate={endDate} // MỚI
-        setEndDate={setEndDate} // MỚI
+        startDate={startDate} 
+        setStartDate={setStartDate} 
+        endDate={endDate} 
+        setEndDate={setEndDate} 
       />
 
       {/* COMPONENT: TABLE */}

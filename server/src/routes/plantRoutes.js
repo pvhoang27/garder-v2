@@ -16,6 +16,13 @@ const cpUpload = upload.fields([
   { name: "gallery", maxCount: 20 },
 ]);
 
+// --- ROUTES MỚI CHO IMPORT / EXPORT ---
+// Đặt trước route /:id để tránh conflict params
+router.get("/data/export", authMiddleware, plantController.exportPlants);
+// Sử dụng upload.single('file') cho file excel
+router.post("/data/import", authMiddleware, upload.single("file"), plantController.importPlants);
+// --------------------------------------
+
 router.post("/", authMiddleware, cpUpload, plantController.createPlant);
 router.put("/:id", authMiddleware, cpUpload, plantController.updatePlant);
 router.delete("/:id", authMiddleware, plantController.deletePlant);

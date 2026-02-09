@@ -6,25 +6,39 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
-        // Đặt tên file tránh trùng
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
 const fileFilter = (req, file, cb) => {
-    // Chấp nhận TẤT CẢ các loại ảnh và video
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    // Check extension file (đuôi file)
+    const ext = path.extname(file.originalname).toLowerCase();
+    
+    // Danh sách đuôi file cho phép: ảnh, video, excel
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov', '.xlsx', '.xls'];
+
+    if (allowedExtensions.includes(ext)) {
         cb(null, true);
     } else {
-        cb(new Error('Chỉ chấp nhận file ảnh hoặc video!'), false);
+        // Cho phép MIME type của Excel (đôi khi check đuôi file an toàn hơn check mime với excel)
+        if (
+            file.mimetype.startsWith('image/') || 
+            file.mimetype.startsWith('video/') ||
+            file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+            file.mimetype === 'application/vnd.ms-excel'
+        ) {
+            cb(null, true);
+        } else {
+            cb(new Error('File không hỗ trợ! Chỉ nhận Ảnh, Video hoặc Excel.'), false);
+        }
     }
 };
 
 const upload = multer({ 
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 100 * 1024 * 1024 } // Giới hạn 100MB
+    limits: { fileSize: 100 * 1024 * 1024 } 
 });
 
 module.exports = upload;
