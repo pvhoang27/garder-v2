@@ -1,4 +1,4 @@
-import { FaBars, FaList, FaPlus, FaMagic, FaImage } from "react-icons/fa";
+import { FaBars, FaList, FaPlus, FaMagic, FaImage, FaInfoCircle } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
 // Import components
@@ -6,6 +6,7 @@ import AdminGlobalEffectConfig from "../components/admin/layout/AdminGlobalEffec
 import AdminLayoutForm from "../components/admin/layout/AdminLayoutForm";
 import AdminLayoutList from "../components/admin/layout/AdminLayoutList";
 import AdminHeroConfig from "../components/admin/layout/AdminHeroConfig";
+import AdminAboutConfig from "../components/admin/layout/AdminAboutConfig"; // Import mới
 
 // Import CSS
 import "../components/admin/layout/AdminLayout.css";
@@ -24,6 +25,8 @@ const AdminLayoutConfig = () => {
     globalEffect,
     heroConfig,
     previewUrl,
+    aboutConfig, // New
+    aboutPreviews, // New
     isMobile,
     isSidebarOpen,
     config,
@@ -34,6 +37,7 @@ const AdminLayoutConfig = () => {
     // Setters
     setGlobalEffect,
     setHeroConfig,
+    setAboutConfig, // New
     setIsSidebarOpen,
     setConfig,
     setSearchPlant,
@@ -43,6 +47,8 @@ const AdminLayoutConfig = () => {
     handleSaveEffect,
     handleHeroFileChange,
     handleSaveHeroConfig,
+    handleAboutFileChange, // New
+    handleSaveAboutConfig, // New
     handleEdit,
     handleDelete,
     handleMoveSection,
@@ -149,6 +155,13 @@ const AdminLayoutConfig = () => {
             >
               <FaImage /> Cấu Hình Hero
             </button>
+
+            <button
+              style={tabBtnStyle(activeTab === "about")}
+              onClick={() => handleTabClick("about")}
+            >
+              <FaInfoCircle /> Cấu Hình About
+            </button>
           </div>
 
           {/* --- TAB CONTENT: LIST --- */}
@@ -202,6 +215,17 @@ const AdminLayoutConfig = () => {
               previewUrl={previewUrl}
               handleHeroFileChange={handleHeroFileChange}
               handleSaveHeroConfig={handleSaveHeroConfig}
+            />
+          )}
+
+           {/* --- TAB CONTENT: ABOUT CONFIG --- */}
+           {activeTab === "about" && (
+            <AdminAboutConfig
+              aboutConfig={aboutConfig}
+              setAboutConfig={setAboutConfig}
+              aboutPreviews={aboutPreviews}
+              handleAboutFileChange={handleAboutFileChange}
+              handleSaveAboutConfig={handleSaveAboutConfig}
             />
           )}
         </div>

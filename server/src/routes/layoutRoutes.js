@@ -4,25 +4,32 @@ const layoutController = require('../controllers/layoutController');
 const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
 
-// [QUAN TRỌNG] Cấu hình Multer lưu vào Memory (RAM) để lấy Buffer lưu vào DB
-// Thay vì lưu vào đĩa cứng như trước
+// Cấu hình Multer Memory Storage
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn 5MB để tránh quá tải DB
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
-// Route lấy cấu hình hiệu ứng (Public)
+// --- GLOBAL EFFECT ---
 router.get('/effect', layoutController.getGlobalEffect);
-// Route cập nhật hiệu ứng (Admin only)
 router.post('/effect', authMiddleware, layoutController.updateGlobalEffect);
 
-// Route cấu hình Hero Section (Banner đầu trang)
+// --- HERO CONFIG ---
 router.get('/hero', layoutController.getHeroConfig);
-
-// Sử dụng biến 'upload' đã cấu hình memoryStorage ở trên
 router.post('/hero', authMiddleware, upload.single('image'), layoutController.updateHeroConfig);
 
+// --- ABOUT CONFIG (MỚI) ---
+router.get('/about', layoutController.getAboutConfig);
+// Dùng upload.fields để nhận 3 ảnh
+router.post('/about', authMiddleware, upload.fields([
+    { name: 'image1', maxCount: 1 },
+    { name: 'image2', maxCount: 1 },
+    { name: 'image3', maxCount: 1 }
+]), layoutController.updateAboutConfig);
+
+
+// --- GENERAL LAYOUTS ---
 router.get('/', layoutController.getLayouts);
 router.get('/:id/plants', layoutController.getLayoutPlants); 
 

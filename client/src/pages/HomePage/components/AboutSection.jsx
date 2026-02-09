@@ -1,7 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaHeart, FaFacebook, FaTiktok } from "react-icons/fa";
+import axiosClient from "../../../api/axiosClient";
 
 const AboutSection = () => {
+  const [data, setData] = useState({
+    title: "Đam mê tạo nên những tác phẩm sống động",
+    description1: "Cây cảnh Xuân Thục được thành lập với niềm đam mê cây cảnh từ nhiều thế hệ trong gia đình...",
+    description2: "Chúng tôi tin rằng cây cảnh không chỉ là vật trang trí...",
+    stat1Number: "15+",
+    stat1Text: "Năm kinh nghiệm",
+    stat2Number: "100%",
+    stat2Text: "Tâm huyết",
+    image1: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80",
+    image2: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80",
+    image3: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80"
+  });
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await axiosClient.get('/layout/about');
+        if (res.data) {
+          setData(prev => ({ ...prev, ...res.data }));
+        }
+      } catch (error) {
+        console.error("Lỗi tải About config:", error);
+      }
+    };
+    fetchConfig();
+  }, []);
+
   return (
     <section className="section">
       <div className="container">
@@ -9,20 +37,23 @@ const AboutSection = () => {
           <div className="about-images">
             <div className="about-img-1">
               <img
-                src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80"
+                src={data.image1}
                 alt="Garden 1"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
             <div className="about-img-2">
               <img
-                src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80"
+                src={data.image2}
                 alt="Garden 2"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
             <div className="about-img-3">
               <img
-                src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80"
+                src={data.image3}
                 alt="Garden 3"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
           </div>
@@ -32,24 +63,19 @@ const AboutSection = () => {
               <FaHeart /> Về chúng tôi
             </div>
             <h2 className="section-title">
-              Đam mê tạo nên những tác phẩm sống động
+              {data.title}
             </h2>
             <p
               className="text-gray"
               style={{ lineHeight: 1.8, marginBottom: "20px" }}
             >
-              Cây cảnh Xuân Thục được thành lập với niềm đam mê cây cảnh từ
-              nhiều thế hệ trong gia đình. Mỗi cây trong bộ sưu tập đều được
-              chăm sóc tỉ mỉ, từ việc lựa chọn giống, uốn nắn dáng thế đến chăm
-              bón hàng ngày.
+              {data.description1}
             </p>
             <p
               className="text-gray"
               style={{ lineHeight: 1.8, marginBottom: "30px" }}
             >
-              Chúng tôi tin rằng cây cảnh không chỉ là vật trang trí mà còn là
-              người bạn đồng hành, mang lại sự bình yên và năng lượng tích cực
-              cho không gian sống.
+              {data.description2}
             </p>
 
             <div
@@ -69,10 +95,10 @@ const AboutSection = () => {
                 <h4
                   style={{ fontSize: "1.5rem", margin: 0, color: "#3f6212" }}
                 >
-                  15+
+                  {data.stat1Number}
                 </h4>
                 <span style={{ fontSize: "0.9rem", color: "#5c6c49" }}>
-                  Năm kinh nghiệm
+                  {data.stat1Text}
                 </span>
               </div>
               <div
@@ -85,10 +111,10 @@ const AboutSection = () => {
                 <h4
                   style={{ fontSize: "1.5rem", margin: 0, color: "#3f6212" }}
                 >
-                  100%
+                  {data.stat2Number}
                 </h4>
                 <span style={{ fontSize: "0.9rem", color: "#5c6c49" }}>
-                  Tâm huyết
+                  {data.stat2Text}
                 </span>
               </div>
             </div>

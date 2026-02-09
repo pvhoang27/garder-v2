@@ -12,20 +12,44 @@ export const useAdminLayout = () => {
   
   // --- STATE UI & FORM ---
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("list"); // "list", "form", "effect", "hero"
+  const [activeTab, setActiveTab] = useState("list"); // "list", "form", "effect", "hero", "about"
   const [globalEffect, setGlobalEffect] = useState("none");
   const [searchPlant, setSearchPlant] = useState("");
   
   // --- STATE HERO CONFIG ---
   const [heroConfig, setHeroConfig] = useState({
-    titlePrefix: "Khám phá vẻ đẹp",
-    titleHighlight: "thiên nhiên",
-    titleSuffix: "qua từng tác phẩm",
-    description: "Chào mừng đến với Cây cảnh Xuân Thục...",
-    imageUrl: "/hero-bonsai.jpg",
+    titlePrefix: "",
+    titleHighlight: "",
+    titleSuffix: "",
+    description: "",
+    imageUrl: "",
     imageFile: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
+
+  // --- STATE ABOUT CONFIG (MỚI) ---
+  const [aboutConfig, setAboutConfig] = useState({
+    title: "",
+    description1: "",
+    description2: "",
+    stat1Number: "",
+    stat1Text: "",
+    stat2Number: "",
+    stat2Text: "",
+    image1: "",
+    image2: "",
+    image3: "",
+    // Files để upload
+    image1File: null,
+    image2File: null,
+    image3File: null
+  });
+  // Preview cho 3 ảnh About
+  const [aboutPreviews, setAboutPreviews] = useState({
+    image1: null,
+    image2: null,
+    image3: null
+  });
 
   // --- STATE SIDEBAR (MOBILE) ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -61,6 +85,7 @@ export const useAdminLayout = () => {
     fetchAllPlants();
     fetchGlobalEffect();
     fetchHeroConfig();
+    fetchAboutConfig(); // Fetch About config
   }, []);
 
   // --- API HELPER FUNCTIONS ---
@@ -99,11 +124,29 @@ export const useAdminLayout = () => {
       if (res.data) {
         setHeroConfig({ ...res.data, imageFile: null });
         if (res.data.imageUrl) {
-          const url = res.data.imageUrl.startsWith("/uploads")
-            ? `http://localhost:3000${res.data.imageUrl}`
-            : res.data.imageUrl;
-          setPreviewUrl(url);
+          setPreviewUrl(res.data.imageUrl);
         }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchAboutConfig = async () => {
+    try {
+      const res = await axiosClient.get("/layout/about");
+      if (res.data) {
+        setAboutConfig({
+            ...res.data,
+            image1File: null,
+            image2File: null,
+            image3File: null
+        });
+        setAboutPreviews({
+            image1: res.data.image1 || null,
+            image2: res.data.image2 || null,
+            image3: res.data.image3 || null
+        });
       }
     } catch (error) {
       console.error(error);
@@ -143,12 +186,22 @@ export const useAdminLayout = () => {
     }
   };
 
+  // Hero File Handler
   const handleHeroFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setHeroConfig({ ...heroConfig, imageFile: file });
       setPreviewUrl(URL.createObjectURL(file));
     }
+  };
+
+  // About File Handler
+  const handleAboutFileChange = (e, key) => {
+      const file = e.target.files[0];
+      if (file) {
+          setAboutConfig(prev => ({ ...prev, [`${key}File`]: file }));
+          setAboutPreviews(prev => ({ ...prev, [key]: URL.createObjectURL(file) }));
+      }
   };
 
   const handleSaveHeroConfig = async (e) => {
@@ -173,6 +226,34 @@ export const useAdminLayout = () => {
     } catch (error) {
       console.error(error);
       alert("Lỗi khi lưu Hero Config");
+    }
+  };
+
+  const handleSaveAboutConfig = async (e) => {
+    e.preventDefault();
+    try {
+        const formData = new FormData();
+        formData.append("title", aboutConfig.title || "");
+        formData.append("description1", aboutConfig.description1 || "");
+        formData.append("description2", aboutConfig.description2 || "");
+        formData.append("stat1Number", aboutConfig.stat1Number || "");
+        formData.append("stat1Text", aboutConfig.stat1Text || "");
+        formData.append("stat2Number", aboutConfig.stat2Number || "");
+        formData.append("stat2Text", aboutConfig.stat2Text || "");
+
+        if (aboutConfig.image1File) formData.append("image1", aboutConfig.image1File);
+        if (aboutConfig.image2File) formData.append("image2", aboutConfig.image2File);
+        if (aboutConfig.image3File) formData.append("image3", aboutConfig.image3File);
+
+        await axiosClient.post("/layout/about", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        alert("Đã cập nhật About Section thành công!");
+        fetchAboutConfig();
+    } catch (error) {
+        console.error(error);
+        alert("Lỗi khi lưu About Config");
     }
   };
 
@@ -289,45 +370,19 @@ export const useAdminLayout = () => {
     setActiveTab(tabName);
   };
 
-  // Lọc cây theo từ khóa tìm kiếm
   const filteredPlantsForSelection = allPlants.filter((p) =>
     p.name.toLowerCase().includes(searchPlant.toLowerCase())
   );
 
   return {
-    // State
-    layouts,
-    categories,
-    isEditing,
-    activeTab,
-    globalEffect,
-    heroConfig,
-    previewUrl,
-    isMobile,
-    isSidebarOpen,
-    config,
-    selectedPlantIds,
-    searchPlant,
-    filteredPlantsForSelection,
-
-    // Setters (nếu cần thiết expose trực tiếp)
-    setGlobalEffect,
-    setHeroConfig,
-    setIsSidebarOpen,
-    setConfig,
-    setSearchPlant,
-    
-    // Handlers
-    handleSidebarClick,
-    handleSaveEffect,
-    handleHeroFileChange,
-    handleSaveHeroConfig,
-    handleEdit,
-    handleDelete,
-    handleMoveSection,
-    togglePlantSelection,
-    handleSubmit,
-    handleResetAndBack,
-    handleTabClick
+    layouts, categories, isEditing, activeTab, globalEffect, 
+    heroConfig, previewUrl,
+    aboutConfig, aboutPreviews, // New
+    isMobile, isSidebarOpen, config, selectedPlantIds, searchPlant, filteredPlantsForSelection,
+    setGlobalEffect, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
+    handleSidebarClick, handleSaveEffect, 
+    handleHeroFileChange, handleSaveHeroConfig,
+    handleAboutFileChange, handleSaveAboutConfig, // New
+    handleEdit, handleDelete, handleMoveSection, togglePlantSelection, handleSubmit, handleResetAndBack, handleTabClick
   };
 };
