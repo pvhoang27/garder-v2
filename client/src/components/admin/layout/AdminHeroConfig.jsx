@@ -158,7 +158,7 @@ const AdminHeroConfig = ({
               <div style={{ fontSize: "13px", color: "#666", marginTop: "5px", fontStyle: "italic" }}>
                 {heroConfig.imageFile
                   ? `📂 Đã chọn: ${heroConfig.imageFile.name}`
-                  : "ℹ️ Đang dùng ảnh hiện tại trên server"}
+                  : "ℹ️ Đang dùng ảnh hiện tại."}
               </div>
             </div>
 
