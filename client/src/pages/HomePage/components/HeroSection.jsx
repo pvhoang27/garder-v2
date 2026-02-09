@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaLeaf, FaSearch, FaArrowRight } from "react-icons/fa";
+import axiosClient from "../../../api/axiosClient";
 
 const HeroSection = ({
   t,
@@ -11,6 +12,30 @@ const HeroSection = ({
   categories,
   handleSearch,
 }) => {
+  // State lưu cấu hình hiển thị
+  const [config, setConfig] = useState({
+    titlePrefix: "Khám phá vẻ đẹp",
+    titleHighlight: "thiên nhiên",
+    titleSuffix: "qua từng tác phẩm",
+    description: "Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một tác phẩm được chăm sóc với tình yêu và sự tận tâm.",
+    imageUrl: "/hero-bonsai.jpg"
+  });
+
+  // Gọi API lấy cấu hình khi component mount
+  useEffect(() => {
+    const fetchHeroConfig = async () => {
+      try {
+        const res = await axiosClient.get("/layout/hero");
+        if (res.data) {
+          setConfig(res.data);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy cấu hình Hero:", error);
+      }
+    };
+    fetchHeroConfig();
+  }, []);
+
   return (
     <section className="hero-section">
       <div className="hero-blob blob-1"></div>
@@ -23,14 +48,12 @@ const HeroSection = ({
           </div>
 
           <h1>
-            Khám phá vẻ đẹp <span className="text-primary">thiên nhiên</span>{" "}
-            qua từng tác phẩm
+            {config.titlePrefix} <span className="text-primary">{config.titleHighlight}</span>{" "}
+            {config.titleSuffix}
           </h1>
 
           <p>
-            Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ
-            sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một
-            tác phẩm được chăm sóc với tình yêu và sự tận tâm.
+            {config.description}
           </p>
 
           {/* Search Box */}
@@ -87,7 +110,8 @@ const HeroSection = ({
         <div className="hero-image-wrapper">
           <div className="hero-image-backdrop"></div>
           <div className="hero-image-card">
-            <img src="/hero-bonsai.jpg" alt="Hero Bonsai" />
+            {/* Sử dụng ảnh từ config */}
+            <img src={config.imageUrl} alt="Hero Bonsai" />
           </div>
         </div>
       </div>

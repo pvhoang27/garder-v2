@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import { FaBars, FaList, FaPlus, FaMagic } from "react-icons/fa";
+import { FaBars, FaList, FaPlus, FaMagic, FaImage } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
 // Import components
@@ -20,11 +20,20 @@ const AdminLayoutConfig = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   // --- STATE QUẢN LÝ TAB ---
-  // "list": Danh sách, "form": Thêm/Sửa, "effect": Hiệu ứng
+  // "list": Danh sách, "form": Thêm/Sửa, "effect": Hiệu ứng, "hero": Banner đầu trang
   const [activeTab, setActiveTab] = useState("list"); 
 
   // State hiệu ứng global
   const [globalEffect, setGlobalEffect] = useState("none");
+
+  // State Hero Config
+  const [heroConfig, setHeroConfig] = useState({
+    titlePrefix: "Khám phá vẻ đẹp",
+    titleHighlight: "thiên nhiên",
+    titleSuffix: "qua từng tác phẩm",
+    description: "Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một tác phẩm được chăm sóc với tình yêu và sự tận tâm.",
+    imageUrl: "/hero-bonsai.jpg"
+  });
 
   // --- STATE CHO LAYOUT & SIDEBAR ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -44,7 +53,7 @@ const AdminLayoutConfig = () => {
     navigate("/admin");
   };
 
-  // Form State
+  // Form State cho Layout Sections
   const [config, setConfig] = useState(initialState());
   const [selectedPlantIds, setSelectedPlantIds] = useState([]);
   const [searchPlant, setSearchPlant] = useState("");
@@ -65,6 +74,7 @@ const AdminLayoutConfig = () => {
     fetchCategories();
     fetchAllPlants();
     fetchGlobalEffect();
+    fetchHeroConfig();
   }, []);
 
   const fetchLayouts = async () => {
@@ -73,7 +83,6 @@ const AdminLayoutConfig = () => {
       const sortedData = res.data.sort((a, b) => a.sort_order - b.sort_order);
       setLayouts(sortedData);
 
-      // Nếu đang không sửa thì tính toán sort order mới
       if (!isEditing) {
         const nextOrder =
           sortedData.length > 0
@@ -91,6 +100,17 @@ const AdminLayoutConfig = () => {
       const res = await axiosClient.get("/layout/effect");
       if (res.data.effect) {
         setGlobalEffect(res.data.effect);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchHeroConfig = async () => {
+    try {
+      const res = await axiosClient.get("/layout/hero");
+      if (res.data) {
+        setHeroConfig(res.data);
       }
     } catch (error) {
       console.error(error);
@@ -125,7 +145,19 @@ const AdminLayoutConfig = () => {
     }
   };
 
-  // KHI BẤM SỬA TỪ DANH SÁCH
+  // Xử lý lưu Hero Config
+  const handleSaveHeroConfig = async (e) => {
+    e.preventDefault();
+    try {
+      await axiosClient.post("/layout/hero", heroConfig);
+      alert("Đã cập nhật Hero Section thành công!");
+    } catch (error) {
+      console.error(error);
+      alert("Lỗi khi lưu Hero Config");
+    }
+  };
+
+  // KHI BẤM SỬA TỪ DANH SÁCH LAYOUT
   const handleEdit = async (item) => {
     setConfig({ ...item, is_active: item.is_active === 1 });
     setIsEditing(true);
@@ -142,7 +174,6 @@ const AdminLayoutConfig = () => {
       setSelectedPlantIds([]);
     }
 
-    // Chuyển sang tab Form để sửa
     setActiveTab("form");
   };
 
@@ -209,8 +240,6 @@ const AdminLayoutConfig = () => {
         await axiosClient.post("/layout", payload);
       }
       alert("Lưu thành công!");
-      
-      // Sau khi lưu xong, reset form và quay về danh sách
       resetFormState();
       setIsEditing(false);
       setActiveTab("list");
@@ -220,7 +249,6 @@ const AdminLayoutConfig = () => {
     }
   };
 
-  // Hàm reset dữ liệu form (không liên quan đến chuyển tab)
   const resetFormState = () => {
     const newInitial = initialState();
     const maxOrder =
@@ -231,16 +259,13 @@ const AdminLayoutConfig = () => {
     setIsEditing(false);
   };
 
-  // Hàm xử lý nút "Hủy / Thêm mới" hoặc chuyển tab
   const handleResetAndBack = () => {
     resetFormState();
     setActiveTab("list");
   };
 
-  // Xử lý khi bấm vào Tab trên thanh điều hướng
   const handleTabClick = (tabName) => {
     if (tabName === "form") {
-      // Nếu bấm tab "Thêm mới", đảm bảo reset về trạng thái thêm mới
       resetFormState();
     }
     setActiveTab(tabName);
@@ -250,7 +275,6 @@ const AdminLayoutConfig = () => {
     p.name.toLowerCase().includes(searchPlant.toLowerCase()),
   );
 
-  // Inline styles cho Tabs (Bạn có thể đưa vào CSS file nếu muốn)
   const tabBtnStyle = (isActive) => ({
     padding: "10px 20px",
     marginRight: "10px",
@@ -265,6 +289,10 @@ const AdminLayoutConfig = () => {
     gap: "8px",
     transition: "all 0.3s"
   });
+
+  const formGroupStyle = { marginBottom: "15px" };
+  const labelStyle = { display: "block", marginBottom: "5px", fontWeight: "bold" };
+  const inputStyle = { width: "100%", padding: "8px", border: "1px solid #ccc", borderRadius: "4px" };
 
   return (
     <div className="admin-layout-page">
@@ -331,7 +359,14 @@ const AdminLayoutConfig = () => {
               style={tabBtnStyle(activeTab === "effect")}
               onClick={() => handleTabClick("effect")}
             >
-              <FaMagic /> Cấu Hình Hiệu Ứng
+              <FaMagic /> Hiệu Ứng
+            </button>
+
+            <button 
+              style={tabBtnStyle(activeTab === "hero")}
+              onClick={() => handleTabClick("hero")}
+            >
+              <FaImage /> Cấu Hình Hero
             </button>
           </div>
 
@@ -358,7 +393,7 @@ const AdminLayoutConfig = () => {
                 config={config}
                 setConfig={setConfig}
                 handleSubmit={handleSubmit}
-                resetForm={handleResetAndBack} // Truyền hàm quay lại list
+                resetForm={handleResetAndBack}
                 categories={categories}
                 selectedPlantIds={selectedPlantIds}
                 togglePlantSelection={togglePlantSelection}
@@ -376,6 +411,77 @@ const AdminLayoutConfig = () => {
                 setGlobalEffect={setGlobalEffect}
                 handleSaveEffect={handleSaveEffect}
            />
+          )}
+
+          {/* --- TAB CONTENT: HERO CONFIG --- */}
+          {activeTab === "hero" && (
+            <div className="admin-card">
+              <h3 style={{marginBottom: '20px', color: '#2e7d32'}}>Cấu Hình Banner Đầu Trang (Hero Section)</h3>
+              <form onSubmit={handleSaveHeroConfig}>
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Phần tiêu đề (Đầu):</label>
+                  <input 
+                    type="text" 
+                    style={inputStyle}
+                    value={heroConfig.titlePrefix}
+                    onChange={(e) => setHeroConfig({...heroConfig, titlePrefix: e.target.value})}
+                    placeholder="VD: Khám phá vẻ đẹp"
+                  />
+                </div>
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Phần tiêu đề (Nổi bật - Màu xanh):</label>
+                  <input 
+                    type="text" 
+                    style={inputStyle}
+                    value={heroConfig.titleHighlight}
+                    onChange={(e) => setHeroConfig({...heroConfig, titleHighlight: e.target.value})}
+                    placeholder="VD: thiên nhiên"
+                  />
+                </div>
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Phần tiêu đề (Cuối):</label>
+                  <input 
+                    type="text" 
+                    style={inputStyle}
+                    value={heroConfig.titleSuffix}
+                    onChange={(e) => setHeroConfig({...heroConfig, titleSuffix: e.target.value})}
+                    placeholder="VD: qua từng tác phẩm"
+                  />
+                </div>
+                
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Đường dẫn ảnh Hero (URL hoặc tên file trong public):</label>
+                  <input 
+                    type="text" 
+                    style={inputStyle}
+                    value={heroConfig.imageUrl}
+                    onChange={(e) => setHeroConfig({...heroConfig, imageUrl: e.target.value})}
+                    placeholder="/hero-bonsai.jpg"
+                  />
+                  {heroConfig.imageUrl && (
+                    <div style={{marginTop: '10px', width: '200px'}}>
+                      <img src={heroConfig.imageUrl} alt="Preview" style={{width: '100%', borderRadius: '8px'}} />
+                    </div>
+                  )}
+                </div>
+
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Mô tả chi tiết:</label>
+                  <textarea 
+                    style={{...inputStyle, height: '100px'}}
+                    value={heroConfig.description}
+                    onChange={(e) => setHeroConfig({...heroConfig, description: e.target.value})}
+                    placeholder="Nhập nội dung mô tả..."
+                  ></textarea>
+                </div>
+
+                <div style={{marginTop: '20px'}}>
+                  <button type="submit" className="btn-save">
+                    Lưu Thay Đổi Hero
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
 
         </div>
