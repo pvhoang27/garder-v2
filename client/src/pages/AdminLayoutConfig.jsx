@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import { FaBars, FaList, FaPlus, FaMagic, FaImage } from "react-icons/fa";
+import { FaBars, FaList, FaPlus, FaMagic, FaImage, FaSave } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
 // Import components
@@ -21,7 +21,7 @@ const AdminLayoutConfig = () => {
 
   // --- STATE QUẢN LÝ TAB ---
   // "list": Danh sách, "form": Thêm/Sửa, "effect": Hiệu ứng, "hero": Banner đầu trang
-  const [activeTab, setActiveTab] = useState("list"); 
+  const [activeTab, setActiveTab] = useState("list");
 
   // State hiệu ứng global
   const [globalEffect, setGlobalEffect] = useState("none");
@@ -31,9 +31,13 @@ const AdminLayoutConfig = () => {
     titlePrefix: "Khám phá vẻ đẹp",
     titleHighlight: "thiên nhiên",
     titleSuffix: "qua từng tác phẩm",
-    description: "Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một tác phẩm được chăm sóc với tình yêu và sự tận tâm.",
-    imageUrl: "/hero-bonsai.jpg"
+    description: "Chào mừng đến với Cây cảnh Xuân Thục...",
+    imageUrl: "/hero-bonsai.jpg",
+    imageFile: null // [MỚI] Để lưu file upload
   });
+  
+  // [MỚI] State preview ảnh
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   // --- STATE CHO LAYOUT & SIDEBAR ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -110,7 +114,17 @@ const AdminLayoutConfig = () => {
     try {
       const res = await axiosClient.get("/layout/hero");
       if (res.data) {
-        setHeroConfig(res.data);
+        // Reset file khi load mới
+        setHeroConfig({ ...res.data, imageFile: null });
+        
+        // Xử lý preview ảnh từ DB
+        if (res.data.imageUrl) {
+           // Nếu là ảnh upload (bắt đầu bằng /uploads) thì thêm localhost vào để hiển thị
+           const url = res.data.imageUrl.startsWith("/uploads") 
+             ? `http://localhost:3000${res.data.imageUrl}` 
+             : res.data.imageUrl;
+           setPreviewUrl(url);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -145,12 +159,39 @@ const AdminLayoutConfig = () => {
     }
   };
 
-  // Xử lý lưu Hero Config
+  // [MỚI] Xử lý chọn file ảnh Hero
+  const handleHeroFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setHeroConfig({ ...heroConfig, imageFile: file });
+      // Tạo URL preview tạm thời
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  // [SỬA] Xử lý lưu Hero Config bằng FormData
   const handleSaveHeroConfig = async (e) => {
     e.preventDefault();
     try {
-      await axiosClient.post("/layout/hero", heroConfig);
+      const formData = new FormData();
+      formData.append("titlePrefix", heroConfig.titlePrefix || "");
+      formData.append("titleHighlight", heroConfig.titleHighlight || "");
+      formData.append("titleSuffix", heroConfig.titleSuffix || "");
+      formData.append("description", heroConfig.description || "");
+      
+      // Chỉ gửi ảnh nếu có file mới được chọn
+      if (heroConfig.imageFile) {
+        formData.append("image", heroConfig.imageFile);
+      }
+
+      await axiosClient.post("/layout/hero", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      
       alert("Đã cập nhật Hero Section thành công!");
+      fetchHeroConfig(); // Load lại để lấy đường dẫn ảnh chính thức từ server
     } catch (error) {
       console.error(error);
       alert("Lỗi khi lưu Hero Config");
@@ -410,34 +451,37 @@ const AdminLayoutConfig = () => {
                 globalEffect={globalEffect}
                 setGlobalEffect={setGlobalEffect}
                 handleSaveEffect={handleSaveEffect}
-           />
+            />
           )}
 
-          {/* --- TAB CONTENT: HERO CONFIG --- */}
+          {/* --- TAB CONTENT: HERO CONFIG (SỬA LẠI ĐỂ CÓ PREVIEW & UPLOAD) --- */}
           {activeTab === "hero" && (
             <div className="admin-card">
               <h3 style={{marginBottom: '20px', color: '#2e7d32'}}>Cấu Hình Banner Đầu Trang (Hero Section)</h3>
-              <form onSubmit={handleSaveHeroConfig}>
-                <div style={formGroupStyle}>
-                  <label style={labelStyle}>Phần tiêu đề (Đầu):</label>
-                  <input 
-                    type="text" 
-                    style={inputStyle}
-                    value={heroConfig.titlePrefix}
-                    onChange={(e) => setHeroConfig({...heroConfig, titlePrefix: e.target.value})}
-                    placeholder="VD: Khám phá vẻ đẹp"
-                  />
+              <form onSubmit={handleSaveHeroConfig} encType="multipart/form-data">
+                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Phần tiêu đề (Đầu):</label>
+                    <input 
+                      type="text" 
+                      style={inputStyle}
+                      value={heroConfig.titlePrefix}
+                      onChange={(e) => setHeroConfig({...heroConfig, titlePrefix: e.target.value})}
+                      placeholder="VD: Khám phá vẻ đẹp"
+                    />
+                  </div>
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Phần tiêu đề (Nổi bật):</label>
+                    <input 
+                      type="text" 
+                      style={inputStyle}
+                      value={heroConfig.titleHighlight}
+                      onChange={(e) => setHeroConfig({...heroConfig, titleHighlight: e.target.value})}
+                      placeholder="VD: thiên nhiên"
+                    />
+                  </div>
                 </div>
-                <div style={formGroupStyle}>
-                  <label style={labelStyle}>Phần tiêu đề (Nổi bật - Màu xanh):</label>
-                  <input 
-                    type="text" 
-                    style={inputStyle}
-                    value={heroConfig.titleHighlight}
-                    onChange={(e) => setHeroConfig({...heroConfig, titleHighlight: e.target.value})}
-                    placeholder="VD: thiên nhiên"
-                  />
-                </div>
+
                 <div style={formGroupStyle}>
                   <label style={labelStyle}>Phần tiêu đề (Cuối):</label>
                   <input 
@@ -449,20 +493,59 @@ const AdminLayoutConfig = () => {
                   />
                 </div>
                 
+                {/* [MỚI] KHU VỰC UPLOAD ẢNH & PREVIEW */}
                 <div style={formGroupStyle}>
-                  <label style={labelStyle}>Đường dẫn ảnh Hero (URL hoặc tên file trong public):</label>
-                  <input 
-                    type="text" 
-                    style={inputStyle}
-                    value={heroConfig.imageUrl}
-                    onChange={(e) => setHeroConfig({...heroConfig, imageUrl: e.target.value})}
-                    placeholder="/hero-bonsai.jpg"
-                  />
-                  {heroConfig.imageUrl && (
-                    <div style={{marginTop: '10px', width: '200px'}}>
-                      <img src={heroConfig.imageUrl} alt="Preview" style={{width: '100%', borderRadius: '8px'}} />
+                  <label style={labelStyle}>Hình ảnh Banner:</label>
+                  
+                  <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                       {/* Input file ẩn, dùng label để style */}
+                       <label style={{
+                         display: 'inline-block',
+                         padding: '10px 15px',
+                         backgroundColor: '#f0f0f0',
+                         border: '1px solid #ccc',
+                         borderRadius: '5px',
+                         cursor: 'pointer',
+                         marginBottom: '10px'
+                       }}>
+                          <FaImage style={{ marginRight: '5px' }}/> Chọn ảnh mới
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleHeroFileChange}
+                            style={{ display: 'none' }} 
+                          />
+                       </label>
+                       
+                       <div style={{ fontSize: '13px', color: '#666', marginTop: '5px' }}>
+                         {heroConfig.imageFile ? `Đã chọn: ${heroConfig.imageFile.name}` : "Đang dùng ảnh hiện tại"}
+                       </div>
                     </div>
-                  )}
+
+                    {/* Khung Preview */}
+                    <div style={{ 
+                      width: '300px', 
+                      height: '180px', 
+                      border: '1px dashed #ccc',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#fafafa'
+                    }}>
+                      {previewUrl ? (
+                        <img 
+                          src={previewUrl} 
+                          alt="Hero Preview" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <span style={{ color: '#aaa' }}>Chưa có ảnh</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div style={formGroupStyle}>
@@ -476,8 +559,8 @@ const AdminLayoutConfig = () => {
                 </div>
 
                 <div style={{marginTop: '20px'}}>
-                  <button type="submit" className="btn-save">
-                    Lưu Thay Đổi Hero
+                  <button type="submit" className="btn-save" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FaSave /> Lưu Thay Đổi Hero
                   </button>
                 </div>
               </form>

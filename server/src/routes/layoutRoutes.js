@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const layoutController = require('../controllers/layoutController');
 const authMiddleware = require('../middleware/authMiddleware');
+const upload = require('../config/upload'); // IMPORT THÊM UPLOAD
 
 // Route lấy cấu hình hiệu ứng (Public)
 router.get('/effect', layoutController.getGlobalEffect);
@@ -10,7 +11,9 @@ router.post('/effect', authMiddleware, layoutController.updateGlobalEffect);
 
 // Route cấu hình Hero Section (Banner đầu trang)
 router.get('/hero', layoutController.getHeroConfig);
-router.post('/hero', authMiddleware, layoutController.updateHeroConfig);
+
+// THÊM upload.single('image') ĐỂ XỬ LÝ ẢNH UPLOAD
+router.post('/hero', authMiddleware, upload.single('image'), layoutController.updateHeroConfig);
 
 router.get('/', layoutController.getLayouts);
 router.get('/:id/plants', layoutController.getLayoutPlants); 

@@ -76,10 +76,18 @@ exports.getHeroConfig = async (req, res) => {
     
     if (rows.length > 0 && rows[0].param_value) {
       const config = JSON.parse(rows[0].param_value);
-      // Đảm bảo trả về đủ trường dữ liệu
-      res.json(config);
+      // Đảm bảo trả về đủ trường dữ liệu, inject thêm type để frontend nhận biết
+      res.json({ ...config, type: 'hero_config' });
     } else {
-      res.json(null);
+      // Trả về cấu hình mặc định nếu chưa có
+      res.json({
+        type: 'hero_config',
+        titlePrefix: '',
+        titleHighlight: '',
+        titleSuffix: '',
+        description: '',
+        imageUrl: ''
+      });
     }
   } catch (error) {
     console.error(error);
@@ -89,7 +97,7 @@ exports.getHeroConfig = async (req, res) => {
 
 exports.updateHeroConfig = async (req, res) => {
   try {
-    // req.body chứa các trường text (title, description...)
+    // req.body chứa các trường text
     // req.file chứa thông tin file ảnh vừa upload (nếu có)
     
     // 1. Lấy config cũ ra trước (để giữ lại ảnh cũ nếu người dùng không upload ảnh mới)
@@ -103,19 +111,18 @@ exports.updateHeroConfig = async (req, res) => {
 
     // 2. Chuẩn bị object config mới
     const newConfig = {
-      titlePrefix: req.body.titlePrefix,
-      titleHighlight: req.body.titleHighlight,
-      titleSuffix: req.body.titleSuffix,
-      description: req.body.description,
+      titlePrefix: req.body.titlePrefix || "",
+      titleHighlight: req.body.titleHighlight || "",
+      titleSuffix: req.body.titleSuffix || "",
+      description: req.body.description || "",
       // Mặc định lấy ảnh cũ
       imageUrl: currentConfig.imageUrl || "" 
     };
 
     // 3. Nếu có file upload mới, cập nhật đường dẫn ảnh
     if (req.file) {
-      // Đường dẫn file sau khi upload (ví dụ: /uploads/filename.jpg)
-      // Lưu ý: path này phụ thuộc vào cấu hình static file ở server.js
-      // Giả sử server serve thư mục uploads
+      // Đường dẫn file sau khi upload. 
+      // Lưu ý: Đảm bảo server.js đã cấu hình: app.use('/uploads', express.static...)
       newConfig.imageUrl = `/uploads/${req.file.filename}`;
     }
 
