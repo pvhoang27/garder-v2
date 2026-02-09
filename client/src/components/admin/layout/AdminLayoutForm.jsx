@@ -20,10 +20,15 @@ const AdminLayoutForm = ({
   // Effect để hiển thị ảnh cũ nếu có
   useEffect(() => {
     if (config.type === "hero_config" && config.imageUrl && !config.imageFile) {
-      // Nếu là đường dẫn đầy đủ (http...) thì giữ nguyên, nếu không thì thêm localhost
-      const url = config.imageUrl.startsWith("http")
+      // Logic mới: Kiểm tra xem ảnh là đường dẫn web, Base64 hay đường dẫn local cũ
+      const isExternalOrBase64 = 
+        config.imageUrl.startsWith("http") || 
+        config.imageUrl.startsWith("data:"); // data:image/...
+      
+      const url = isExternalOrBase64
         ? config.imageUrl
         : `http://localhost:3000${config.imageUrl}`;
+      
       setPreviewUrl(url);
     }
   }, [config]);

@@ -67,30 +67,38 @@ exports.updateGlobalEffect = async (req, res) => {
   }
 };
 
-// --- LOGIC HERO SECTION (Đã sửa để hỗ trợ Upload ảnh) ---
+// --- LOGIC HERO SECTION (Đã sửa để LƯU ẢNH VÀO DB - Base64 & AN TOÀN HƠN) ---
 exports.getHeroConfig = async (req, res) => {
   try {
     const [rows] = await db.query(
       "SELECT param_value FROM homepage_layouts WHERE type = 'hero_config' LIMIT 1"
     );
     
+    // Cấu hình mặc định
+    const defaultConfig = {
+      type: 'hero_config',
+      titlePrefix: '',
+      titleHighlight: '',
+      titleSuffix: '',
+      description: '',
+      imageUrl: ''
+    };
+
     if (rows.length > 0 && rows[0].param_value) {
-      const config = JSON.parse(rows[0].param_value);
-      // Đảm bảo trả về đủ trường dữ liệu, inject thêm type để frontend nhận biết
-      res.json({ ...config, type: 'hero_config' });
+      try {
+        // [QUAN TRỌNG] Thử parse JSON, nếu lỗi (do chuỗi bị cắt cụt) thì dùng mặc định
+        const config = JSON.parse(rows[0].param_value);
+        res.json({ ...config, type: 'hero_config' });
+      } catch (parseError) {
+        console.error("Lỗi JSON Parse Hero Config (Có thể do DB field quá nhỏ):", parseError);
+        // Trả về mặc định để không crash frontend
+        res.json(defaultConfig);
+      }
     } else {
-      // Trả về cấu hình mặc định nếu chưa có
-      res.json({
-        type: 'hero_config',
-        titlePrefix: '',
-        titleHighlight: '',
-        titleSuffix: '',
-        description: '',
-        imageUrl: ''
-      });
+      res.json(defaultConfig);
     }
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi lấy cấu hình Hero:", error);
     res.status(500).json({ message: "Lỗi lấy cấu hình Hero" });
   }
 };
@@ -98,15 +106,19 @@ exports.getHeroConfig = async (req, res) => {
 exports.updateHeroConfig = async (req, res) => {
   try {
     // req.body chứa các trường text
-    // req.file chứa thông tin file ảnh vừa upload (nếu có)
+    // req.file chứa Buffer dữ liệu ảnh (do dùng memoryStorage)
     
-    // 1. Lấy config cũ ra trước (để giữ lại ảnh cũ nếu người dùng không upload ảnh mới)
+    // 1. Lấy config cũ ra trước
     let currentConfig = {};
-    const [rows] = await db.query(
-      "SELECT param_value FROM homepage_layouts WHERE type = 'hero_config' LIMIT 1"
-    );
-    if (rows.length > 0 && rows[0].param_value) {
-      currentConfig = JSON.parse(rows[0].param_value);
+    try {
+      const [rows] = await db.query(
+        "SELECT param_value FROM homepage_layouts WHERE type = 'hero_config' LIMIT 1"
+      );
+      if (rows.length > 0 && rows[0].param_value) {
+        currentConfig = JSON.parse(rows[0].param_value);
+      }
+    } catch (e) {
+      console.log("Không đọc được config cũ, sẽ tạo mới hoàn toàn.");
     }
 
     // 2. Chuẩn bị object config mới
@@ -119,11 +131,14 @@ exports.updateHeroConfig = async (req, res) => {
       imageUrl: currentConfig.imageUrl || "" 
     };
 
-    // 3. Nếu có file upload mới, cập nhật đường dẫn ảnh
+    // 3. Xử lý lưu ảnh vào DB (Dạng Base64)
     if (req.file) {
-      // Đường dẫn file sau khi upload. 
-      // Lưu ý: Đảm bảo server.js đã cấu hình: app.use('/uploads', express.static...)
-      newConfig.imageUrl = `/uploads/${req.file.filename}`;
+      // Chuyển Buffer thành Base64 string
+      const b64 = Buffer.from(req.file.buffer).toString('base64');
+      const mimeType = req.file.mimetype; // ví dụ: image/jpeg
+      
+      // Tạo chuỗi Data URI
+      newConfig.imageUrl = `data:${mimeType};base64,${b64}`;
     }
 
     const configString = JSON.stringify(newConfig);
@@ -147,7 +162,7 @@ exports.updateHeroConfig = async (req, res) => {
 
     res.json({ message: "Cập nhật Hero Section thành công", config: newConfig });
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi update hero:", error);
     res.status(500).json({ message: "Lỗi cập nhật Hero Section" });
   }
 };
