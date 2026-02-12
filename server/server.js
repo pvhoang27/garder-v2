@@ -13,8 +13,8 @@ const app = express();
 // Middleware
 // [SỬA] Cấu hình CORS chặt chẽ để dùng được Cookie
 app.use(cors({
-    origin: 'http://localhost:5173', // Chỉ định chính xác domain Frontend (Vite mặc định 5173)
-    credentials: true // Cho phép gửi cookie
+    origin: ['http://localhost:5173', 'http://caycanhxuanthuc.com', 'https://caycanhxuanthuc.com'],
+    credentials: true
 }));
 
 app.use(express.json());
