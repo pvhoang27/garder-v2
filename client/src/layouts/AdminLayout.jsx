@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminHeader from "../components/admin/AdminHeader";
 import { FaHeart } from "react-icons/fa";
+import axiosClient from "../api/axiosClient"; // [MỚI] Import axiosClient
 
 const AdminLayout = ({
   children,
@@ -27,11 +28,19 @@ const AdminLayout = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/login");
+      try {
+        // Gọi API logout để xóa cookie
+        await axiosClient.post("/auth/logout");
+      } catch (error) {
+        console.warn("Logout error:", error);
+      } finally {
+        // Xóa localStorage và chuyển về login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      }
     }
   };
 

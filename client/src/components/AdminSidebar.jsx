@@ -11,8 +11,9 @@ import {
   FaNewspaper,
   FaComments,
   FaChartPie,
-  FaChartLine // <--- [MỚI] Icon cho Tracking
+  FaChartLine, // <--- [MỚI] Icon cho Tracking
 } from "react-icons/fa";
+import axiosClient from "../api/axiosClient"; // [MỚI] Import axiosClient
 
 const AdminSidebar = ({
   activeTab,
@@ -23,15 +24,40 @@ const AdminSidebar = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+  const handleLogout = async () => {
+    if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
+      try {
+        // Gọi API logout để xóa cookie
+        await axiosClient.post("/auth/logout");
+      } catch (error) {
+        console.warn("Logout error:", error);
+      } finally {
+        // Xóa localStorage và chuyển về login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      }
+    }
   };
 
   const handleMenuClick = (tab) => {
     setActiveTab(tab);
     if (isMobile) setIsOpen(false);
+
+    // Navigate đến URL tương ứng
+    const routes = {
+      dashboard: "/admin",
+      tracking: "/admin/tracking",
+      plants: "/admin/plants",
+      categories: "/admin/categories",
+      news: "/admin/news",
+      comments: "/admin/comments",
+      users: "/admin/users",
+    };
+
+    if (routes[tab]) {
+      navigate(routes[tab]);
+    }
   };
 
   const sidebarStyle = {
@@ -129,7 +155,6 @@ const AdminSidebar = ({
 
       {/* --- MENU SCROLLABLE --- */}
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
-        
         <MenuButton
           active={activeTab === "dashboard"}
           onClick={() => handleMenuClick("dashboard")}
@@ -163,14 +188,14 @@ const AdminSidebar = ({
           icon={<FaNewspaper />}
           label="Quản lý Tin tức"
         />
-        
+
         <MenuButton
           active={activeTab === "comments"}
           onClick={() => handleMenuClick("comments")}
           icon={<FaComments />}
           label="Quản lý Bình luận"
         />
-        
+
         <MenuButton
           active={activeTab === "users"}
           onClick={() => handleMenuClick("users")}

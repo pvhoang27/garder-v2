@@ -4,11 +4,11 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation, 
+  useLocation,
 } from "react-router-dom";
 
 // [MỚI] Import axiosClient để gọi API tracking
-import axiosClient from "./api/axiosClient"; 
+import axiosClient from "./api/axiosClient";
 
 // --- IMPORT CÁC TRANG (PAGES) ---
 import HomePage from "./pages/HomePage/index";
@@ -28,12 +28,17 @@ import ProfilePage from "./pages/ProfilePage";
 
 // --- IMPORT COMPONENTS ---
 import PopupBanner from "./components/PopupBanner";
-import FloatingContact from "./components/FloatingContact"; 
-import Footer from "./components/Footer"; 
-import Header from "./components/Header"; 
+import FloatingContact from "./components/FloatingContact";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
 
 // --- COMPONENT CONTENT WRAPPER ---
-const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) => {
+const AppContent = ({
+  isLoggedIn,
+  userRole,
+  handleLoginSuccess,
+  handleLogout,
+}) => {
   const location = useLocation();
 
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
@@ -46,7 +51,7 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
       // Không track nếu đang ở trang admin để số liệu chính xác hơn (tùy chọn)
       if (!location.pathname.startsWith("/admin")) {
         try {
-          await axiosClient.post('/tracking/visit');
+          await axiosClient.post("/tracking/visit");
           console.log("Visit logged");
         } catch (error) {
           // Lỗi tracking không nên làm phiền người dùng, chỉ log warning nhẹ
@@ -62,7 +67,7 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
     if (!isLoggedIn) {
       return <Navigate to="/login" />;
     }
-    if (userRole !== 'admin') {
+    if (userRole !== "admin") {
       return <Navigate to="/" />;
     }
     return children;
@@ -80,10 +85,10 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
     <>
       {/* Chỉ hiện Header nếu KHÔNG PHẢI trang admin */}
       {!isAdminRoute && (
-        <Header 
-            isLoggedIn={isLoggedIn} 
-            userRole={userRole} 
-            onLogout={handleLogout} 
+        <Header
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
+          onLogout={handleLogout}
         />
       )}
 
@@ -96,9 +101,9 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
       <div
         style={{
           minHeight: "80vh",
-          paddingBottom: isAdminRoute ? "0" : "0", 
-          width: "100%", 
-          boxSizing: "border-box"
+          paddingBottom: isAdminRoute ? "0" : "0",
+          width: "100%",
+          boxSizing: "border-box",
         }}
       >
         <Routes>
@@ -109,24 +114,114 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/plant/:id" element={<PlantDetail />} />
           <Route path="/contact" element={<ContactPage />} />
-          
+
           <Route
             path="/login"
             element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
           />
           <Route path="/register" element={<RegisterPage />} />
-          
+
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* Profile Route */}
-          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          />
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/add" element={<AdminRoute><AdminPlantForm /></AdminRoute>} />
-          <Route path="/admin/edit/:id" element={<AdminRoute><AdminPlantForm /></AdminRoute>} />
-          <Route path="/admin/popup" element={<AdminRoute><AdminPopupConfig /></AdminRoute>} />
-          <Route path="/admin/layout" element={<AdminRoute><AdminLayoutConfig /></AdminRoute>} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="dashboard" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/tracking"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="tracking" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/plants"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="plants" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="categories" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/news"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="news" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/comments"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="comments" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="users" />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/add"
+            element={
+              <AdminRoute>
+                <AdminPlantForm />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/edit/:id"
+            element={
+              <AdminRoute>
+                <AdminPlantForm />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/popup"
+            element={
+              <AdminRoute>
+                <AdminPopupConfig />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/layout"
+            element={
+              <AdminRoute>
+                <AdminLayoutConfig />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </div>
 
@@ -138,29 +233,77 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true); // [MỚI] Loading state
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userStr = localStorage.getItem("user");
-    
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      setIsLoggedIn(true);
-      setUserRole(user.role || 'customer');
-    }
+    // [SỬA] Gọi API verify để kiểm tra auth từ cookie
+    const verifyAuth = async () => {
+      try {
+        const res = await axiosClient.get("/auth/verify");
+
+        if (res.data.isAuthenticated) {
+          // Token hợp lệ, user đã đăng nhập
+          setIsLoggedIn(true);
+          setUserRole(res.data.user.role);
+
+          // Cập nhật localStorage để giữ thông tin user
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+        } else {
+          // Không authenticated, xóa localStorage
+          localStorage.removeItem("user");
+          setIsLoggedIn(false);
+          setUserRole(null);
+        }
+      } catch (error) {
+        // Token không hợp lệ hoặc hết hạn, xóa localStorage
+        localStorage.removeItem("user");
+        setIsLoggedIn(false);
+        setUserRole(null);
+      } finally {
+        setIsAuthChecking(false); // Kết thúc loading
+      }
+    };
+
+    verifyAuth();
   }, []);
 
   const handleLoginSuccess = (user) => {
     setIsLoggedIn(true);
-    setUserRole(user?.role || 'customer');
+    setUserRole(user?.role || "customer");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    setUserRole(null);
+  const handleLogout = async () => {
+    try {
+      // Gọi API logout để xóa cookie
+      await axiosClient.post("/auth/logout");
+    } catch (error) {
+      console.warn("Logout error:", error);
+    } finally {
+      // Xóa localStorage và reset state
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setIsLoggedIn(false);
+      setUserRole(null);
+    }
   };
+
+  // [MỚI] Hiển thị loading khi đang kiểm tra auth
+  if (isAuthChecking) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          fontSize: "18px",
+          color: "#666",
+        }}
+      >
+        Đang kiểm tra đăng nhập...
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
