@@ -796,6 +796,32 @@
     font-size: 0.9rem;
   }
 
+  /* Plant cards - FIX ẢNH BỊ MẤT */
+  .plant-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .plant-img-wrapper {
+    height: 220px;
+  }
+
+  .plant-content {
+    padding: 14px;
+  }
+
+  .plant-title {
+    font-size: 0.95rem;
+  }
+
+  .plant-category {
+    font-size: 0.7rem;
+  }
+
+  .plant-price {
+    font-size: 0.95rem;
+  }
+
   .plant-title-wrapper:hover::after {
     max-width: 200px;
     font-size: 0.85rem;
