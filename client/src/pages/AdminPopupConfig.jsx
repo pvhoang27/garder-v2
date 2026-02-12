@@ -41,8 +41,8 @@ const AdminPopupConfig = () => {
 
   // State form
   const [config, setConfig] = useState(initialState());
-  const [files, setFiles] = useState([]); 
-  const [previews, setPreviews] = useState([]); 
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
 
   function initialState() {
     return {
@@ -85,7 +85,7 @@ const AdminPopupConfig = () => {
       setPreviews(
         oldMedia.map((url) => ({
           type: "url",
-          url: `http://localhost:3000${url}`,
+          url: `${API_URL}${url}`,
         })),
       );
     } catch (e) {

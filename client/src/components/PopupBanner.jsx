@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { API_URL } from "../config";
 
 const PopupBanner = () => {
   const [popups, setPopups] = useState([]);
@@ -8,7 +9,7 @@ const PopupBanner = () => {
   useEffect(() => {
     // FIX: Sửa endpoint thành /popups (số nhiều) để khớp với Server
     axiosClient
-      .get("/popups") 
+      .get("/popups")
       .then((res) => {
         if (res.data && Array.isArray(res.data)) {
           // Lọc các popup đã bị đóng trong session
@@ -96,7 +97,7 @@ const SinglePopup = ({ popup, onClose }) => {
   const getMediaUrl = (path) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
-    return `http://localhost:3000${path}`;
+    return `${API_URL}${path}`;
   };
 
   return (
@@ -176,7 +177,9 @@ const SinglePopup = ({ popup, onClose }) => {
         </div>
       )}
 
-      <div style={{ padding: "15px", textAlign: "center", background: "white" }}>
+      <div
+        style={{ padding: "15px", textAlign: "center", background: "white" }}
+      >
         {popup.title && (
           <h4 style={{ color: "#2e7d32", marginBottom: "8px" }}>
             {popup.title}

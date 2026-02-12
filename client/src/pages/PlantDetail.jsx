@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
+import { API_URL } from "../config";
 
 // Components
 import PlantGallery from "../components/PlantGallery";
@@ -15,7 +16,7 @@ const PlantDetail = () => {
   const [plant, setPlant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const BE_URL = "http://localhost:3000";
+  const BE_URL = API_URL;
 
   useEffect(() => {
     setLoading(true);
@@ -36,7 +37,9 @@ const PlantDetail = () => {
   useEffect(() => {
     if (plant) {
       // 1. Lấy danh sách cũ từ localStorage
-      const viewedItems = JSON.parse(localStorage.getItem("recently_viewed") || "[]");
+      const viewedItems = JSON.parse(
+        localStorage.getItem("recently_viewed") || "[]",
+      );
 
       // 2. Tạo object chứa thông tin cần thiết để hiển thị Card (không lưu tất cả để nhẹ bộ nhớ)
       const newItem = {
@@ -45,11 +48,11 @@ const PlantDetail = () => {
         thumbnail: plant.thumbnail,
         price: plant.price,
         category_id: plant.category_id,
-        view_count: plant.view_count
+        view_count: plant.view_count,
       };
 
       // 3. Lọc bỏ trùng lặp (nếu đã có cây này rồi thì xóa đi để đưa lên đầu)
-      const filteredItems = viewedItems.filter(item => item.id !== plant.id);
+      const filteredItems = viewedItems.filter((item) => item.id !== plant.id);
 
       // 4. Thêm vào đầu danh sách
       filteredItems.unshift(newItem);

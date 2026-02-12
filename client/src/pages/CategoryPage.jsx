@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link } from "react-router-dom";
 import { FaArrowRight, FaLeaf } from "react-icons/fa";
-import "./CategoryPage.css"; // Import file CSS mới tạo
+import "./CategoryPage.css";
+import { UPLOADS_URL } from "../config";
 
-// Đường dẫn gốc chứa ảnh trên server
-const IMAGE_BASE_URL = "http://localhost:3000/uploads/";
+const IMAGE_BASE_URL = UPLOADS_URL;
 
 const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
@@ -39,12 +39,11 @@ const CategoryPage = () => {
       {/* Header Section - Giống repo phụ */}
       <section className="category-header-section">
         <div className="category-header-content">
-          <h1 className="category-title">
-            Danh mục cây cảnh
-          </h1>
+          <h1 className="category-title">Danh mục cây cảnh</h1>
           <p className="category-subtitle">
-            Khám phá bộ sưu tập phong phú với nhiều loại cây cảnh được phân loại 
-            theo đặc tính và ý nghĩa riêng biệt, giúp bạn dễ dàng tìm thấy màu xanh phù hợp cho không gian sống.
+            Khám phá bộ sưu tập phong phú với nhiều loại cây cảnh được phân loại
+            theo đặc tính và ý nghĩa riêng biệt, giúp bạn dễ dàng tìm thấy màu
+            xanh phù hợp cho không gian sống.
           </p>
         </div>
       </section>
@@ -57,8 +56,8 @@ const CategoryPage = () => {
               {categories.map((cat) => (
                 <div key={cat.id} className="category-item">
                   {/* Card với hiệu ứng hình ảnh và gradient */}
-                  <Link 
-                    to={`/?category_id=${cat.id}`} 
+                  <Link
+                    to={`/?category_id=${cat.id}`}
                     className="category-card"
                   >
                     {/* Phần Ảnh */}
@@ -69,18 +68,18 @@ const CategoryPage = () => {
                           alt={cat.name}
                           className="category-img"
                           onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
                           }}
                         />
                       ) : null}
-                      
+
                       {/* Placeholder nếu ảnh lỗi hoặc không có */}
-                      <div 
+                      <div
                         className="image-placeholder"
                         style={{ display: cat.image ? "none" : "flex" }}
                       >
-                         <FaLeaf size={40} />
+                        <FaLeaf size={40} />
                       </div>
                     </div>
 
@@ -91,7 +90,7 @@ const CategoryPage = () => {
                     <div className="category-card-content">
                       <div className="category-info">
                         <h3>{cat.name}</h3>
-                        <p>Xem chi tiết</p> 
+                        <p>Xem chi tiết</p>
                       </div>
                       <div className="category-icon-wrapper">
                         <FaArrowRight className="category-arrow-icon" />
@@ -101,14 +100,18 @@ const CategoryPage = () => {
 
                   {/* Phần mô tả nằm dưới Card */}
                   <p className="category-desc-text">
-                    {cat.description || "Một lựa chọn tuyệt vời cho không gian xanh của bạn."}
+                    {cat.description ||
+                      "Một lựa chọn tuyệt vời cho không gian xanh của bạn."}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
             <div className="empty-container">
-              <FaLeaf size={40} style={{ marginBottom: "1rem", opacity: 0.5 }} />
+              <FaLeaf
+                size={40}
+                style={{ marginBottom: "1rem", opacity: 0.5 }}
+              />
               <p>Chưa có danh mục nào được tạo.</p>
             </div>
           )}

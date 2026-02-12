@@ -1,6 +1,7 @@
 import React from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import "./AdminPopup.css"; // Import CSS
+import "./AdminPopup.css";
+import { API_URL } from "../../../config";
 
 const AdminPopupList = ({ popups, handleEdit, handleDelete }) => {
   return (
@@ -10,7 +11,7 @@ const AdminPopupList = ({ popups, handleEdit, handleDelete }) => {
         try {
           mediaList = JSON.parse(popup.media_urls || "[]");
         } catch (e) {}
-        
+
         // Xác định class active/inactive
         const cardClass = `popup-card ${popup.is_active ? "active" : "inactive"}`;
 
@@ -29,12 +30,12 @@ const AdminPopupList = ({ popups, handleEdit, handleDelete }) => {
               <div className="card-media-box">
                 {mediaList[0].match(/\.(mp4|webm)$/i) ? (
                   <video
-                    src={`http://localhost:3000${mediaList[0]}`}
+                    src={`${API_URL}${mediaList[0]}`}
                     className="preview-media"
                   />
                 ) : (
                   <img
-                    src={`http://localhost:3000${mediaList[0]}`}
+                    src={`${API_URL}${mediaList[0]}`}
                     alt=""
                     className="preview-media"
                   />

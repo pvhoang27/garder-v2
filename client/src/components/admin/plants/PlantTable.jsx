@@ -1,5 +1,6 @@
 import React from "react";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { API_URL } from "../../../config";
 
 const PlantTable = ({ plants, onView, onEdit, onDelete }) => {
   return (
@@ -27,7 +28,7 @@ const PlantTable = ({ plants, onView, onEdit, onDelete }) => {
                 <td>
                   {plant.thumbnail ? (
                     <img
-                      src={`http://localhost:3000${plant.thumbnail}`}
+                      src={`${API_URL}${plant.thumbnail}`}
                       alt=""
                       className="thumb-img"
                     />

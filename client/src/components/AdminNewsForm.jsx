@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { FaUpload, FaTimes } from "react-icons/fa";
+import { API_URL } from "../config";
 
 const AdminNewsForm = ({ initialData, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -21,8 +22,12 @@ const AdminNewsForm = ({ initialData, onSuccess }) => {
       });
       // Nếu là URL ảnh (đã có trên server)
       if (initialData.image && typeof initialData.image === "string") {
-         // Xử lý hiển thị ảnh cũ
-         setPreview(initialData.image.startsWith("http") ? initialData.image : `http://localhost:3000${initialData.image}`);
+        // Xử lý hiển thị ảnh cũ
+        setPreview(
+          initialData.image.startsWith("http")
+            ? initialData.image
+            : `${API_URL}${initialData.image}`,
+        );
       }
     }
   }, [initialData]);
@@ -67,7 +72,10 @@ const AdminNewsForm = ({ initialData, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: "20px", background: "white", borderRadius: "8px" }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{ padding: "20px", background: "white", borderRadius: "8px" }}
+    >
       <div style={{ marginBottom: "15px" }}>
         <label>Tiêu đề tin tức:</label>
         <input
@@ -105,27 +113,89 @@ const AdminNewsForm = ({ initialData, onSuccess }) => {
 
       <div style={{ marginBottom: "15px" }}>
         <label>Hình ảnh bìa:</label>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "5px" }}>
-            <label style={{ 
-                cursor: "pointer", padding: "8px 15px", background: "#f0f0f0", 
-                borderRadius: "5px", display: "flex", alignItems: "center", gap: "5px" 
-            }}>
-                <FaUpload /> Chọn ảnh
-                <input type="file" hidden onChange={handleImageChange} accept="image/*" />
-            </label>
-            {preview && (
-                <div style={{ position: "relative", width: "100px", height: "60px" }}>
-                    <img src={preview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }} />
-                    <button type="button" onClick={() => { setPreview(null); setFormData({...formData, image: null}) }}
-                        style={{ position: "absolute", top: -5, right: -5, background: "red", color: "white", borderRadius: "50%", border: "none", width: "20px", height: "20px", cursor: "pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <FaTimes size={10}/>
-                    </button>
-                </div>
-            )}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginTop: "5px",
+          }}
+        >
+          <label
+            style={{
+              cursor: "pointer",
+              padding: "8px 15px",
+              background: "#f0f0f0",
+              borderRadius: "5px",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <FaUpload /> Chọn ảnh
+            <input
+              type="file"
+              hidden
+              onChange={handleImageChange}
+              accept="image/*"
+            />
+          </label>
+          {preview && (
+            <div
+              style={{ position: "relative", width: "100px", height: "60px" }}
+            >
+              <img
+                src={preview}
+                alt="Preview"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "4px",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setPreview(null);
+                  setFormData({ ...formData, image: null });
+                }}
+                style={{
+                  position: "absolute",
+                  top: -5,
+                  right: -5,
+                  background: "red",
+                  color: "white",
+                  borderRadius: "50%",
+                  border: "none",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <FaTimes size={10} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      <button type="submit" style={{ width: "100%", padding: "10px", background: "#2e7d32", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
+      <button
+        type="submit"
+        style={{
+          width: "100%",
+          padding: "10px",
+          background: "#2e7d32",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          fontWeight: "bold",
+        }}
+      >
         {initialData ? "Cập Nhật" : "Đăng Tin"}
       </button>
     </form>

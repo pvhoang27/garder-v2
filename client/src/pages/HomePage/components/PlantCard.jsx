@@ -1,15 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaComment } from "react-icons/fa";
+import { API_URL } from "../../../config";
 
-const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'views', cardStyle = {} }) => {
-  const catName = categories.find((c) => c.id === plant.category_id)?.name || "Indoor";
+const PlantCard = ({
+  plant,
+  categories,
+  showStats = false,
+  trendingFilter = "views",
+  cardStyle = {},
+}) => {
+  const catName =
+    categories.find((c) => c.id === plant.category_id)?.name || "Indoor";
 
   const getImageUrl = (path) => {
     if (!path)
       return "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
     if (path.startsWith("http")) return path;
-    return `http://localhost:3000${path}`;
+    return `${API_URL}${path}`;
   };
 
   return (
@@ -55,10 +63,10 @@ const PlantCard = ({ plant, categories, showStats = false, trendingFilter = 'vie
         </div>
         <div className="plant-content">
           <span className="plant-category">{catName}</span>
-          
+
           {/* --- SỬA TẠI ĐÂY: Dùng Wrapper để giữ Tooltip không bị cắt --- */}
           <div className="plant-title-wrapper" data-title={plant.name}>
-             <h4 className="plant-title">{plant.name}</h4>
+            <h4 className="plant-title">{plant.name}</h4>
           </div>
           {/* ----------------------------------------------------------- */}
 

@@ -23,16 +23,20 @@ const PlantMedia = ({
       <div className="media-box">
         <h3 className="media-title">1. Ảnh Đại Diện</h3>
         <input type="file" onChange={handleThumbnailChange} accept="image/*" />
-        
+
         {thumbnailPreview && (
-          <img src={thumbnailPreview} alt="New" className="preview-img new-thumb" />
+          <img
+            src={thumbnailPreview}
+            alt="New"
+            className="preview-img new-thumb"
+          />
         )}
-        
+
         {isEdit && !thumbnailPreview && oldThumbnail && (
           <div className="old-media-wrapper">
             <p>Ảnh hiện tại:</p>
             <img
-              src={`http://localhost:3000${oldThumbnail}`}
+              src={`${API_URL}${oldThumbnail}`}
               alt="Old"
               className="preview-img"
             />
@@ -55,9 +59,16 @@ const PlantMedia = ({
           {oldMedia.map((item) => (
             <div key={item.id} className="gallery-item">
               {isVideo(item.image_url) ? (
-                <video src={`http://localhost:3000${item.image_url}`} className="gallery-content" />
+                <video
+                  src={`${API_URL}${item.image_url}`}
+                  className="gallery-content"
+                />
               ) : (
-                <img src={`http://localhost:3000${item.image_url}`} alt="old" className="gallery-content" />
+                <img
+                  src={`${API_URL}${item.image_url}`}
+                  alt="old"
+                  className="gallery-content"
+                />
               )}
               <button
                 type="button"

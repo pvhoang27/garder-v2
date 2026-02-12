@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaSave, FaImage } from "react-icons/fa";
 import "./AdminLayout.css";
+import { API_URL } from "../../../config";
 
 const AdminLayoutForm = ({
   isEditing,
@@ -21,14 +22,14 @@ const AdminLayoutForm = ({
   useEffect(() => {
     if (config.type === "hero_config" && config.imageUrl && !config.imageFile) {
       // Logic mới: Kiểm tra xem ảnh là đường dẫn web, Base64 hay đường dẫn local cũ
-      const isExternalOrBase64 = 
-        config.imageUrl.startsWith("http") || 
+      const isExternalOrBase64 =
+        config.imageUrl.startsWith("http") ||
         config.imageUrl.startsWith("data:"); // data:image/...
-      
+
       const url = isExternalOrBase64
         ? config.imageUrl
-        : `http://localhost:3000${config.imageUrl}`;
-      
+        : `${API_URL}${config.imageUrl}`;
+
       setPreviewUrl(url);
     }
   }, [config]);
@@ -40,7 +41,7 @@ const AdminLayoutForm = ({
       // Tạo URL preview tạm thời
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
-      
+
       // Lưu file vào state config để component cha xử lý gửi đi
       setConfig({ ...config, imageFile: file });
     }
@@ -51,7 +52,11 @@ const AdminLayoutForm = ({
     return (
       <div className="layout-form-container">
         <h3>Chỉnh sửa Hero Section (Banner)</h3>
-        <form onSubmit={handleSubmit} style={{ marginTop: "15px" }} encType="multipart/form-data">
+        <form
+          onSubmit={handleSubmit}
+          style={{ marginTop: "15px" }}
+          encType="multipart/form-data"
+        >
           <div className="form-grid">
             <div className="form-input-group">
               <label>Tiêu đề (Phần đầu):</label>
@@ -60,7 +65,9 @@ const AdminLayoutForm = ({
                 className="form-input"
                 placeholder="Ví dụ: Make your"
                 value={config.titlePrefix || ""}
-                onChange={(e) => setConfig({ ...config, titlePrefix: e.target.value })}
+                onChange={(e) =>
+                  setConfig({ ...config, titlePrefix: e.target.value })
+                }
               />
             </div>
             <div className="form-input-group">
@@ -70,20 +77,24 @@ const AdminLayoutForm = ({
                 className="form-input"
                 placeholder="Ví dụ: home"
                 value={config.titleHighlight || ""}
-                onChange={(e) => setConfig({ ...config, titleHighlight: e.target.value })}
+                onChange={(e) =>
+                  setConfig({ ...config, titleHighlight: e.target.value })
+                }
               />
             </div>
           </div>
-          
+
           <div className="form-grid">
-             <div className="form-input-group">
+            <div className="form-input-group">
               <label>Tiêu đề (Phần cuối):</label>
               <input
                 type="text"
                 className="form-input"
                 placeholder="Ví dụ: green"
                 value={config.titleSuffix || ""}
-                onChange={(e) => setConfig({ ...config, titleSuffix: e.target.value })}
+                onChange={(e) =>
+                  setConfig({ ...config, titleSuffix: e.target.value })
+                }
               />
             </div>
           </div>
@@ -94,60 +105,83 @@ const AdminLayoutForm = ({
               className="form-input"
               rows="3"
               value={config.description || ""}
-              onChange={(e) => setConfig({ ...config, description: e.target.value })}
+              onChange={(e) =>
+                setConfig({ ...config, description: e.target.value })
+              }
             ></textarea>
           </div>
 
           {/* UPLOAD ẢNH */}
           <div className="form-input-group" style={{ marginTop: "15px" }}>
-            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
               Hình ảnh Banner:
             </label>
-            
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
+
+            <div
+              style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}
+            >
               <div style={{ flex: 1 }}>
-                <label className="custom-file-upload" style={{
-                  display: "inline-block",
-                  padding: "8px 15px",
-                  backgroundColor: "#f0f0f0",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  marginBottom: "10px"
-                }}>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleFileChange} 
-                    style={{ display: "none" }} 
+                <label
+                  className="custom-file-upload"
+                  style={{
+                    display: "inline-block",
+                    padding: "8px 15px",
+                    backgroundColor: "#f0f0f0",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
                   />
                   <FaImage style={{ marginRight: "5px" }} /> Chọn ảnh mới
                 </label>
                 <div style={{ fontSize: "12px", color: "#666" }}>
-                  {config.imageFile ? `Đã chọn: ${config.imageFile.name}` : "Chưa chọn file mới"}
+                  {config.imageFile
+                    ? `Đã chọn: ${config.imageFile.name}`
+                    : "Chưa chọn file mới"}
                 </div>
               </div>
 
               {/* PREVIEW ẢNH */}
-              <div style={{ 
-                width: "200px", 
-                height: "120px", 
-                border: "1px dashed #ccc", 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center",
-                backgroundColor: "#fafafa",
-                overflow: "hidden",
-                borderRadius: "8px"
-              }}>
+              <div
+                style={{
+                  width: "200px",
+                  height: "120px",
+                  border: "1px dashed #ccc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#fafafa",
+                  overflow: "hidden",
+                  borderRadius: "8px",
+                }}
+              >
                 {previewUrl ? (
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
                   />
                 ) : (
-                  <span style={{ color: "#aaa", fontSize: "12px" }}>No Image</span>
+                  <span style={{ color: "#aaa", fontSize: "12px" }}>
+                    No Image
+                  </span>
                 )}
               </div>
             </div>
@@ -229,7 +263,7 @@ const AdminLayoutForm = ({
                   <div className="plant-info">
                     {plant.thumbnail && (
                       <img
-                        src={`http://localhost:3000${plant.thumbnail}`}
+                        src={`${API_URL}${plant.thumbnail}`}
                         alt=""
                         className="plant-thumb"
                       />

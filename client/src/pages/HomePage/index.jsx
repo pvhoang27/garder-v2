@@ -3,6 +3,7 @@ import axiosClient from "../../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa";
+import { UPLOADS_URL } from "../../config";
 
 // Components chức năng chung
 import BackgroundEffect from "../../components/BackgroundEffect";
@@ -48,7 +49,7 @@ const HomePage = () => {
   // State tìm kiếm & filter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category_id") || ""
+    searchParams.get("category_id") || "",
   );
 
   const isShowAll = searchParams.get("show_all") === "true";
@@ -86,7 +87,7 @@ const HomePage = () => {
     // 4. Lấy bố cục Dynamic Sections
     axiosClient.get("/layout").then((res) => {
       const sortedLayouts = (res.data || []).sort(
-        (a, b) => a.sort_order - b.sort_order
+        (a, b) => a.sort_order - b.sort_order,
       );
       setLayouts(sortedLayouts);
     });
@@ -104,7 +105,7 @@ const HomePage = () => {
       setLoadingTrending(true);
       try {
         const res = await axiosClient.get(
-          `/plants?sort_by=${trendingFilter}&limit=4`
+          `/plants?sort_by=${trendingFilter}&limit=4`,
         );
         setTrendingPlants(res.data);
       } catch (error) {
@@ -141,7 +142,7 @@ const HomePage = () => {
     }
     if (imageName.startsWith("http")) return imageName;
     // Đường dẫn ảnh từ server (tương tự như AdminCategoryManager)
-    return `http://localhost:3000/uploads/${imageName}`;
+    return `${UPLOADS_URL}${imageName}`;
   };
 
   const isSearching =
@@ -289,10 +290,7 @@ const HomePage = () => {
 
           {/* --- SECTION ĐÃ XEM GẦN ĐÂY (Background TRẮNG - Card XANH) --- */}
           {/* Truyền data vào để component hiển thị, không cần load lại từ localStorage */}
-          <RecentlyViewedSection
-            categories={categories}
-            data={recentPlants}
-          />
+          <RecentlyViewedSection categories={categories} data={recentPlants} />
 
           {/* DYNAMIC SECTIONS */}
           {layouts.map(
@@ -306,7 +304,7 @@ const HomePage = () => {
                   // Điều chỉnh index bắt đầu dựa trên việc có Section Recent hay không
                   index={index + startDynamicIndex}
                 />
-              )
+              ),
           )}
 
           {/* ABOUT SECTION */}

@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { FaPlus, FaTimes, FaEdit, FaTrash, FaImage } from "react-icons/fa";
+import { UPLOADS_URL } from "../config";
 
-// SỬA PORT THÀNH 3000 ĐỂ KHỚP VỚI SERVER
-const API_URL = "http://localhost:3000/uploads/";
+const API_URL = UPLOADS_URL;
 
 const AdminCategoryManager = ({ isMobile }) => {
   const [categories, setCategories] = useState([]);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  
+
   const [catFormData, setCatFormData] = useState({
     name: "",
     slug: "",
@@ -73,7 +73,7 @@ const AdminCategoryManager = ({ isMobile }) => {
 
   const handleSubmitCategory = async (e) => {
     e.preventDefault();
-    
+
     // Dùng FormData để gửi file + text
     const formData = new FormData();
     formData.append("name", catFormData.name);
@@ -86,12 +86,12 @@ const AdminCategoryManager = ({ isMobile }) => {
     try {
       if (editingCategory) {
         await axiosClient.put(`/categories/${editingCategory.id}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" },
         });
         alert("Cập nhật thành công!");
       } else {
         await axiosClient.post("/categories", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" },
         });
         alert("Thêm thành công!");
       }
@@ -200,12 +200,12 @@ const AdminCategoryManager = ({ isMobile }) => {
       cursor: "pointer",
     },
     imgPreview: {
-      width: "60px", 
-      height: "60px", 
-      objectFit: "cover", 
+      width: "60px",
+      height: "60px",
+      objectFit: "cover",
       borderRadius: "4px",
-      border: "1px solid #ddd"
-    }
+      border: "1px solid #ddd",
+    },
   };
 
   return (
@@ -262,7 +262,7 @@ const AdminCategoryManager = ({ isMobile }) => {
                 style={styles.input}
               />
             </div>
-            
+
             <div style={{ marginBottom: "15px" }}>
               <label style={styles.label}>Slug</label>
               <input
@@ -274,7 +274,7 @@ const AdminCategoryManager = ({ isMobile }) => {
                 style={styles.input}
               />
             </div>
-            
+
             {/* Input Hình ảnh */}
             <div style={{ marginBottom: "15px" }}>
               <label style={styles.label}>Hình ảnh</label>
@@ -287,10 +287,19 @@ const AdminCategoryManager = ({ isMobile }) => {
               {/* Hiển thị ảnh preview */}
               {(previewUrl || editingCategory?.image) && (
                 <div style={{ marginTop: "10px" }}>
-                  <img 
-                    src={previewUrl || (editingCategory?.image ? `${API_URL}${editingCategory.image}` : "")} 
-                    alt="Preview" 
-                    style={{ maxHeight: "150px", borderRadius: "5px", border: "1px solid #ccc" }}
+                  <img
+                    src={
+                      previewUrl ||
+                      (editingCategory?.image
+                        ? `${API_URL}${editingCategory.image}`
+                        : "")
+                    }
+                    alt="Preview"
+                    style={{
+                      maxHeight: "150px",
+                      borderRadius: "5px",
+                      border: "1px solid #ccc",
+                    }}
                   />
                 </div>
               )}
@@ -337,18 +346,29 @@ const AdminCategoryManager = ({ isMobile }) => {
               <tr key={cat.id} style={{ borderBottom: "1px solid #eee" }}>
                 <td style={styles.td}>#{cat.id}</td>
                 <td style={styles.td}>
-                    {cat.image ? (
-                        <img 
-                            src={`${API_URL}${cat.image}`} 
-                            alt={cat.name} 
-                            style={styles.imgPreview} 
-                            onError={(e) => {e.target.style.display='none'}} 
-                        />
-                    ) : (
-                        <div style={{...styles.imgPreview, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0f0', color: '#888'}}>
-                            <FaImage />
-                        </div>
-                    )}
+                  {cat.image ? (
+                    <img
+                      src={`${API_URL}${cat.image}`}
+                      alt={cat.name}
+                      style={styles.imgPreview}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        ...styles.imgPreview,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "#f0f0f0",
+                        color: "#888",
+                      }}
+                    >
+                      <FaImage />
+                    </div>
+                  )}
                 </td>
                 <td style={styles.td}>
                   <strong>{cat.name}</strong>
