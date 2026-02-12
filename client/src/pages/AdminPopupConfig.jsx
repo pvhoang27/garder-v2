@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import { FaPlus, FaBars } from "react-icons/fa";
+import { API_URL } from "../config";
 import AdminSidebar from "../components/AdminSidebar";
 
 // Import components

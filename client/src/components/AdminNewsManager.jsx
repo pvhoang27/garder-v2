@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { API_URL } from "../config";
 import AdminNewsForm from "./AdminNewsForm";
 
 const AdminNewsManager = ({ isMobile }) => {
