@@ -1,220 +1,289 @@
 /* Container chính */
 .comment-section {
-    margin-top: 40px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .comment-section h3 {
-    margin-bottom: 20px;
-    color: #2e7d32;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
+  margin-bottom: 20px;
+  color: #2e7d32;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
 }
 
 /* Form chung */
 .comment-form {
-    margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 .comment-form textarea,
 .reply-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-    resize: vertical;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  resize: vertical;
 }
 
 .comment-form textarea {
-    min-height: 80px;
+  min-height: 80px;
 }
 
 .comment-form button {
-    background-color: #2e7d32;
-    color: white;
-    border: none;
-    padding: 0 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 500;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
 }
 
 /* Style cho từng Comment Wrapper */
 .comment-wrapper {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .comment-item {
-    display: flex;
-    gap: 15px;
-    padding-bottom: 10px;
+  display: flex;
+  gap: 15px;
+  padding-bottom: 10px;
 }
 
 /* Avatar */
 .comment-avatar {
-    font-size: 35px;
-    color: #ccc;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
+  font-size: 35px;
+  color: #ccc;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .comment-avatar img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Nội dung */
 .comment-content-wrapper {
-    flex: 1;
+  flex: 1;
 }
 
 .comment-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 5px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
 }
 
 .comment-author {
-    font-weight: bold;
-    color: #333;
+  font-weight: bold;
+  color: #333;
 }
 
 .badge-member {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-weight: normal;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: normal;
 }
 
 .comment-time {
-    font-size: 12px;
-    color: #999;
+  font-size: 12px;
+  color: #999;
 }
 
 .comment-body {
-    color: #555;
-    line-height: 1.5;
-    margin-bottom: 5px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 5px;
 }
 
 /* Actions: Nút Trả lời, Xóa */
 .comment-actions {
-    margin-left: auto;
-    display: flex;
-    gap: 10px;
-    align-items: center;
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .btn-reply {
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: 0.2s;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: 0.2s;
 }
 
 .btn-reply:hover {
-    background-color: #f0f0f0;
-    color: #2e7d32;
+  background-color: #f0f0f0;
+  color: #2e7d32;
 }
 
 .btn-delete-comment {
-    background: none;
-    border: none;
-    color: #ff5252;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 4px 8px;
-    opacity: 0.6;
-    transition: 0.2s;
+  background: none;
+  border: none;
+  color: #ff5252;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 8px;
+  opacity: 0.6;
+  transition: 0.2s;
 }
 
 .btn-delete-comment:hover {
-    opacity: 1;
-    background-color: #ffebee;
-    border-radius: 4px;
+  opacity: 1;
+  background-color: #ffebee;
+  border-radius: 4px;
 }
 
 /* PHẦN TRẢ LỜI (REPLY) */
 /* Thụt lề cho danh sách trả lời */
 .replies-list {
-    margin-left: 55px; /* Thụt vào so với avatar cha */
-    border-left: 2px solid #f0f0f0; /* Đường kẻ chỉ dẫn */
-    padding-left: 15px;
-    margin-top: 10px;
+  margin-left: 55px; /* Thụt vào so với avatar cha */
+  border-left: 2px solid #f0f0f0; /* Đường kẻ chỉ dẫn */
+  padding-left: 15px;
+  margin-top: 10px;
 }
 
 /* Form trả lời */
 .reply-form {
-    margin-top: 10px;
-    animation: fadeIn 0.3s ease;
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease;
 }
 
 .reply-form textarea {
-    min-height: 60px;
-    margin-bottom: 5px;
-    font-size: 14px;
+  min-height: 60px;
+  margin-bottom: 5px;
+  font-size: 14px;
 }
 
 .reply-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .reply-actions button {
-    padding: 5px 15px;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-    border: none;
+  padding: 5px 15px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
 }
 
 .reply-actions button[type="submit"] {
-    background-color: #2e7d32;
-    color: white;
+  background-color: #2e7d32;
+  color: white;
 }
 
 .btn-cancel {
-    background-color: #f5f5f5;
-    color: #666;
+  background-color: #f5f5f5;
+  color: #666;
 }
 
 .btn-cancel:hover {
-    background-color: #e0e0e0;
+  background-color: #e0e0e0;
 }
 
 .no-comments {
-    text-align: center;
-    color: #888;
-    font-style: italic;
-    margin-top: 20px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 20px;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .comment-section {
+    padding: 15px;
+    margin-top: 30px;
+  }
+
+  .comment-section h3 {
+    font-size: 1.2rem;
+  }
+
+  .comment-avatar {
+    font-size: 30px;
+    width: 35px;
+    height: 35px;
+  }
+
+  .replies-list {
+    margin-left: 40px;
+    padding-left: 10px;
+  }
+
+  .comment-header {
+    font-size: 0.9rem;
+  }
+
+  .comment-body {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .comment-section {
+    padding: 12px;
+  }
+
+  .comment-item {
+    gap: 10px;
+  }
+
+  .comment-avatar {
+    font-size: 25px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .replies-list {
+    margin-left: 30px;
+    padding-left: 8px;
+  }
+
+  .comment-form textarea,
+  .reply-form textarea {
+    font-size: 14px;
+  }
+
+  .btn-reply,
+  .btn-delete-comment {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
 }

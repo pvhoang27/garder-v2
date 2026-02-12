@@ -2,7 +2,11 @@
 
 /* --- Layout chung --- */
 .contact-page-container {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: #1f2937; /* Gray-800 */
   background-color: #ffffff;
   min-height: 100vh;
@@ -23,7 +27,7 @@
   font-weight: 700;
   color: #166534; /* Green-800 */
   margin-bottom: 1rem;
-  font-family: 'Merriweather', serif;
+  font-family: "Merriweather", serif;
 }
 
 .contact-subtitle {
@@ -62,7 +66,7 @@
   font-weight: 600;
   color: #166534;
   margin-bottom: 0.5rem;
-  font-family: 'Merriweather', serif;
+  font-family: "Merriweather", serif;
 }
 
 .info-desc,
@@ -148,7 +152,9 @@
   border-radius: 9999px; /* Bo tròn hoàn toàn (pill shape) */
   text-decoration: none;
   width: fit-content;
-  transition: transform 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
   box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
 }
 
@@ -242,4 +248,78 @@
 .submit-btn:disabled {
   background-color: #86efac;
   cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-title {
+    font-size: 2rem;
+  }
+
+  .contact-subtitle {
+    font-size: 1rem;
+  }
+
+  .contact-content-section {
+    padding: 2rem 1rem;
+  }
+
+  .contact-grid {
+    gap: 2rem;
+  }
+
+  .info-column h2,
+  .form-column h2 {
+    font-size: 1.5rem;
+  }
+
+  .form-card {
+    padding: 1.5rem;
+  }
+
+  .direction-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-header-section {
+    padding: 2rem 1rem;
+  }
+
+  .contact-title {
+    font-size: 1.75rem;
+  }
+
+  .contact-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .contact-content-section {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .info-card {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .icon-wrapper {
+    margin: 0 auto;
+  }
+
+  .form-card {
+    padding: 1.25rem;
+  }
+
+  .form-input,
+  .form-textarea {
+    font-size: 0.95rem;
+  }
+
+  .submit-btn {
+    font-size: 0.95rem;
+  }
 }

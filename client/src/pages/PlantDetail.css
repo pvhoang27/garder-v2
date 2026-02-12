@@ -39,7 +39,7 @@
 .gallery-swiper {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   background: #fff;
 }
 
@@ -166,13 +166,60 @@
 @media (max-width: 768px) {
   .detail-container {
     flex-direction: column;
+    gap: 25px;
   }
-  
+
   .detail-left {
     max-width: 100%;
   }
-  
-  .gallery-media, .no-media {
-    height: 300px; /* Giảm chiều cao trên mobile */
+
+  .gallery-media,
+  .no-media {
+    height: 300px;
+  }
+
+  .plant-title {
+    font-size: 1.75rem;
+  }
+
+  .plant-price {
+    font-size: 1.3rem;
+  }
+
+  .attr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .plant-detail-page {
+    margin-top: 15px;
+    padding-bottom: 30px;
+  }
+
+  .gallery-media,
+  .no-media {
+    height: 250px;
+  }
+
+  .plant-title {
+    font-size: 1.5rem;
+  }
+
+  .plant-price {
+    font-size: 1.2rem;
+  }
+
+  .plant-meta {
+    font-size: 0.9rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .care-box {
+    padding: 15px;
+    font-size: 0.95rem;
   }
 }

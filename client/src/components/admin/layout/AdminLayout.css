@@ -397,3 +397,97 @@
   align-items: center;
   gap: 5px;
 }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .admin-layout-content {
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout-content {
+    padding: 15px;
+    margin-top: 60px;
+  }
+
+  .page-heading {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .effect-config-container {
+    padding: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .effect-controls {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .effect-select {
+    width: 100%;
+  }
+
+  .btn-save-effect {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .layout-form-container {
+    padding: 15px;
+  }
+
+  .layout-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .layout-item-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .move-btn-group {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-layout-content {
+    padding: 10px;
+  }
+
+  .mobile-header {
+    padding: 0 15px;
+  }
+
+  .mobile-header-title {
+    font-size: 16px;
+  }
+
+  .effect-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .layout-item-left {
+    width: 100%;
+  }
+
+  .item-title {
+    font-size: 1rem;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+}

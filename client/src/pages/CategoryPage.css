@@ -1,12 +1,15 @@
 /* Import font chữ Serif để giống repo phụ (nếu chưa có) */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap");
 
 .category-page-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 /* --- Header Section (Màu nền nhẹ nhàng) --- */
@@ -22,7 +25,7 @@
 }
 
 .category-title {
-  font-family: 'Playfair Display', serif; /* Font chữ điểm nhấn */
+  font-family: "Playfair Display", serif; /* Font chữ điểm nhấn */
   font-size: 2.5rem;
   font-weight: 600;
   color: #1a202c;
@@ -84,7 +87,7 @@
   background-color: white;
   aspect-ratio: 3 / 2; /* Tỷ lệ khung hình giống repo phụ */
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   text-decoration: none;
   display: block;
@@ -92,7 +95,9 @@
 
 /* Hiệu ứng Hover cho Card */
 .category-card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border-color: rgba(22, 163, 74, 0.3); /* Viền xanh nhẹ khi hover */
 }
 
@@ -119,7 +124,12 @@
 .category-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -140,7 +150,7 @@
   font-weight: 600;
   color: white;
   margin: 0 0 0.25rem 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .category-info p {
@@ -181,7 +191,8 @@
 }
 
 /* Trạng thái Loading / Empty */
-.loading-container, .empty-container {
+.loading-container,
+.empty-container {
   padding: 4rem;
   text-align: center;
   color: #64748b;
@@ -196,4 +207,73 @@
   justify-content: center;
   background-color: #e2e8f0;
   color: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .category-title {
+    font-size: 2rem;
+  }
+
+  .category-subtitle {
+    font-size: 1rem;
+  }
+
+  .category-content-section {
+    padding: 3rem 1rem;
+  }
+
+  .category-card-content {
+    padding: 1.25rem;
+  }
+
+  .category-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .category-icon-wrapper {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .category-header-section {
+    padding: 3rem 1rem;
+  }
+
+  .category-title {
+    font-size: 1.75rem;
+  }
+
+  .category-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .category-desc-text {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-title {
+    font-size: 1.5rem;
+  }
+
+  .category-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .category-content-section {
+    padding: 2rem 0.75rem;
+  }
+
+  .category-card-content {
+    padding: 1rem;
+  }
+
+  .category-info h3 {
+    font-size: 1rem;
+  }
 }

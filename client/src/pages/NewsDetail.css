@@ -3,7 +3,7 @@
   max-width: 800px; /* Giới hạn chiều rộng để dễ đọc giống Medium/Blog xịn */
   margin: 0 auto;
   padding: 40px 20px 80px 20px;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .back-btn {
@@ -28,7 +28,7 @@
 .article-content {
   /* Không dùng background trắng + shadow nữa để tạo cảm giác hiện đại, thoáng hơn */
   /* Hoặc nếu thích nổi bật thì giữ background nhưng làm shadow thật nhẹ */
-  background: white; 
+  background: white;
 }
 
 .article-title {
@@ -82,9 +82,59 @@
 }
 
 /* Loading/Error */
-.loading-message, .error-message {
+.loading-message,
+.error-message {
   text-align: center;
   margin-top: 100px;
   font-size: 1.1rem;
   color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .news-detail-container {
+    padding: 20px 15px 50px 15px;
+  }
+
+  .article-title {
+    font-size: 1.75rem;
+  }
+
+  .article-meta {
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .article-hero-image {
+    max-height: 300px;
+    border-radius: 8px;
+  }
+
+  .article-summary {
+    font-size: 1.05rem;
+    padding: 15px;
+  }
+
+  .article-body {
+    font-size: 1rem;
+  }
+
+  .back-btn {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .article-title {
+    font-size: 1.5rem;
+  }
+
+  .article-summary {
+    font-size: 0.95rem;
+    padding: 12px;
+  }
+
+  .article-body {
+    font-size: 0.95rem;
+  }
 }

@@ -16,11 +16,27 @@
   opacity: 0.9;
 }
 
-.btn-add { background-color: #2e7d32; }
-.btn-save { background-color: #2e7d32; }
-.btn-cancel { background-color: #666; }
-.btn-edit { background-color: #ff9800; padding: 5px 10px; font-size: 0.9rem; border-radius: 3px; }
-.btn-delete { background-color: #f44336; padding: 5px 10px; font-size: 0.9rem; border-radius: 3px; }
+.btn-add {
+  background-color: #2e7d32;
+}
+.btn-save {
+  background-color: #2e7d32;
+}
+.btn-cancel {
+  background-color: #666;
+}
+.btn-edit {
+  background-color: #ff9800;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  border-radius: 3px;
+}
+.btn-delete {
+  background-color: #f44336;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  border-radius: 3px;
+}
 
 /* --- FORM --- */
 .admin-popup-form {
@@ -219,4 +235,92 @@
 .page-top-actions {
   margin-bottom: 20px;
   text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .popup-list-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row.config-area {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-popup-form {
+    padding: 20px;
+  }
+
+  .form-title {
+    font-size: 1.1rem;
+  }
+
+  .popup-list-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .popup-card {
+    padding: 12px;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .card-media-box {
+    height: 100px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .preview-list {
+    justify-content: flex-start;
+  }
+
+  .preview-item {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-popup-form {
+    padding: 15px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-popup {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .form-row {
+    gap: 15px;
+  }
+
+  .form-row.config-area {
+    padding: 10px;
+  }
 }

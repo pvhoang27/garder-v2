@@ -29,12 +29,72 @@
 }
 
 @media (max-width: 768px) {
-  .row-3-cols, .row-2-cols {
+  .row-3-cols,
+  .row-2-cols {
     grid-template-columns: 1fr;
+  }
+
+  .form-title {
+    font-size: 1.3rem;
+  }
+
+  .form-section {
+    padding: 12px;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .media-box {
+    padding: 15px;
+  }
+
+  .media-title {
+    font-size: 0.95rem;
+  }
+
+  .preview-img,
+  .preview-video {
+    height: 80px;
   }
 }
 
-.form-input, .form-select, .form-textarea {
+@media (max-width: 480px) {
+  .admin-form-container {
+    padding-bottom: 30px;
+  }
+
+  .form-grid {
+    gap: 15px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .attr-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .media-container {
+    gap: 15px;
+  }
+
+  .btn-submit,
+  .btn-cancel {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+.form-input,
+.form-select,
+.form-textarea {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;

@@ -3,7 +3,10 @@
   background-color: #ffffff; /* bg-card */
   border-top: 1px solid #e2e8f0; /* border-border */
   color: #0f172a; /* text-foreground */
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ngắn */
 }
 
@@ -124,4 +127,65 @@
 
 .social-link:hover {
   color: #16a34a; /* Màu xanh chủ đạo khi hover */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 2.5rem 1rem;
+  }
+
+  .footer-grid {
+    gap: 2.5rem;
+  }
+
+  .footer-brand-name {
+    font-size: 1.15rem;
+  }
+
+  .footer-heading {
+    font-size: 0.8rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .footer-link,
+  .footer-contact-item {
+    font-size: 0.8rem;
+  }
+
+  .footer-bottom {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .footer-copyright {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-container {
+    padding: 2rem 0.875rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-bottom {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-desc {
+    font-size: 0.8rem;
+  }
+
+  .footer-socials {
+    justify-content: center;
+    gap: 0.75rem;
+  }
 }

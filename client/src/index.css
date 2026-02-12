@@ -464,4 +464,102 @@ ul {
     bottom: 120px;
     right: 15px;
   }
+
+  .contact-btn {
+    width: 45px;
+    height: 45px;
+  }
+
+  .container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    height: 70px;
+  }
+
+  .navbar-container {
+    height: 70px;
+  }
+
+  .nav-logo {
+    font-size: 1.4rem;
+  }
+
+  .mobile-icon {
+    font-size: 1.6rem;
+  }
+
+  .nav-menu {
+    top: 70px;
+  }
+
+  .floating-contact-wrapper {
+    bottom: 100px;
+    right: 10px;
+  }
+
+  .contact-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .popup-banner {
+    width: 95%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    height: 65px;
+  }
+
+  .navbar-container {
+    height: 65px;
+    padding: 0 15px;
+  }
+
+  .nav-logo {
+    font-size: 1.2rem;
+  }
+
+  .nav-menu {
+    top: 65px;
+  }
+
+  .nav-link {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .detail-container {
+    padding: 20px;
+  }
+
+  .plant-list {
+    gap: 18px;
+  }
+
+  .floating-contact-wrapper {
+    bottom: 80px;
+    right: 8px;
+  }
+
+  .contact-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .contact-tooltip {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    right: 50px;
+  }
 }

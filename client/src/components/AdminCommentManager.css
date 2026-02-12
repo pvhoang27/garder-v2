@@ -1,166 +1,254 @@
 .admin-content {
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .admin-header-section h2 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #2c3e50;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
 }
 
 /* Table Styles */
 .table-responsive {
-    overflow-x: auto;
+  overflow-x: auto;
 }
 
 .admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    background-color: white; /* Đảm bảo nền trắng */
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background-color: white; /* Đảm bảo nền trắng */
 }
 
-.admin-table th, .admin-table td {
-    padding: 14px 12px; /* Tăng padding chút cho thoáng */
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-    /* QUAN TRỌNG: Căn giữa theo trục dọc */
-    vertical-align: middle !important; 
-    color: #333;
+.admin-table th,
+.admin-table td {
+  padding: 14px 12px; /* Tăng padding chút cho thoáng */
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  /* QUAN TRỌNG: Căn giữa theo trục dọc */
+  vertical-align: middle !important;
+  color: #333;
 }
 
 .admin-table th {
-    background-color: #f8f9fa;
-    font-weight: 700;
-    color: #444;
-    white-space: nowrap; /* Tiêu đề không xuống dòng */
-    border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  font-weight: 700;
+  color: #444;
+  white-space: nowrap; /* Tiêu đề không xuống dòng */
+  border-top: 1px solid #dee2e6;
 }
 
 .admin-table tr:hover {
-    background-color: #f1f8ff; /* Màu hover xanh nhạt cho dễ nhìn */
+  background-color: #f1f8ff; /* Màu hover xanh nhạt cho dễ nhìn */
 }
 
 /* Căn giữa cột ID, Thời gian, Hành động */
 .col-center {
-    text-align: center !important;
+  text-align: center !important;
 }
 
 /* Badges */
 .badge-user {
-    background-color: #e3f2fd;
-    color: #1976d2;
-    padding: 3px 8px;
-    border-radius: 12px; /* Bo tròn hơn chút */
-    font-size: 11px;
-    font-weight: 600;
-    margin-left: 5px;
-    white-space: nowrap;
-    display: inline-block;
-    vertical-align: middle; /* Căn giữa badge với tên */
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 3px 8px;
+  border-radius: 12px; /* Bo tròn hơn chút */
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 5px;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle; /* Căn giữa badge với tên */
 }
 
 .badge-type {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: bold;
-    text-transform: uppercase;
-    width: fit-content;
-    margin-bottom: 4px;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  width: fit-content;
+  margin-bottom: 4px;
 }
 
 .badge-type.plant {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
 }
 
 .badge-type.news {
-    background-color: #fff3e0;
-    color: #ef6c00;
-    border: 1px solid #ffe0b2;
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ffe0b2;
 }
 
 .entity-name-display {
-    font-size: 13px;
-    font-weight: 600;
-    color: #2c3e50;
-    cursor: pointer;
-    transition: color 0.2s;
-    line-height: 1.4;
-    
-    /* Giới hạn 2 dòng, quá thì ... */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1.4;
+
+  /* Giới hạn 2 dòng, quá thì ... */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entity-name-display:hover {
-    color: #007bff;
-    text-decoration: underline;
+  color: #007bff;
+  text-decoration: underline;
 }
 
 /* Buttons */
 .action-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: center; /* Căn giữa ngang */
-    align-items: center;     /* Căn giữa dọc */
-    width: 100%;             /* Chiếm hết chiều rộng ô để căn giữa chuẩn */
+  display: flex;
+  gap: 8px;
+  justify-content: center; /* Căn giữa ngang */
+  align-items: center; /* Căn giữa dọc */
+  width: 100%; /* Chiếm hết chiều rộng ô để căn giữa chuẩn */
 }
 
 .btn-action {
-    border: none;
-    border-radius: 6px; /* Bo góc mềm hơn */
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    width: 34px;
-    height: 34px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: none;
+  border-radius: 6px; /* Bo góc mềm hơn */
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  width: 34px;
+  height: 34px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-view {
-    background-color: #fff;
-    color: #3498db;
-    border: 1px solid #3498db;
+  background-color: #fff;
+  color: #3498db;
+  border: 1px solid #3498db;
 }
 
 .btn-view:hover {
-    background-color: #3498db;
-    color: white;
-    transform: translateY(-2px);
+  background-color: #3498db;
+  color: white;
+  transform: translateY(-2px);
 }
 
 .btn-delete {
-    background-color: #fff;
-    color: #e74c3c;
-    border: 1px solid #e74c3c;
+  background-color: #fff;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
 }
 
 .btn-delete:hover {
-    background-color: #e74c3c;
-    color: white;
-    transform: translateY(-2px);
+  background-color: #e74c3c;
+  color: white;
+  transform: translateY(-2px);
 }
 
 .no-comments {
-    text-align: center;
-    color: #777;
-    font-style: italic;
-    padding: 30px;
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  padding: 30px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .admin-table {
+    font-size: 0.9rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 15px;
+  }
+
+  .admin-header-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    min-width: 700px;
+    font-size: 0.85rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+  }
+
+  .badge-user {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .badge-type {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .entity-name-display {
+    font-size: 12px;
+  }
+
+  .comment-content-cell {
+    max-width: 200px;
+    font-size: 12px;
+  }
+
+  .btn-view,
+  .btn-delete {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-content {
+    padding: 10px;
+  }
+
+  .admin-header-section h2 {
+    font-size: 1.1rem;
+  }
+
+  .admin-table {
+    min-width: 600px;
+    font-size: 0.8rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 6px;
+  }
+
+  .comment-content-cell {
+    max-width: 150px;
+  }
 }
