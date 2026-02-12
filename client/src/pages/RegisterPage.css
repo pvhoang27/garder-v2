@@ -1,0 +1,168 @@
+/* RegisterPage.css */
+
+.register-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  background: #f4f4f9;
+  padding: 20px;
+}
+
+.register-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.register-logo-wrapper {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.register-logo {
+  height: 50px;
+  width: auto;
+}
+
+.register-title {
+  text-align: center;
+  color: #2e7d32;
+  margin-bottom: 20px;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.register-error {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid #ef9a9a;
+}
+
+.register-form-group {
+  margin-bottom: 14px;
+}
+
+.register-form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.register-form-input:focus {
+  outline: none;
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.register-form-input::placeholder {
+  color: #999;
+}
+
+.register-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  margin-top: 6px;
+}
+
+.register-submit-btn:hover {
+  background: #1b5e20;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.register-submit-btn:active {
+  transform: translateY(0);
+}
+
+.register-footer {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.register-footer a {
+  color: #2e7d32;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.register-footer a:hover {
+  color: #1b5e20;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-page-container {
+    padding: 15px;
+    min-height: 85vh;
+  }
+
+  .register-form {
+    padding: 25px 20px;
+  }
+
+  .register-title {
+    font-size: 1.5rem;
+  }
+
+  .register-logo {
+    height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-form {
+    padding: 20px 16px;
+  }
+
+  .register-title {
+    font-size: 1.35rem;
+    margin-bottom: 16px;
+  }
+
+  .register-logo {
+    height: 40px;
+  }
+
+  .register-form-input,
+  .register-submit-btn {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .register-form-group {
+    margin-bottom: 12px;
+  }
+
+  .register-error {
+    font-size: 13px;
+    padding: 9px;
+  }
+
+  .register-footer {
+    font-size: 0.9rem;
+  }
+}
