@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../api/axiosClient";
 import "./ForgotPasswordPage.css";
-import { API_BASE_URL } from "../config";
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // Step 1: Nhập Email, Step 2: Nhập OTP & Pass mới
@@ -23,7 +22,7 @@ const ForgotPasswordPage = () => {
     setLoading(true);
 
     try {
-      await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email });
+      await axiosClient.post("/auth/forgot-password", { email });
       setMessage("Mã OTP đã được gửi đến email của bạn.");
       setStep(2); // Chuyển sang bước nhập OTP
     } catch (err) {
@@ -43,7 +42,7 @@ const ForgotPasswordPage = () => {
     setLoading(true);
 
     try {
-      await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+      await axiosClient.post("/auth/reset-password", {
         email,
         otp,
         newPassword,
