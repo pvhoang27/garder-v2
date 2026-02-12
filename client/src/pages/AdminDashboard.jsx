@@ -5,7 +5,8 @@ import AdminCategoryManager from "../components/AdminCategoryManager";
 import AdminUserManager from "../components/AdminUserManager";
 import AdminNewsManager from "../components/AdminNewsManager";
 import AdminCommentManager from "../components/AdminCommentManager"; 
-import AdminStats from "../components/AdminStats"; // <--- Import Component Thống kê
+import AdminStats from "../components/AdminStats"; 
+import AdminTrackingStats from "../components/AdminTrackingStats"; // [MỚI] Import component Tracking
 
 const AdminDashboard = () => {
   // Mặc định vào là thấy thống kê ngay
@@ -14,7 +15,8 @@ const AdminDashboard = () => {
   // --- HELPER: Lấy tiêu đề ---
   const getPageInfo = () => {
     switch (activeTab) {
-      case "dashboard": return { title: "Tổng Quan", breadcrumb: "Admin / Thống kê" }; // <--- Case mới
+      case "dashboard": return { title: "Tổng Quan", breadcrumb: "Admin / Thống kê" };
+      case "tracking": return { title: "Tracking Lượt Xem", breadcrumb: "Admin / Tracking" }; // [MỚI]
       case "plants": return { title: "Quản Lý Cây Cảnh", breadcrumb: "Admin / Cây cảnh" };
       case "categories": return { title: "Quản Lý Danh Mục", breadcrumb: "Admin / Danh mục" };
       case "users": return { title: "Quản Lý Người Dùng", breadcrumb: "Admin / Người dùng" };
@@ -34,7 +36,8 @@ const AdminDashboard = () => {
       title={title}
       breadcrumb={breadcrumb}
     >
-        {activeTab === "dashboard" && <AdminStats />} {/* <--- Render Thống kê */}
+        {activeTab === "dashboard" && <AdminStats />}
+        {activeTab === "tracking" && <AdminTrackingStats />} {/* [MỚI] Render component Tracking */}
         {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
         {activeTab === "categories" && <AdminCategoryManager isMobile={isMobile} />}
         {activeTab === "users" && <AdminUserManager isMobile={isMobile} />}

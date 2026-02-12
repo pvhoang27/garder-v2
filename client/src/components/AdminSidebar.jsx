@@ -10,7 +10,8 @@ import {
   FaHome,
   FaNewspaper,
   FaComments,
-  FaChartPie // <--- Thêm icon
+  FaChartPie,
+  FaChartLine // <--- [MỚI] Icon cho Tracking
 } from "react-icons/fa";
 
 const AdminSidebar = ({
@@ -128,12 +129,20 @@ const AdminSidebar = ({
 
       {/* --- MENU SCROLLABLE --- */}
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
-        {/* --- MỤC MỚI: THỐNG KÊ --- */}
+        
         <MenuButton
           active={activeTab === "dashboard"}
           onClick={() => handleMenuClick("dashboard")}
           icon={<FaChartPie />}
           label="Thống kê chung"
+        />
+
+        {/* --- [MỚI] MỤC TRACKING --- */}
+        <MenuButton
+          active={activeTab === "tracking"}
+          onClick={() => handleMenuClick("tracking")}
+          icon={<FaChartLine />}
+          label="Tracking lượt xem"
         />
 
         <MenuButton

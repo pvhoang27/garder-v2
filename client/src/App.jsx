@@ -7,10 +7,11 @@ import {
   useLocation, 
 } from "react-router-dom";
 
-// --- IMPORT CÁC TRANG (PAGES) ---
-// SỬA DÒNG NÀY: Trỏ thẳng vào file index trong thư mục HomePage
-import HomePage from "./pages/HomePage/index";
+// [MỚI] Import axiosClient để gọi API tracking
+import axiosClient from "./api/axiosClient"; 
 
+// --- IMPORT CÁC TRANG (PAGES) ---
+import HomePage from "./pages/HomePage/index";
 import PlantDetail from "./pages/PlantDetail";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -23,7 +24,7 @@ import NewsPage from "./pages/NewsPage";
 import NewsDetail from "./pages/NewsDetail";
 import AdminPopupConfig from "./pages/AdminPopupConfig";
 import AdminLayoutConfig from "./pages/AdminLayoutConfig";
-import ProfilePage from "./pages/ProfilePage"; // [MỚI]
+import ProfilePage from "./pages/ProfilePage";
 
 // --- IMPORT COMPONENTS ---
 import PopupBanner from "./components/PopupBanner";
@@ -38,6 +39,24 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
   const isAdminRoute = location.pathname.startsWith("/admin");
 
+  // [MỚI] Effect để tracking lượt truy cập
+  // Chạy 1 lần khi người dùng vào web (Reload trang sẽ tính là 1 lượt mới)
+  useEffect(() => {
+    const trackVisit = async () => {
+      // Không track nếu đang ở trang admin để số liệu chính xác hơn (tùy chọn)
+      if (!location.pathname.startsWith("/admin")) {
+        try {
+          await axiosClient.post('/tracking/visit');
+          console.log("Visit logged");
+        } catch (error) {
+          // Lỗi tracking không nên làm phiền người dùng, chỉ log warning nhẹ
+          console.warn("Tracking skipped:", error.message);
+        }
+      }
+    };
+    trackVisit();
+  }, []); // [] nghĩa là chỉ chạy khi App vừa load xong
+
   // Component bảo vệ Route Admin
   const AdminRoute = ({ children }) => {
     if (!isLoggedIn) {
@@ -49,7 +68,7 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
     return children;
   };
 
-  // [MỚI] Component bảo vệ Route yêu cầu đăng nhập (cho Profile)
+  // Component bảo vệ Route yêu cầu đăng nhập (cho Profile)
   const PrivateRoute = ({ children }) => {
     if (!isLoggedIn) {
       return <Navigate to="/login" />;
@@ -99,7 +118,7 @@ const AppContent = ({ isLoggedIn, userRole, handleLoginSuccess, handleLogout }) 
           
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-          {/* [MỚI] Profile Route */}
+          {/* Profile Route */}
           <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
 
           {/* Admin Routes */}
@@ -121,11 +140,9 @@ function App() {
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Hoặc check cookie nếu cần
+    const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
     
-    // Lưu ý: Logic check token đơn giản này có thể không hoàn hảo nếu dùng httpOnly cookie,
-    // nhưng giữ nguyên theo logic hiện tại của bạn để tránh break app.
     if (userStr) {
       const user = JSON.parse(userStr);
       setIsLoggedIn(true);

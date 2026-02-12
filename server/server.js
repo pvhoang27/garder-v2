@@ -38,8 +38,11 @@ app.use('/api/users', require('./src/routes/userRoutes'));
 app.use('/api/comments', require('./src/routes/commentRoutes'));
 app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 
-// [MỚI] Route thống kê
+// [MỚI] Route thống kê Dashboard chung (cũ)
 app.use('/api/dashboard', require('./src/routes/dashboardRoutes')); 
+
+// [MỚI - TRACKING] Route cho tính năng đo lượt truy cập
+app.use('/api/tracking', require('./src/routes/trackingRoutes'));
 
 // Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000
 const PORT = process.env.PORT || 3000;
