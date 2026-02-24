@@ -30,6 +30,18 @@ const AboutSection = () => {
     fetchConfig();
   }, []);
 
+  // [MỚI] Hàm xử lý click social
+  const handleSocialClick = async (platform) => {
+    try {
+      await axiosClient.post("/tracking-social/click", {
+        platform,
+        location: "about"
+      });
+    } catch (error) {
+      console.warn("Lỗi log tracking social:", error);
+    }
+  };
+
   return (
     <section className="section">
       <div className="container">
@@ -125,6 +137,7 @@ const AboutSection = () => {
                 href="https://fb.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => handleSocialClick('facebook')}
                 className="btn btn-outline"
                 style={{
                   display: "flex",
@@ -140,6 +153,7 @@ const AboutSection = () => {
                 href="https://tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => handleSocialClick('tiktok')}
                 className="btn btn-outline"
                 style={{
                   display: "flex",

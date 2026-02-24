@@ -150,6 +150,15 @@ const AppContent = ({
               </AdminRoute>
             }
           />
+          {/* [MỚI] Thêm Route tracking social */}
+          <Route
+            path="/admin/tracking-social"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="trackingSocial" />
+              </AdminRoute>
+            }
+          />
           <Route
             path="/admin/plants"
             element={

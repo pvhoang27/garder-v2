@@ -7,7 +7,8 @@ import AdminUserManager from "../components/AdminUserManager";
 import AdminNewsManager from "../components/AdminNewsManager";
 import AdminCommentManager from "../components/AdminCommentManager";
 import AdminStats from "../components/AdminStats";
-import AdminTrackingStats from "../components/AdminTrackingStats"; // [MỚI] Import component Tracking
+import AdminTrackingStats from "../components/AdminTrackingStats"; 
+import AdminTrackingSocialStats from "../components/AdminTrackingSocialStats"; // [MỚI]
 
 const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const location = useLocation();
@@ -24,7 +25,9 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
       case "dashboard":
         return { title: "Tổng Quan", breadcrumb: "Admin / Thống kê" };
       case "tracking":
-        return { title: "Tracking Lượt Xem", breadcrumb: "Admin / Tracking" }; // [MỚI]
+        return { title: "Tracking Lượt Xem", breadcrumb: "Admin / Tracking" }; 
+      case "trackingSocial": // [MỚI]
+        return { title: "Tracking Mạng Xã Hội", breadcrumb: "Admin / Tracking MXH" };
       case "plants":
         return { title: "Quản Lý Cây Cảnh", breadcrumb: "Admin / Cây cảnh" };
       case "categories":
@@ -54,8 +57,8 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
       breadcrumb={breadcrumb}
     >
       {activeTab === "dashboard" && <AdminStats />}
-      {activeTab === "tracking" && <AdminTrackingStats />}{" "}
-      {/* [MỚI] Render component Tracking */}
+      {activeTab === "tracking" && <AdminTrackingStats />}
+      {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} {/* [MỚI] */}
       {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
       {activeTab === "categories" && (
         <AdminCategoryManager isMobile={isMobile} />

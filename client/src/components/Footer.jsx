@@ -9,8 +9,21 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 import "./Footer.css";
+import axiosClient from "../api/axiosClient"; // [MỚI]
 
 const Footer = () => {
+  // [MỚI] Hàm xử lý log social click
+  const handleSocialClick = async (platform) => {
+    try {
+      await axiosClient.post("/tracking-social/click", {
+        platform,
+        location: "footer"
+      });
+    } catch (error) {
+      console.warn("Lỗi log tracking social:", error);
+    }
+  };
+
   return (
     <footer className="site-footer">
       <div className="footer-container">
@@ -34,6 +47,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-link"
                 title="Facebook"
+                onClick={() => handleSocialClick('facebook')}
               >
                 <FaFacebook size={24} />
               </a>
@@ -43,6 +57,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="social-link"
                 title="TikTok"
+                onClick={() => handleSocialClick('tiktok')}
               >
                 <FaTiktok size={24} />
               </a>

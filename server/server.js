@@ -49,6 +49,9 @@ app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
 // [MỚI - TRACKING] Route cho tính năng đo lượt truy cập
 app.use('/api/tracking', require('./src/routes/trackingRoutes'));
 
+// [MỚI - TRACKING SOCIAL] Route đo click facebook/tiktok
+app.use('/api/tracking-social', require('./src/routes/trackingSocialRoutes'));
+
 // Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
