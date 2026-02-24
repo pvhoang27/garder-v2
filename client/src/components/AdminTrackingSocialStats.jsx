@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { FaFacebook, FaTiktok } from "react-icons/fa";
+import Pagination from "./Pagination"; // [MỚI] Import component phân trang có sẵn của bạn
 
 const AdminTrackingSocialStats = () => {
   const [stats, setStats] = useState({ summary: [], history: [] });
   const [loading, setLoading] = useState(true);
+
+  // [MỚI] Khai báo State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Mặc định hiển thị 10 dòng 1 trang
 
   useEffect(() => {
     fetchStats();
@@ -27,6 +32,11 @@ const AdminTrackingSocialStats = () => {
   };
 
   if (loading) return <div>Đang tải dữ liệu...</div>;
+
+  // [MỚI] Tính toán dữ liệu cắt ra để hiển thị cho trang hiện tại
+  const totalPages = Math.ceil(stats.history.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentHistory = stats.history.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div style={{ padding: "20px", background: "#fff", borderRadius: "8px" }}>
@@ -60,8 +70,8 @@ const AdminTrackingSocialStats = () => {
             </tr>
           </thead>
           <tbody>
-            {stats.history.map((item, idx) => {
-              // Format lại thời gian ra chuẩn: HH:mm:ss DD/MM/YYYY
+            {/* [SỬA] Đổi từ stats.history.map thành currentHistory.map để chỉ hiển thị số lượng theo trang */}
+            {currentHistory.map((item, idx) => {
               const dateObj = new Date(item.created_at);
               const formattedTime = dateObj.toLocaleTimeString("vi-VN", { 
                 hour: '2-digit', minute: '2-digit', second: '2-digit' 
@@ -88,7 +98,7 @@ const AdminTrackingSocialStats = () => {
                 </tr>
               );
             })}
-            {stats.history.length === 0 && (
+            {currentHistory.length === 0 && (
               <tr>
                 <td colSpan="4" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
                   Chưa có dữ liệu lịch sử
@@ -98,6 +108,17 @@ const AdminTrackingSocialStats = () => {
           </tbody>
         </table>
       </div>
+
+      {/* [MỚI] Hiển thị thanh phân trang nếu có dữ liệu */}
+      {stats.history.length > 0 && (
+        <Pagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+        />
+      )}
     </div>
   );
 };
