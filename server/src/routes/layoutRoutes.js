@@ -11,11 +11,11 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
-// --- HEADER CONFIG ---
-router.get('/header', layoutController.getHeaderConfig);
-router.post('/header', authMiddleware, upload.single('logo'), layoutController.updateHeaderConfig);
+// --- BRAND CONFIG (Logo & Tên) ---
+router.get('/brand', layoutController.getBrandConfig);
+router.post('/brand', authMiddleware, upload.single('logo'), layoutController.updateBrandConfig);
 
-// --- MENU CONFIG (MỚI) ---
+// --- MENU CONFIG ---
 router.get('/menu', layoutController.getMenuConfig);
 router.post('/menu', authMiddleware, layoutController.updateMenuConfig);
 

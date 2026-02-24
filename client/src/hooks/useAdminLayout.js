@@ -16,15 +16,15 @@ export const useAdminLayout = () => {
   const [globalEffect, setGlobalEffect] = useState("none");
   const [searchPlant, setSearchPlant] = useState("");
   
-  // --- STATE HEADER CONFIG ---
-  const [headerConfig, setHeaderConfig] = useState({
+  // --- STATE BRAND CONFIG (Đổi từ Header sang Brand) ---
+  const [brandConfig, setBrandConfig] = useState({
     brandName: "",
     logoUrl: "",
     logoFile: null,
   });
-  const [headerPreviewUrl, setHeaderPreviewUrl] = useState(null);
+  const [brandPreviewUrl, setBrandPreviewUrl] = useState(null);
 
-  // --- STATE MENU CONFIG (MỚI TÁCH) ---
+  // --- STATE MENU CONFIG ---
   const [menuConfig, setMenuConfig] = useState({
     menuItems: [],
   });
@@ -94,8 +94,8 @@ export const useAdminLayout = () => {
     fetchGlobalEffect();
     fetchHeroConfig();
     fetchAboutConfig(); 
-    fetchHeaderConfig();
-    fetchMenuConfig(); // Fetch Menu riêng
+    fetchBrandConfig(); // Fetch Brand
+    fetchMenuConfig();  // Fetch Menu 
   }, []);
 
   const fetchLayouts = async () => {
@@ -127,16 +127,16 @@ export const useAdminLayout = () => {
     }
   };
 
-  const fetchHeaderConfig = async () => {
+  const fetchBrandConfig = async () => {
     try {
-      const res = await axiosClient.get("/layout/header");
+      const res = await axiosClient.get("/layout/brand");
       if (res.data) {
-        setHeaderConfig({ 
+        setBrandConfig({ 
             ...res.data, 
             logoFile: null
         });
         if (res.data.logoUrl) {
-          setHeaderPreviewUrl(res.data.logoUrl);
+          setBrandPreviewUrl(res.data.logoUrl);
         }
       }
     } catch (error) {
@@ -221,29 +221,29 @@ export const useAdminLayout = () => {
     }
   };
 
-  const handleHeaderFileChange = (e) => {
+  const handleBrandFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setHeaderConfig({ ...headerConfig, logoFile: file });
-      setHeaderPreviewUrl(URL.createObjectURL(file));
+      setBrandConfig({ ...brandConfig, logoFile: file });
+      setBrandPreviewUrl(URL.createObjectURL(file));
     }
   };
 
-  const handleSaveHeaderConfig = async (e) => {
+  const handleSaveBrandConfig = async (e) => {
     e.preventDefault();
     try {
       const formData = new FormData();
-      formData.append("brandName", headerConfig.brandName || "");
+      formData.append("brandName", brandConfig.brandName || "");
 
-      if (headerConfig.logoFile) {
-        formData.append("logo", headerConfig.logoFile);
+      if (brandConfig.logoFile) {
+        formData.append("logo", brandConfig.logoFile);
       }
 
-      await axiosClient.post("/layout/header", formData, {
+      await axiosClient.post("/layout/brand", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      fetchHeaderConfig();
+      fetchBrandConfig();
     } catch (error) {
       console.error(error);
       throw error;
@@ -448,15 +448,15 @@ export const useAdminLayout = () => {
 
   return {
     layouts, categories, isEditing, activeTab, globalEffect, 
-    headerConfig, headerPreviewUrl,
-    menuConfig, // Mới
+    brandConfig, brandPreviewUrl, // Đổi tên 
+    menuConfig, 
     heroConfig, previewUrl,
     aboutConfig, aboutPreviews, 
     isMobile, isSidebarOpen, config, selectedPlantIds, searchPlant, filteredPlantsForSelection,
-    setGlobalEffect, setHeaderConfig, setMenuConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
+    setGlobalEffect, setBrandConfig, setMenuConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
     handleSidebarClick, handleSaveEffect, 
-    handleHeaderFileChange, handleSaveHeaderConfig,
-    handleSaveMenuConfig, // Mới
+    handleBrandFileChange, handleSaveBrandConfig, // Đổi tên
+    handleSaveMenuConfig, 
     handleHeroFileChange, handleSaveHeroConfig,
     handleAboutFileChange, handleSaveAboutConfig, 
     handleEdit, handleDelete, handleMoveSection, togglePlantSelection, handleSubmit, handleResetAndBack, handleTabClick

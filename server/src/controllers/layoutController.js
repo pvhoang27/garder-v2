@@ -3,8 +3,9 @@ const db = require("../config/db");
 // Lấy danh sách layout
 exports.getLayouts = async (req, res) => {
   try {
+    // Thêm 'header_config' vào danh sách bỏ qua để ẩn rác từ bản test trước
     const [rows] = await db.query(
-      "SELECT * FROM homepage_layouts WHERE type NOT IN ('global_effect', 'hero_config', 'about_config', 'header_config', 'menu_config') ORDER BY sort_order ASC",
+      "SELECT * FROM homepage_layouts WHERE type NOT IN ('global_effect', 'hero_config', 'about_config', 'brand_config', 'menu_config', 'header_config') ORDER BY sort_order ASC",
     );
     res.json(rows);
   } catch (error) {
@@ -67,15 +68,15 @@ exports.updateGlobalEffect = async (req, res) => {
   }
 };
 
-// --- LOGIC HEADER SECTION (Chỉ gồm Logo và Brand) ---
-exports.getHeaderConfig = async (req, res) => {
+// --- LOGIC BRAND SECTION (Logo & Brand Name) ---
+exports.getBrandConfig = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT param_value FROM homepage_layouts WHERE type = 'header_config' LIMIT 1"
+      "SELECT param_value FROM homepage_layouts WHERE type = 'brand_config' LIMIT 1"
     );
     
     const defaultConfig = {
-      type: 'header_config',
+      type: 'brand_config',
       brandName: '',
       logoUrl: ''
     };
@@ -91,17 +92,17 @@ exports.getHeaderConfig = async (req, res) => {
       res.json(defaultConfig);
     }
   } catch (error) {
-    console.error("Lỗi lấy cấu hình Header:", error);
-    res.status(500).json({ message: "Lỗi lấy cấu hình Header" });
+    console.error("Lỗi lấy cấu hình Brand:", error);
+    res.status(500).json({ message: "Lỗi lấy cấu hình Brand" });
   }
 };
 
-exports.updateHeaderConfig = async (req, res) => {
+exports.updateBrandConfig = async (req, res) => {
   try {
     let currentConfig = {};
     try {
       const [rows] = await db.query(
-        "SELECT param_value FROM homepage_layouts WHERE type = 'header_config' LIMIT 1"
+        "SELECT param_value FROM homepage_layouts WHERE type = 'brand_config' LIMIT 1"
       );
       if (rows.length > 0 && rows[0].param_value) {
         currentConfig = JSON.parse(rows[0].param_value);
@@ -120,25 +121,25 @@ exports.updateHeaderConfig = async (req, res) => {
     }
 
     const configString = JSON.stringify(newConfig);
-    const [check] = await db.query("SELECT id FROM homepage_layouts WHERE type = 'header_config'");
+    const [check] = await db.query("SELECT id FROM homepage_layouts WHERE type = 'brand_config'");
 
     if (check.length > 0) {
-      await db.query("UPDATE homepage_layouts SET param_value = ? WHERE type = 'header_config'", [configString]);
+      await db.query("UPDATE homepage_layouts SET param_value = ? WHERE type = 'brand_config'", [configString]);
     } else {
       await db.query(
         "INSERT INTO homepage_layouts (title, type, param_value, sort_order, is_active) VALUES (?, ?, ?, ?, ?)",
-        ['Header Config', 'header_config', configString, -3, 0]
+        ['Brand Config', 'brand_config', configString, -3, 0]
       );
     }
 
-    res.json({ message: "Cập nhật Header thành công", config: newConfig });
+    res.json({ message: "Cập nhật Brand thành công", config: newConfig });
   } catch (error) {
-    console.error("Lỗi update header:", error);
-    res.status(500).json({ message: "Lỗi cập nhật Header" });
+    console.error("Lỗi update brand:", error);
+    res.status(500).json({ message: "Lỗi cập nhật Brand" });
   }
 };
 
-// --- LOGIC MENU SECTION (Chỉ gồm Menu Items) ---
+// --- LOGIC MENU SECTION (Menu Items) ---
 exports.getMenuConfig = async (req, res) => {
   try {
     const [rows] = await db.query(

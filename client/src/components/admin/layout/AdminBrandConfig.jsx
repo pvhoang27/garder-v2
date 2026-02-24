@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { FaImage, FaSave, FaCheckCircle, FaExclamationCircle, FaSpinner } from "react-icons/fa";
 
-const AdminHeaderConfig = ({
-  headerConfig,
-  setHeaderConfig,
-  headerPreviewUrl,
-  handleHeaderFileChange,
-  handleSaveHeaderConfig,
+const AdminBrandConfig = ({
+  brandConfig,
+  setBrandConfig,
+  brandPreviewUrl,
+  handleBrandFileChange,
+  handleSaveBrandConfig,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -17,7 +17,7 @@ const AdminHeaderConfig = ({
     setNotification(null);
 
     try {
-      await handleSaveHeaderConfig(e);
+      await handleSaveBrandConfig(e);
       setNotification({
         type: "success",
         message: "Đã lưu cấu hình Logo & Tên thành công!",
@@ -60,9 +60,9 @@ const AdminHeaderConfig = ({
           <input
             type="text"
             style={inputStyle}
-            value={headerConfig.brandName}
+            value={brandConfig.brandName}
             onChange={(e) =>
-              setHeaderConfig({ ...headerConfig, brandName: e.target.value })
+              setBrandConfig({ ...brandConfig, brandName: e.target.value })
             }
             placeholder='VD: Garder (Để trống sẽ dùng chữ mặc định của "Đa ngôn ngữ")'
             onFocus={(e) => (e.target.style.borderColor = "#2e7d32")}
@@ -93,13 +93,13 @@ const AdminHeaderConfig = ({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleHeaderFileChange}
+                  onChange={handleBrandFileChange}
                   style={{ display: "none" }}
                 />
               </label>
               <div style={{ fontSize: "13px", color: "#666", marginTop: "5px", fontStyle: "italic" }}>
-                {headerConfig.logoFile
-                  ? `📂 Đã chọn: ${headerConfig.logoFile.name}`
+                {brandConfig.logoFile
+                  ? `📂 Đã chọn: ${brandConfig.logoFile.name}`
                   : "ℹ️ Để trống để dùng logo gốc của hệ thống."}
               </div>
             </div>
@@ -118,10 +118,10 @@ const AdminHeaderConfig = ({
                 boxShadow: "inset 0 0 10px rgba(0,0,0,0.05)"
               }}
             >
-              {headerPreviewUrl ? (
+              {brandPreviewUrl ? (
                 <img
-                  src={headerPreviewUrl}
-                  alt="Header Preview"
+                  src={brandPreviewUrl}
+                  alt="Brand Preview"
                   style={{ width: "100%", height: "100%", objectFit: "contain" }}
                 />
               ) : (
@@ -179,4 +179,4 @@ const AdminHeaderConfig = ({
   );
 };
 
-export default AdminHeaderConfig;
+export default AdminBrandConfig;

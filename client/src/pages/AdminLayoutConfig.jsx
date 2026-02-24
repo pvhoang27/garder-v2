@@ -7,8 +7,8 @@ import AdminLayoutForm from "../components/admin/layout/AdminLayoutForm";
 import AdminLayoutList from "../components/admin/layout/AdminLayoutList";
 import AdminHeroConfig from "../components/admin/layout/AdminHeroConfig";
 import AdminAboutConfig from "../components/admin/layout/AdminAboutConfig"; 
-import AdminHeaderConfig from "../components/admin/layout/AdminHeaderConfig";
-import AdminMenuConfig from "../components/admin/layout/AdminMenuConfig"; // Chắc chắn bạn đã tạo file này nhé
+import AdminBrandConfig from "../components/admin/layout/AdminBrandConfig"; 
+import AdminMenuConfig from "../components/admin/layout/AdminMenuConfig"; 
 
 // Import CSS
 import "../components/admin/layout/AdminLayout.css";
@@ -19,14 +19,14 @@ import { useAdminLayout } from "../hooks/useAdminLayout";
 const AdminLayoutConfig = () => {
   const {
     layouts, categories, isEditing, activeTab, globalEffect,
-    headerConfig, headerPreviewUrl,
+    brandConfig, brandPreviewUrl, 
     menuConfig, 
     heroConfig, previewUrl,
     aboutConfig, aboutPreviews, 
     isMobile, isSidebarOpen, config, selectedPlantIds, searchPlant, filteredPlantsForSelection,
-    setGlobalEffect, setHeaderConfig, setMenuConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
+    setGlobalEffect, setBrandConfig, setMenuConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
     handleSidebarClick, handleSaveEffect,
-    handleHeaderFileChange, handleSaveHeaderConfig,
+    handleBrandFileChange, handleSaveBrandConfig,
     handleSaveMenuConfig, 
     handleHeroFileChange, handleSaveHeroConfig,
     handleAboutFileChange, handleSaveAboutConfig, 
@@ -35,7 +35,6 @@ const AdminLayoutConfig = () => {
 
   const tabBtnStyle = (isActive) => ({
     padding: "10px 20px",
-    marginRight: "10px",
     cursor: "pointer",
     border: "none",
     borderRadius: "5px",
@@ -46,6 +45,8 @@ const AdminLayoutConfig = () => {
     alignItems: "center",
     gap: "8px",
     transition: "all 0.3s",
+    whiteSpace: "nowrap", // Không cho chữ bị rớt dòng trong nút
+    flexShrink: 0, // Không cho nút bị bóp méo khi màn hình nhỏ
   });
 
   return (
@@ -86,8 +87,18 @@ const AdminLayoutConfig = () => {
         <div className="container" style={{ paddingBottom: "50px" }}>
           <h2 className="page-heading">🎨 Quản Lý Bố Cục Trang Chủ</h2>
 
-          {/* --- TAB NAVIGATION --- */}
-          <div style={{ display: "flex", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          {/* SỬA CHỖ NÀY: Container trượt ngang cho các Tab */}
+          <div 
+            style={{ 
+              display: "flex", 
+              marginBottom: "20px", 
+              gap: "10px", 
+              overflowX: "auto", // Bật thanh trượt ngang nếu màn nhỏ
+              paddingBottom: "8px", // Chừa chỗ cho thanh cuộn (nếu có)
+              flexWrap: "nowrap" // Ép không cho rớt dòng
+            }}
+            className="admin-tabs-scroll-container"
+          >
             <button style={tabBtnStyle(activeTab === "list")} onClick={() => handleTabClick("list")}>
               <FaList /> Danh Sách
             </button>
@@ -95,12 +106,10 @@ const AdminLayoutConfig = () => {
               <FaPlus /> {isEditing ? "Đang Sửa Section" : "Thêm Section Mới"}
             </button>
             
-            {/* ĐÂY LÀ TAB LOGO & TÊN */}
-            <button style={tabBtnStyle(activeTab === "header")} onClick={() => handleTabClick("header")}>
+            <button style={tabBtnStyle(activeTab === "brand")} onClick={() => handleTabClick("brand")}>
               <FaHeading /> Logo & Tên
             </button>
             
-            {/* ĐÂY LÀ TAB MENU VỪA ĐƯỢC THÊM MỚI */}
             <button style={tabBtnStyle(activeTab === "menu")} onClick={() => handleTabClick("menu")}>
               <FaSitemap /> Cấu Hình Menu
             </button>
@@ -116,7 +125,6 @@ const AdminLayoutConfig = () => {
             </button>
           </div>
 
-          {/* --- TAB CONTENT --- */}
           {activeTab === "list" && (
             <div>
               <h3 className="section-sub-heading">Danh sách hiển thị trên trang chủ</h3>
@@ -137,10 +145,10 @@ const AdminLayoutConfig = () => {
             />
           )}
 
-          {activeTab === "header" && (
-            <AdminHeaderConfig
-              headerConfig={headerConfig} setHeaderConfig={setHeaderConfig} headerPreviewUrl={headerPreviewUrl}
-              handleHeaderFileChange={handleHeaderFileChange} handleSaveHeaderConfig={handleSaveHeaderConfig}
+          {activeTab === "brand" && (
+            <AdminBrandConfig
+              brandConfig={brandConfig} setBrandConfig={setBrandConfig} brandPreviewUrl={brandPreviewUrl}
+              handleBrandFileChange={handleBrandFileChange} handleSaveBrandConfig={handleSaveBrandConfig}
             />
           )}
 
@@ -169,6 +177,24 @@ const AdminLayoutConfig = () => {
           )}
         </div>
       </div>
+      
+      {/* Ẩn thanh cuộn ngang đi cho đẹp trên Windows/Chrome */}
+      <style>{`
+        .admin-tabs-scroll-container::-webkit-scrollbar {
+          height: 6px;
+        }
+        .admin-tabs-scroll-container::-webkit-scrollbar-track {
+          background: #f1f1f1; 
+          border-radius: 4px;
+        }
+        .admin-tabs-scroll-container::-webkit-scrollbar-thumb {
+          background: #ccc; 
+          border-radius: 4px;
+        }
+        .admin-tabs-scroll-container::-webkit-scrollbar-thumb:hover {
+          background: #888; 
+        }
+      `}</style>
     </div>
   );
 };

@@ -20,7 +20,7 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { t } = useTranslation();
 
-  const [headerConfig, setHeaderConfig] = useState(null);
+  const [brandConfig, setBrandConfig] = useState(null); // Đổi tên state
   const [menuConfig, setMenuConfig] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
@@ -28,12 +28,12 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
   useEffect(() => {
     const fetchConfigs = async () => {
       try {
-        const [headerRes, menuRes] = await Promise.all([
-            axiosClient.get("/layout/header"),
+        const [brandRes, menuRes] = await Promise.all([
+            axiosClient.get("/layout/brand"), // Call tới api /brand
             axiosClient.get("/layout/menu")
         ]);
         
-        if (headerRes.data) setHeaderConfig(headerRes.data);
+        if (brandRes.data) setBrandConfig(brandRes.data);
         if (menuRes.data) setMenuConfig(menuRes.data);
       } catch (error) {
         console.error("Failed to fetch configs", error);
@@ -70,11 +70,11 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
           }}
         >
           <img
-            src={headerConfig?.logoUrl || logo}
+            src={brandConfig?.logoUrl || logo}
             alt="Logo"
             style={{ height: "40px", width: "auto", objectFit: "contain" }}
           />
-          <span style={{ whiteSpace: "nowrap" }}>{headerConfig?.brandName || t("nav.brand")}</span>
+          <span style={{ whiteSpace: "nowrap" }}>{brandConfig?.brandName || t("nav.brand")}</span>
         </Link>
 
         {/* Mobile Toggle Button */}
@@ -88,7 +88,6 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
         {/* Menu Items */}
         <div className={isMobileMenuOpen ? "nav-menu active" : "nav-menu"}>
           
-          {/* CÚ PHÁP RENDER ĐỘNG MENU ITEMS */}
           {(() => {
             const defaultMenuItems = [
               { label: t("nav.home"), path: "/" },
