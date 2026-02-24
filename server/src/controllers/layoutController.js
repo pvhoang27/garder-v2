@@ -67,7 +67,7 @@ exports.updateGlobalEffect = async (req, res) => {
   }
 };
 
-// --- LOGIC HEADER SECTION (MỚI) ---
+// --- LOGIC HEADER SECTION (Bao gồm Menu Items) ---
 exports.getHeaderConfig = async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -77,7 +77,13 @@ exports.getHeaderConfig = async (req, res) => {
     const defaultConfig = {
       type: 'header_config',
       brandName: '',
-      logoUrl: ''
+      logoUrl: '',
+      menuItems: [
+        { id: 1, label: "Trang chủ", path: "/" },
+        { id: 2, label: "Danh mục", path: "/categories" },
+        { id: 3, label: "Tin tức", path: "/news" },
+        { id: 4, label: "Liên hệ", path: "/contact" }
+      ]
     };
 
     if (rows.length > 0 && rows[0].param_value) {
@@ -110,7 +116,8 @@ exports.updateHeaderConfig = async (req, res) => {
 
     const newConfig = {
       brandName: req.body.brandName || "",
-      logoUrl: currentConfig.logoUrl || "" 
+      logoUrl: currentConfig.logoUrl || "",
+      menuItems: req.body.menuItems ? JSON.parse(req.body.menuItems) : (currentConfig.menuItems || [])
     };
 
     if (req.file) {
@@ -285,7 +292,6 @@ exports.updateAboutConfig = async (req, res) => {
     };
 
     // 3. Xử lý upload ảnh (nếu có)
-    // req.files là object do dùng upload.fields
     if (req.files) {
       const processFile = (fieldName) => {
         if (req.files[fieldName] && req.files[fieldName][0]) {

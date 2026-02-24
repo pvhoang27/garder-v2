@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaImage, FaSave, FaCheckCircle, FaExclamationCircle, FaSpinner } from "react-icons/fa";
+import { FaImage, FaSave, FaCheckCircle, FaExclamationCircle, FaSpinner, FaArrowUp, FaArrowDown, FaTrash, FaPlus } from "react-icons/fa";
 
 const AdminHeaderConfig = ({
   headerConfig,
@@ -36,6 +36,37 @@ const AdminHeaderConfig = ({
     }
   };
 
+  // --- CÁC HÀM XỬ LÝ MENU ---
+  const handleMenuChange = (index, field, value) => {
+    const newMenuItems = [...(headerConfig.menuItems || [])];
+    newMenuItems[index][field] = value;
+    setHeaderConfig({ ...headerConfig, menuItems: newMenuItems });
+  };
+
+  const moveMenuItem = (index, direction) => {
+    const newMenuItems = [...(headerConfig.menuItems || [])];
+    if (index + direction < 0 || index + direction >= newMenuItems.length) return;
+    
+    // Hoán đổi vị trí
+    const temp = newMenuItems[index];
+    newMenuItems[index] = newMenuItems[index + direction];
+    newMenuItems[index + direction] = temp;
+    
+    setHeaderConfig({ ...headerConfig, menuItems: newMenuItems });
+  };
+
+  const addMenuItem = () => {
+    const newMenuItems = [...(headerConfig.menuItems || [])];
+    newMenuItems.push({ id: Date.now(), label: "Menu Mới", path: "/" });
+    setHeaderConfig({ ...headerConfig, menuItems: newMenuItems });
+  };
+
+  const removeMenuItem = (index) => {
+    const newMenuItems = [...(headerConfig.menuItems || [])];
+    newMenuItems.splice(index, 1);
+    setHeaderConfig({ ...headerConfig, menuItems: newMenuItems });
+  };
+
   const formGroupStyle = { marginBottom: "20px" };
   const labelStyle = { display: "block", marginBottom: "8px", fontWeight: "600", color: "#333" };
   const inputStyle = {
@@ -55,6 +86,7 @@ const AdminHeaderConfig = ({
       </h3>
 
       <form onSubmit={onSaveWrapper} encType="multipart/form-data">
+        {/* KHU VỰC THƯƠNG HIỆU */}
         <div style={formGroupStyle}>
           <label style={labelStyle}>Tên thương hiệu (Brand Name):</label>
           <input
@@ -141,6 +173,95 @@ const AdminHeaderConfig = ({
           </div>
         </div>
 
+        {/* KHU VỰC QUẢN LÝ MENU ITEMS */}
+        <div style={{ marginTop: "30px", borderTop: "2px solid #e8f5e9", paddingTop: "20px" }}>
+          <h4 style={{ color: "#2e7d32", marginBottom: "15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Quản Lý Menu Gắn Trên Header</span>
+            <button
+              type="button"
+              onClick={addMenuItem}
+              style={{ 
+                padding: "8px 15px", background: "#e8f5e9", color: "#2e7d32", 
+                border: "1px solid #a5d6a7", borderRadius: "6px", cursor: "pointer", 
+                display: "flex", alignItems: "center", gap: "5px", fontSize: "14px", fontWeight: "bold"
+              }}
+            >
+              <FaPlus /> Thêm Menu Mới
+            </button>
+          </h4>
+
+          {(headerConfig.menuItems || []).map((item, index) => (
+            <div key={item.id || index} style={{ 
+              display: "flex", gap: "10px", alignItems: "center", marginBottom: "10px", 
+              background: "#f9f9f9", padding: "10px", borderRadius: "6px", border: "1px solid #eee" 
+            }}>
+              
+              <input
+                type="text"
+                style={{ ...inputStyle, flex: 1, marginBottom: 0 }}
+                placeholder="Tên hiển thị (VD: Trang chủ)"
+                value={item.label}
+                onChange={(e) => handleMenuChange(index, "label", e.target.value)}
+              />
+              
+              <input
+                type="text"
+                style={{ ...inputStyle, flex: 1, marginBottom: 0 }}
+                placeholder="Đường dẫn (VD: /categories)"
+                value={item.path}
+                onChange={(e) => handleMenuChange(index, "path", e.target.value)}
+              />
+              
+              {/* Hành động sửa vị trí, xoá */}
+              <div style={{ display: "flex", gap: "5px" }}>
+                <button
+                  type="button"
+                  onClick={() => moveMenuItem(index, -1)}
+                  disabled={index === 0}
+                  style={{ 
+                    padding: "8px", cursor: index === 0 ? "not-allowed" : "pointer", 
+                    background: "white", border: "1px solid #ddd", borderRadius: "4px", color: index === 0 ? "#ccc" : "#333" 
+                  }}
+                  title="Di chuyển lên"
+                >
+                  <FaArrowUp />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveMenuItem(index, 1)}
+                  disabled={index === (headerConfig.menuItems || []).length - 1}
+                  style={{ 
+                    padding: "8px", cursor: index === (headerConfig.menuItems || []).length - 1 ? "not-allowed" : "pointer", 
+                    background: "white", border: "1px solid #ddd", borderRadius: "4px", color: index === (headerConfig.menuItems || []).length - 1 ? "#ccc" : "#333" 
+                  }}
+                  title="Di chuyển xuống"
+                >
+                  <FaArrowDown />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeMenuItem(index)}
+                  style={{ 
+                    padding: "8px", cursor: "pointer", background: "#ffebee", 
+                    border: "1px solid #ffcdd2", borderRadius: "4px", color: "#c62828" 
+                  }}
+                  title="Xóa Menu"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* Thông báo nếu chưa có Menu */}
+          {(headerConfig.menuItems || []).length === 0 && (
+            <div style={{ textAlign: "center", padding: "20px", color: "#999", fontStyle: "italic", background: "#fafafa", borderRadius: "6px" }}>
+              Chưa có menu nào được cấu hình. (Sẽ hiển thị mặc định trang chủ, danh mục...).
+            </div>
+          )}
+        </div>
+
+        {/* KHU VỰC LƯU VÀ THÔNG BÁO */}
         <div style={{ marginTop: "30px", display: "flex", flexDirection: "column", gap: "15px" }}>
           {notification && (
             <div

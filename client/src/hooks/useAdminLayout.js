@@ -12,15 +12,16 @@ export const useAdminLayout = () => {
   
   // --- STATE UI & FORM ---
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("list"); // "list", "form", "effect", "hero", "about", "header"
+  const [activeTab, setActiveTab] = useState("list"); 
   const [globalEffect, setGlobalEffect] = useState("none");
   const [searchPlant, setSearchPlant] = useState("");
   
-  // --- STATE HEADER CONFIG (MỚI) ---
+  // --- STATE HEADER CONFIG ---
   const [headerConfig, setHeaderConfig] = useState({
     brandName: "",
     logoUrl: "",
     logoFile: null,
+    menuItems: [], // THÊM MỚI STATE MENU
   });
   const [headerPreviewUrl, setHeaderPreviewUrl] = useState(null);
 
@@ -47,23 +48,20 @@ export const useAdminLayout = () => {
     image1: "",
     image2: "",
     image3: "",
-    // Files để upload
     image1File: null,
     image2File: null,
     image3File: null
   });
-  // Preview cho 3 ảnh About
+  
   const [aboutPreviews, setAboutPreviews] = useState({
     image1: null,
     image2: null,
     image3: null
   });
 
-  // --- STATE SIDEBAR (MOBILE) ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // --- FORM STATE ---
   const initialState = () => ({
     id: null,
     title: "",
@@ -76,7 +74,6 @@ export const useAdminLayout = () => {
   const [config, setConfig] = useState(initialState());
   const [selectedPlantIds, setSelectedPlantIds] = useState([]);
 
-  // --- EFFECT: RESIZE WINDOW ---
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024);
@@ -86,7 +83,6 @@ export const useAdminLayout = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // --- EFFECT: FETCH DATA ---
   useEffect(() => {
     fetchLayouts();
     fetchCategories();
@@ -94,10 +90,9 @@ export const useAdminLayout = () => {
     fetchGlobalEffect();
     fetchHeroConfig();
     fetchAboutConfig(); 
-    fetchHeaderConfig(); // Fetch Header config
+    fetchHeaderConfig();
   }, []);
 
-  // --- API HELPER FUNCTIONS ---
   const fetchLayouts = async () => {
     try {
       const res = await axiosClient.get("/layout");
@@ -131,7 +126,11 @@ export const useAdminLayout = () => {
     try {
       const res = await axiosClient.get("/layout/header");
       if (res.data) {
-        setHeaderConfig({ ...res.data, logoFile: null });
+        setHeaderConfig({ 
+            ...res.data, 
+            logoFile: null,
+            menuItems: res.data.menuItems || [] 
+        });
         if (res.data.logoUrl) {
           setHeaderPreviewUrl(res.data.logoUrl);
         }
@@ -194,8 +193,6 @@ export const useAdminLayout = () => {
     }
   };
 
-  // --- HANDLERS ---
-
   const handleSidebarClick = () => {
     navigate("/admin");
   };
@@ -209,7 +206,6 @@ export const useAdminLayout = () => {
     }
   };
 
-  // Header File Handler
   const handleHeaderFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -223,6 +219,8 @@ export const useAdminLayout = () => {
     try {
       const formData = new FormData();
       formData.append("brandName", headerConfig.brandName || "");
+      // CHUYỂN menuItems thành chuỗi JSON để gửi đi
+      formData.append("menuItems", JSON.stringify(headerConfig.menuItems || []));
 
       if (headerConfig.logoFile) {
         formData.append("logo", headerConfig.logoFile);
@@ -232,7 +230,6 @@ export const useAdminLayout = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Không throw alert nữa vì đã handle bằng UI trong AdminHeaderConfig
       fetchHeaderConfig();
     } catch (error) {
       console.error(error);
@@ -240,7 +237,6 @@ export const useAdminLayout = () => {
     }
   };
 
-  // Hero File Handler
   const handleHeroFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -249,7 +245,6 @@ export const useAdminLayout = () => {
     }
   };
 
-  // About File Handler
   const handleAboutFileChange = (e, key) => {
       const file = e.target.files[0];
       if (file) {
@@ -429,13 +424,13 @@ export const useAdminLayout = () => {
 
   return {
     layouts, categories, isEditing, activeTab, globalEffect, 
-    headerConfig, headerPreviewUrl, // New
+    headerConfig, headerPreviewUrl,
     heroConfig, previewUrl,
     aboutConfig, aboutPreviews, 
     isMobile, isSidebarOpen, config, selectedPlantIds, searchPlant, filteredPlantsForSelection,
     setGlobalEffect, setHeaderConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
     handleSidebarClick, handleSaveEffect, 
-    handleHeaderFileChange, handleSaveHeaderConfig, // New
+    handleHeaderFileChange, handleSaveHeaderConfig,
     handleHeroFileChange, handleSaveHeroConfig,
     handleAboutFileChange, handleSaveAboutConfig, 
     handleEdit, handleDelete, handleMoveSection, togglePlantSelection, handleSubmit, handleResetAndBack, handleTabClick

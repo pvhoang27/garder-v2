@@ -11,7 +11,7 @@ import {
   FaUser,
 } from "react-icons/fa";
 import LanguageSwitcher from "./LanguageSwitcher";
-import logo from "../assets/logo.png"; // Lưu ý đường dẫn import logo (lên 1 cấp cha)
+import logo from "../assets/logo.png"; 
 import axiosClient from "../api/axiosClient";
 
 const Header = ({ isLoggedIn, userRole, onLogout }) => {
@@ -43,7 +43,6 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
     navigate("/");
     setIsMobileMenuOpen(false);
     setShowUserMenu(false);
-    // alert(t("common.success_logout"));
   };
 
   const closeMenu = () => {
@@ -84,18 +83,25 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
 
         {/* Menu Items */}
         <div className={isMobileMenuOpen ? "nav-menu active" : "nav-menu"}>
-          <Link to="/" className="nav-link" onClick={closeMenu}>
-            {t("nav.home")}
-          </Link>
-          <Link to="/categories" className="nav-link" onClick={closeMenu}>
-            {t("nav.categories")}
-          </Link>
-          <Link to="/news" className="nav-link" onClick={closeMenu}>
-            {t("nav.news")}
-          </Link>
-          <Link to="/contact" className="nav-link" onClick={closeMenu}>
-            {t("nav.contact")}
-          </Link>
+          
+          {/* CÚ PHÁP RENDER ĐỘNG MENU ITEMS TỪ CẤU HÌNH CMS */}
+          {(() => {
+            // Mặc định fallback nếu CMS trống menu
+            const defaultMenuItems = [
+              { label: t("nav.home"), path: "/" },
+              { label: t("nav.categories"), path: "/categories" },
+              { label: t("nav.news"), path: "/news" },
+              { label: t("nav.contact"), path: "/contact" },
+            ];
+            
+            const menuToRender = headerConfig?.menuItems?.length > 0 ? headerConfig.menuItems : defaultMenuItems;
+
+            return menuToRender.map((item, idx) => (
+              <Link key={item.id || idx} to={item.path} className="nav-link" onClick={closeMenu}>
+                {item.label}
+              </Link>
+            ));
+          })()}
 
           {isLoggedIn ? (
             <>
@@ -179,7 +185,6 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
                       </p>
                     </div>
 
-                    {/* [MỚI] Link trang cá nhân */}
                     <Link
                       to="/profile"
                       onClick={closeMenu}
@@ -203,7 +208,6 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
                       <FaUser /> Trang cá nhân
                     </Link>
 
-                    {/* MỤC QUẢN TRỊ (Chỉ hiện nếu là admin) */}
                     {userRole === "admin" && (
                       <Link
                         to="/admin"
@@ -217,7 +221,7 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
                           color: "#333",
                           fontSize: "14px",
                           background: "white",
-                          borderBottom: "1px solid #eee", // Ngăn cách với nút đăng xuất
+                          borderBottom: "1px solid #eee", 
                         }}
                         onMouseEnter={(e) =>
                           (e.currentTarget.style.background = "#f5f5f5")
