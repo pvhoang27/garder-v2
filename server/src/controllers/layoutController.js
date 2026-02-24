@@ -4,7 +4,7 @@ const db = require("../config/db");
 exports.getLayouts = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM homepage_layouts WHERE type NOT IN ('global_effect', 'hero_config', 'about_config', 'header_config') ORDER BY sort_order ASC",
+      "SELECT * FROM homepage_layouts WHERE type NOT IN ('global_effect', 'hero_config', 'about_config', 'header_config', 'menu_config') ORDER BY sort_order ASC",
     );
     res.json(rows);
   } catch (error) {
@@ -67,7 +67,7 @@ exports.updateGlobalEffect = async (req, res) => {
   }
 };
 
-// --- LOGIC HEADER SECTION (Bao gồm Menu Items) ---
+// --- LOGIC HEADER SECTION (Chỉ gồm Logo và Brand) ---
 exports.getHeaderConfig = async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -77,13 +77,7 @@ exports.getHeaderConfig = async (req, res) => {
     const defaultConfig = {
       type: 'header_config',
       brandName: '',
-      logoUrl: '',
-      menuItems: [
-        { id: 1, label: "Trang chủ", path: "/" },
-        { id: 2, label: "Danh mục", path: "/categories" },
-        { id: 3, label: "Tin tức", path: "/news" },
-        { id: 4, label: "Liên hệ", path: "/contact" }
-      ]
+      logoUrl: ''
     };
 
     if (rows.length > 0 && rows[0].param_value) {
@@ -116,8 +110,7 @@ exports.updateHeaderConfig = async (req, res) => {
 
     const newConfig = {
       brandName: req.body.brandName || "",
-      logoUrl: currentConfig.logoUrl || "",
-      menuItems: req.body.menuItems ? JSON.parse(req.body.menuItems) : (currentConfig.menuItems || [])
+      logoUrl: currentConfig.logoUrl || ""
     };
 
     if (req.file) {
@@ -142,6 +135,64 @@ exports.updateHeaderConfig = async (req, res) => {
   } catch (error) {
     console.error("Lỗi update header:", error);
     res.status(500).json({ message: "Lỗi cập nhật Header" });
+  }
+};
+
+// --- LOGIC MENU SECTION (Chỉ gồm Menu Items) ---
+exports.getMenuConfig = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT param_value FROM homepage_layouts WHERE type = 'menu_config' LIMIT 1"
+    );
+    
+    const defaultConfig = {
+      type: 'menu_config',
+      menuItems: [
+        { id: 1, label: "Trang chủ", path: "/" },
+        { id: 2, label: "Danh mục", path: "/categories" },
+        { id: 3, label: "Tin tức", path: "/news" },
+        { id: 4, label: "Liên hệ", path: "/contact" }
+      ]
+    };
+
+    if (rows.length > 0 && rows[0].param_value) {
+      try {
+        const config = JSON.parse(rows[0].param_value);
+        res.json({ ...defaultConfig, ...config });
+      } catch (parseError) {
+        res.json(defaultConfig);
+      }
+    } else {
+      res.json(defaultConfig);
+    }
+  } catch (error) {
+    console.error("Lỗi lấy cấu hình Menu:", error);
+    res.status(500).json({ message: "Lỗi lấy cấu hình Menu" });
+  }
+};
+
+exports.updateMenuConfig = async (req, res) => {
+  try {
+    const newConfig = {
+      menuItems: req.body.menuItems || []
+    };
+
+    const configString = JSON.stringify(newConfig);
+    const [check] = await db.query("SELECT id FROM homepage_layouts WHERE type = 'menu_config'");
+
+    if (check.length > 0) {
+      await db.query("UPDATE homepage_layouts SET param_value = ? WHERE type = 'menu_config'", [configString]);
+    } else {
+      await db.query(
+        "INSERT INTO homepage_layouts (title, type, param_value, sort_order, is_active) VALUES (?, ?, ?, ?, ?)",
+        ['Menu Config', 'menu_config', configString, -4, 0]
+      );
+    }
+
+    res.json({ message: "Cập nhật Menu thành công", config: newConfig });
+  } catch (error) {
+    console.error("Lỗi update menu:", error);
+    res.status(500).json({ message: "Lỗi cập nhật Menu" });
   }
 };
 
@@ -232,7 +283,6 @@ exports.getAboutConfig = async (req, res) => {
       "SELECT param_value FROM homepage_layouts WHERE type = 'about_config' LIMIT 1"
     );
     
-    // Cấu hình mặc định (theo file code cứng cũ của bạn)
     const defaultConfig = {
       title: "Đam mê tạo nên những tác phẩm sống động",
       description1: "Cây cảnh Xuân Thục được thành lập với niềm đam mê cây cảnh từ nhiều thế hệ trong gia đình. Mỗi cây trong bộ sưu tập đều được chăm sóc tỉ mỉ, từ việc lựa chọn giống, uốn nắn dáng thế đến chăm bón hàng ngày.",
@@ -249,7 +299,6 @@ exports.getAboutConfig = async (req, res) => {
     if (rows.length > 0 && rows[0].param_value) {
       try {
         const config = JSON.parse(rows[0].param_value);
-        // Merge với default để đảm bảo đủ trường nếu thiếu
         res.json({ ...defaultConfig, ...config });
       } catch (parseError) {
         res.json(defaultConfig);
@@ -265,7 +314,6 @@ exports.getAboutConfig = async (req, res) => {
 
 exports.updateAboutConfig = async (req, res) => {
   try {
-    // 1. Lấy config cũ
     let currentConfig = {};
     try {
       const [rows] = await db.query(
@@ -276,7 +324,6 @@ exports.updateAboutConfig = async (req, res) => {
       }
     } catch (e) {}
 
-    // 2. Tạo config mới từ body
     const newConfig = {
       title: req.body.title || "",
       description1: req.body.description1 || "",
@@ -285,13 +332,11 @@ exports.updateAboutConfig = async (req, res) => {
       stat1Text: req.body.stat1Text || "",
       stat2Number: req.body.stat2Number || "",
       stat2Text: req.body.stat2Text || "",
-      // Giữ ảnh cũ trước
       image1: currentConfig.image1 || "",
       image2: currentConfig.image2 || "",
       image3: currentConfig.image3 || ""
     };
 
-    // 3. Xử lý upload ảnh (nếu có)
     if (req.files) {
       const processFile = (fieldName) => {
         if (req.files[fieldName] && req.files[fieldName][0]) {
@@ -307,14 +352,13 @@ exports.updateAboutConfig = async (req, res) => {
 
     const configString = JSON.stringify(newConfig);
 
-    // 4. Lưu vào DB
     const [check] = await db.query("SELECT id FROM homepage_layouts WHERE type = 'about_config'");
     if (check.length > 0) {
       await db.query("UPDATE homepage_layouts SET param_value = ? WHERE type = 'about_config'", [configString]);
     } else {
       await db.query(
         "INSERT INTO homepage_layouts (title, type, param_value, sort_order, is_active) VALUES (?, ?, ?, ?, ?)",
-        ['About Config', 'about_config', configString, -1, 0] // sort_order âm để ẩn khỏi list chính
+        ['About Config', 'about_config', configString, -1, 0] 
       );
     }
 

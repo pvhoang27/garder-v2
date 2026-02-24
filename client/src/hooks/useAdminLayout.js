@@ -21,9 +21,13 @@ export const useAdminLayout = () => {
     brandName: "",
     logoUrl: "",
     logoFile: null,
-    menuItems: [], // THÊM MỚI STATE MENU
   });
   const [headerPreviewUrl, setHeaderPreviewUrl] = useState(null);
+
+  // --- STATE MENU CONFIG (MỚI TÁCH) ---
+  const [menuConfig, setMenuConfig] = useState({
+    menuItems: [],
+  });
 
   // --- STATE HERO CONFIG ---
   const [heroConfig, setHeroConfig] = useState({
@@ -91,6 +95,7 @@ export const useAdminLayout = () => {
     fetchHeroConfig();
     fetchAboutConfig(); 
     fetchHeaderConfig();
+    fetchMenuConfig(); // Fetch Menu riêng
   }, []);
 
   const fetchLayouts = async () => {
@@ -128,12 +133,22 @@ export const useAdminLayout = () => {
       if (res.data) {
         setHeaderConfig({ 
             ...res.data, 
-            logoFile: null,
-            menuItems: res.data.menuItems || [] 
+            logoFile: null
         });
         if (res.data.logoUrl) {
           setHeaderPreviewUrl(res.data.logoUrl);
         }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchMenuConfig = async () => {
+    try {
+      const res = await axiosClient.get("/layout/menu");
+      if (res.data) {
+        setMenuConfig({ menuItems: res.data.menuItems || [] });
       }
     } catch (error) {
       console.error(error);
@@ -219,8 +234,6 @@ export const useAdminLayout = () => {
     try {
       const formData = new FormData();
       formData.append("brandName", headerConfig.brandName || "");
-      // CHUYỂN menuItems thành chuỗi JSON để gửi đi
-      formData.append("menuItems", JSON.stringify(headerConfig.menuItems || []));
 
       if (headerConfig.logoFile) {
         formData.append("logo", headerConfig.logoFile);
@@ -231,6 +244,17 @@ export const useAdminLayout = () => {
       });
 
       fetchHeaderConfig();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const handleSaveMenuConfig = async (e) => {
+    e.preventDefault();
+    try {
+      await axiosClient.post("/layout/menu", { menuItems: menuConfig.menuItems });
+      fetchMenuConfig();
     } catch (error) {
       console.error(error);
       throw error;
@@ -425,12 +449,14 @@ export const useAdminLayout = () => {
   return {
     layouts, categories, isEditing, activeTab, globalEffect, 
     headerConfig, headerPreviewUrl,
+    menuConfig, // Mới
     heroConfig, previewUrl,
     aboutConfig, aboutPreviews, 
     isMobile, isSidebarOpen, config, selectedPlantIds, searchPlant, filteredPlantsForSelection,
-    setGlobalEffect, setHeaderConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
+    setGlobalEffect, setHeaderConfig, setMenuConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
     handleSidebarClick, handleSaveEffect, 
     handleHeaderFileChange, handleSaveHeaderConfig,
+    handleSaveMenuConfig, // Mới
     handleHeroFileChange, handleSaveHeroConfig,
     handleAboutFileChange, handleSaveAboutConfig, 
     handleEdit, handleDelete, handleMoveSection, togglePlantSelection, handleSubmit, handleResetAndBack, handleTabClick

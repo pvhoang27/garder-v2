@@ -21,21 +21,25 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
   const { t } = useTranslation();
 
   const [headerConfig, setHeaderConfig] = useState(null);
+  const [menuConfig, setMenuConfig] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
 
   useEffect(() => {
-    const fetchHeaderConfig = async () => {
+    const fetchConfigs = async () => {
       try {
-        const { data } = await axiosClient.get("/layout/header");
-        if (data) {
-          setHeaderConfig(data);
-        }
+        const [headerRes, menuRes] = await Promise.all([
+            axiosClient.get("/layout/header"),
+            axiosClient.get("/layout/menu")
+        ]);
+        
+        if (headerRes.data) setHeaderConfig(headerRes.data);
+        if (menuRes.data) setMenuConfig(menuRes.data);
       } catch (error) {
-        console.error("Failed to fetch header config", error);
+        console.error("Failed to fetch configs", error);
       }
     };
-    fetchHeaderConfig();
+    fetchConfigs();
   }, []);
 
   const handleLogoutClick = () => {
@@ -84,9 +88,8 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
         {/* Menu Items */}
         <div className={isMobileMenuOpen ? "nav-menu active" : "nav-menu"}>
           
-          {/* CÚ PHÁP RENDER ĐỘNG MENU ITEMS TỪ CẤU HÌNH CMS */}
+          {/* CÚ PHÁP RENDER ĐỘNG MENU ITEMS */}
           {(() => {
-            // Mặc định fallback nếu CMS trống menu
             const defaultMenuItems = [
               { label: t("nav.home"), path: "/" },
               { label: t("nav.categories"), path: "/categories" },
@@ -94,7 +97,7 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
               { label: t("nav.contact"), path: "/contact" },
             ];
             
-            const menuToRender = headerConfig?.menuItems?.length > 0 ? headerConfig.menuItems : defaultMenuItems;
+            const menuToRender = menuConfig?.menuItems?.length > 0 ? menuConfig.menuItems : defaultMenuItems;
 
             return menuToRender.map((item, idx) => (
               <Link key={item.id || idx} to={item.path} className="nav-link" onClick={closeMenu}>
