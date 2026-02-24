@@ -133,14 +133,14 @@ exports.verifyEmail = async (req, res) => {
     );
 
     // Redirect về Client
-    res.redirect("http://localhost:5173/login?verified=true");
+    res.redirect("https://localhost:5173/login?verified=true");
   } catch (error) {
     console.error(error);
     res.status(500).send("Lỗi xác thực");
   }
 };
 
-// 4. Đăng nhập (ĐÃ FIX ĐỂ LƯU COOKIE & CẬP NHẬT LAST_LOGIN)
+// 4. Đăng nhập (ĐÃ FIX ĐỂ LƯU COOKIE CHUẨN HTTPS)
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -174,17 +174,16 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" },
     );
 
-    // [MỚI] Lưu token vào Cookie HttpOnly
+    // [SỬA] Cấu hình Cookie cho phép chạy chéo origin/port với HTTPS
     res.cookie("token", token, {
-      httpOnly: true, // Chặn JS client đọc (chống XSS)
-      secure: false, // Để false nếu chạy localhost (http), lên production (https) thì để true
-      sameSite: "strict",
+      httpOnly: true, 
+      secure: true, // Bắt buộc bằng true khi chạy https (cả local và production)
+      sameSite: "none", // Bắt buộc là 'none' để gửi cookie từ cổng 5173 sang 3000
       maxAge: 24 * 60 * 60 * 1000, // 1 ngày
     });
 
     res.json({
       message: "Đăng nhập thành công",
-      // Không gửi token về body nữa
       user: {
         id: user.id,
         full_name: user.full_name,
@@ -199,7 +198,11 @@ exports.login = async (req, res) => {
 
 // [MỚI] Đăng xuất - Xóa cookie
 exports.logout = (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none"
+  });
   res.json({ message: "Đăng xuất thành công" });
 };
 

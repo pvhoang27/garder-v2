@@ -11,9 +11,14 @@ dotenv.config();
 const app = express();
 
 // Middleware
-// [SỬA] Cấu hình CORS chặt chẽ để dùng được Cookie
+// [SỬA] Cấu hình CORS chặt chẽ để dùng được Cookie, bổ sung thêm https://localhost:5173
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://caycanhxuanthuc.com', 'https://caycanhxuanthuc.com'],
+    origin: [
+        'http://localhost:5173', 
+        'https://localhost:5173', 
+        'http://caycanhxuanthuc.com', 
+        'https://caycanhxuanthuc.com'
+    ],
     credentials: true
 }));
 
