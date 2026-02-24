@@ -11,6 +11,10 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
+// --- HEADER CONFIG ---
+router.get('/header', layoutController.getHeaderConfig);
+router.post('/header', authMiddleware, upload.single('logo'), layoutController.updateHeaderConfig);
+
 // --- GLOBAL EFFECT ---
 router.get('/effect', layoutController.getGlobalEffect);
 router.post('/effect', authMiddleware, layoutController.updateGlobalEffect);
@@ -19,7 +23,7 @@ router.post('/effect', authMiddleware, layoutController.updateGlobalEffect);
 router.get('/hero', layoutController.getHeroConfig);
 router.post('/hero', authMiddleware, upload.single('image'), layoutController.updateHeroConfig);
 
-// --- ABOUT CONFIG (MỚI) ---
+// --- ABOUT CONFIG ---
 router.get('/about', layoutController.getAboutConfig);
 // Dùng upload.fields để nhận 3 ảnh
 router.post('/about', authMiddleware, upload.fields([

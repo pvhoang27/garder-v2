@@ -1,4 +1,4 @@
-import { FaBars, FaList, FaPlus, FaMagic, FaImage, FaInfoCircle } from "react-icons/fa";
+import { FaBars, FaList, FaPlus, FaMagic, FaImage, FaInfoCircle, FaHeading } from "react-icons/fa";
 import AdminSidebar from "../components/AdminSidebar";
 
 // Import components
@@ -6,7 +6,8 @@ import AdminGlobalEffectConfig from "../components/admin/layout/AdminGlobalEffec
 import AdminLayoutForm from "../components/admin/layout/AdminLayoutForm";
 import AdminLayoutList from "../components/admin/layout/AdminLayoutList";
 import AdminHeroConfig from "../components/admin/layout/AdminHeroConfig";
-import AdminAboutConfig from "../components/admin/layout/AdminAboutConfig"; // Import mới
+import AdminAboutConfig from "../components/admin/layout/AdminAboutConfig"; 
+import AdminHeaderConfig from "../components/admin/layout/AdminHeaderConfig"; // Import mới
 
 // Import CSS
 import "../components/admin/layout/AdminLayout.css";
@@ -23,10 +24,12 @@ const AdminLayoutConfig = () => {
     isEditing,
     activeTab,
     globalEffect,
+    headerConfig, // New
+    headerPreviewUrl, // New
     heroConfig,
     previewUrl,
-    aboutConfig, // New
-    aboutPreviews, // New
+    aboutConfig, 
+    aboutPreviews, 
     isMobile,
     isSidebarOpen,
     config,
@@ -36,8 +39,9 @@ const AdminLayoutConfig = () => {
 
     // Setters
     setGlobalEffect,
+    setHeaderConfig, // New
     setHeroConfig,
-    setAboutConfig, // New
+    setAboutConfig, 
     setIsSidebarOpen,
     setConfig,
     setSearchPlant,
@@ -45,10 +49,12 @@ const AdminLayoutConfig = () => {
     // Handlers
     handleSidebarClick,
     handleSaveEffect,
+    handleHeaderFileChange, // New
+    handleSaveHeaderConfig, // New
     handleHeroFileChange,
     handleSaveHeroConfig,
-    handleAboutFileChange, // New
-    handleSaveAboutConfig, // New
+    handleAboutFileChange, 
+    handleSaveAboutConfig, 
     handleEdit,
     handleDelete,
     handleMoveSection,
@@ -141,6 +147,13 @@ const AdminLayoutConfig = () => {
             >
               <FaPlus /> {isEditing ? "Đang Sửa Section" : "Thêm Section Mới"}
             </button>
+            
+            <button
+              style={tabBtnStyle(activeTab === "header")}
+              onClick={() => handleTabClick("header")}
+            >
+              <FaHeading /> Cấu Hình Header
+            </button>
 
             <button
               style={tabBtnStyle(activeTab === "effect")}
@@ -196,6 +209,17 @@ const AdminLayoutConfig = () => {
                 filteredPlantsForSelection={filteredPlantsForSelection}
               />
             </div>
+          )}
+
+          {/* --- TAB CONTENT: HEADER CONFIG (MỚI) --- */}
+          {activeTab === "header" && (
+            <AdminHeaderConfig
+              headerConfig={headerConfig}
+              setHeaderConfig={setHeaderConfig}
+              headerPreviewUrl={headerPreviewUrl}
+              handleHeaderFileChange={handleHeaderFileChange}
+              handleSaveHeaderConfig={handleSaveHeaderConfig}
+            />
           )}
 
           {/* --- TAB CONTENT: EFFECT --- */}

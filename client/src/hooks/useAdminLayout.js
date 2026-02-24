@@ -12,10 +12,18 @@ export const useAdminLayout = () => {
   
   // --- STATE UI & FORM ---
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("list"); // "list", "form", "effect", "hero", "about"
+  const [activeTab, setActiveTab] = useState("list"); // "list", "form", "effect", "hero", "about", "header"
   const [globalEffect, setGlobalEffect] = useState("none");
   const [searchPlant, setSearchPlant] = useState("");
   
+  // --- STATE HEADER CONFIG (MỚI) ---
+  const [headerConfig, setHeaderConfig] = useState({
+    brandName: "",
+    logoUrl: "",
+    logoFile: null,
+  });
+  const [headerPreviewUrl, setHeaderPreviewUrl] = useState(null);
+
   // --- STATE HERO CONFIG ---
   const [heroConfig, setHeroConfig] = useState({
     titlePrefix: "",
@@ -27,7 +35,7 @@ export const useAdminLayout = () => {
   });
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  // --- STATE ABOUT CONFIG (MỚI) ---
+  // --- STATE ABOUT CONFIG ---
   const [aboutConfig, setAboutConfig] = useState({
     title: "",
     description1: "",
@@ -85,7 +93,8 @@ export const useAdminLayout = () => {
     fetchAllPlants();
     fetchGlobalEffect();
     fetchHeroConfig();
-    fetchAboutConfig(); // Fetch About config
+    fetchAboutConfig(); 
+    fetchHeaderConfig(); // Fetch Header config
   }, []);
 
   // --- API HELPER FUNCTIONS ---
@@ -112,6 +121,20 @@ export const useAdminLayout = () => {
       const res = await axiosClient.get("/layout/effect");
       if (res.data.effect) {
         setGlobalEffect(res.data.effect);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchHeaderConfig = async () => {
+    try {
+      const res = await axiosClient.get("/layout/header");
+      if (res.data) {
+        setHeaderConfig({ ...res.data, logoFile: null });
+        if (res.data.logoUrl) {
+          setHeaderPreviewUrl(res.data.logoUrl);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -186,6 +209,37 @@ export const useAdminLayout = () => {
     }
   };
 
+  // Header File Handler
+  const handleHeaderFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setHeaderConfig({ ...headerConfig, logoFile: file });
+      setHeaderPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSaveHeaderConfig = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append("brandName", headerConfig.brandName || "");
+
+      if (headerConfig.logoFile) {
+        formData.append("logo", headerConfig.logoFile);
+      }
+
+      await axiosClient.post("/layout/header", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // Không throw alert nữa vì đã handle bằng UI trong AdminHeaderConfig
+      fetchHeaderConfig();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   // Hero File Handler
   const handleHeroFileChange = (e) => {
     const file = e.target.files[0];
@@ -221,11 +275,10 @@ export const useAdminLayout = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("Đã cập nhật Hero Section thành công!");
       fetchHeroConfig();
     } catch (error) {
       console.error(error);
-      alert("Lỗi khi lưu Hero Config");
+      throw error;
     }
   };
 
@@ -376,13 +429,15 @@ export const useAdminLayout = () => {
 
   return {
     layouts, categories, isEditing, activeTab, globalEffect, 
+    headerConfig, headerPreviewUrl, // New
     heroConfig, previewUrl,
-    aboutConfig, aboutPreviews, // New
+    aboutConfig, aboutPreviews, 
     isMobile, isSidebarOpen, config, selectedPlantIds, searchPlant, filteredPlantsForSelection,
-    setGlobalEffect, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
+    setGlobalEffect, setHeaderConfig, setHeroConfig, setAboutConfig, setIsSidebarOpen, setConfig, setSearchPlant,
     handleSidebarClick, handleSaveEffect, 
+    handleHeaderFileChange, handleSaveHeaderConfig, // New
     handleHeroFileChange, handleSaveHeroConfig,
-    handleAboutFileChange, handleSaveAboutConfig, // New
+    handleAboutFileChange, handleSaveAboutConfig, 
     handleEdit, handleDelete, handleMoveSection, togglePlantSelection, handleSubmit, handleResetAndBack, handleTabClick
   };
 };

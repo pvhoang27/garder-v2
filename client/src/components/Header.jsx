@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import LanguageSwitcher from "./LanguageSwitcher";
 import logo from "../assets/logo.png"; // Lưu ý đường dẫn import logo (lên 1 cấp cha)
+import axiosClient from "../api/axiosClient";
 
 const Header = ({ isLoggedIn, userRole, onLogout }) => {
   const navigate = useNavigate();
@@ -19,7 +20,23 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { t } = useTranslation();
 
+  const [headerConfig, setHeaderConfig] = useState(null);
+
   const user = JSON.parse(localStorage.getItem("user")) || {};
+
+  useEffect(() => {
+    const fetchHeaderConfig = async () => {
+      try {
+        const { data } = await axiosClient.get("/layout/header");
+        if (data) {
+          setHeaderConfig(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch header config", error);
+      }
+    };
+    fetchHeaderConfig();
+  }, []);
 
   const handleLogoutClick = () => {
     onLogout();
@@ -50,11 +67,11 @@ const Header = ({ isLoggedIn, userRole, onLogout }) => {
           }}
         >
           <img
-            src={logo}
+            src={headerConfig?.logoUrl || logo}
             alt="Logo"
             style={{ height: "40px", width: "auto", objectFit: "contain" }}
           />
-          <span style={{ whiteSpace: "nowrap" }}>{t("nav.brand")}</span>
+          <span style={{ whiteSpace: "nowrap" }}>{headerConfig?.brandName || t("nav.brand")}</span>
         </Link>
 
         {/* Mobile Toggle Button */}

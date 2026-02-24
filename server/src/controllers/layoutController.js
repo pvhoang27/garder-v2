@@ -4,7 +4,7 @@ const db = require("../config/db");
 exports.getLayouts = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM homepage_layouts WHERE type NOT IN ('global_effect', 'hero_config', 'about_config') ORDER BY sort_order ASC",
+      "SELECT * FROM homepage_layouts WHERE type NOT IN ('global_effect', 'hero_config', 'about_config', 'header_config') ORDER BY sort_order ASC",
     );
     res.json(rows);
   } catch (error) {
@@ -64,6 +64,77 @@ exports.updateGlobalEffect = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi cập nhật hiệu ứng" });
+  }
+};
+
+// --- LOGIC HEADER SECTION (MỚI) ---
+exports.getHeaderConfig = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT param_value FROM homepage_layouts WHERE type = 'header_config' LIMIT 1"
+    );
+    
+    const defaultConfig = {
+      type: 'header_config',
+      brandName: '',
+      logoUrl: ''
+    };
+
+    if (rows.length > 0 && rows[0].param_value) {
+      try {
+        const config = JSON.parse(rows[0].param_value);
+        res.json({ ...defaultConfig, ...config });
+      } catch (parseError) {
+        res.json(defaultConfig);
+      }
+    } else {
+      res.json(defaultConfig);
+    }
+  } catch (error) {
+    console.error("Lỗi lấy cấu hình Header:", error);
+    res.status(500).json({ message: "Lỗi lấy cấu hình Header" });
+  }
+};
+
+exports.updateHeaderConfig = async (req, res) => {
+  try {
+    let currentConfig = {};
+    try {
+      const [rows] = await db.query(
+        "SELECT param_value FROM homepage_layouts WHERE type = 'header_config' LIMIT 1"
+      );
+      if (rows.length > 0 && rows[0].param_value) {
+        currentConfig = JSON.parse(rows[0].param_value);
+      }
+    } catch (e) {}
+
+    const newConfig = {
+      brandName: req.body.brandName || "",
+      logoUrl: currentConfig.logoUrl || "" 
+    };
+
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString('base64');
+      const mimeType = req.file.mimetype;
+      newConfig.logoUrl = `data:${mimeType};base64,${b64}`;
+    }
+
+    const configString = JSON.stringify(newConfig);
+    const [check] = await db.query("SELECT id FROM homepage_layouts WHERE type = 'header_config'");
+
+    if (check.length > 0) {
+      await db.query("UPDATE homepage_layouts SET param_value = ? WHERE type = 'header_config'", [configString]);
+    } else {
+      await db.query(
+        "INSERT INTO homepage_layouts (title, type, param_value, sort_order, is_active) VALUES (?, ?, ?, ?, ?)",
+        ['Header Config', 'header_config', configString, -3, 0]
+      );
+    }
+
+    res.json({ message: "Cập nhật Header thành công", config: newConfig });
+  } catch (error) {
+    console.error("Lỗi update header:", error);
+    res.status(500).json({ message: "Lỗi cập nhật Header" });
   }
 };
 
@@ -147,7 +218,7 @@ exports.updateHeroConfig = async (req, res) => {
   }
 };
 
-// --- LOGIC ABOUT SECTION (MỚI) ---
+// --- LOGIC ABOUT SECTION ---
 exports.getAboutConfig = async (req, res) => {
   try {
     const [rows] = await db.query(
