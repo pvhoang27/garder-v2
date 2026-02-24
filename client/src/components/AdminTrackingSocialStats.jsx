@@ -3,7 +3,7 @@ import axiosClient from "../api/axiosClient";
 import { FaFacebook, FaTiktok } from "react-icons/fa";
 
 const AdminTrackingSocialStats = () => {
-  const [stats, setStats] = useState({ summary: [], daily: [] });
+  const [stats, setStats] = useState({ summary: [], history: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,7 +14,10 @@ const AdminTrackingSocialStats = () => {
     try {
       const res = await axiosClient.get("/tracking-social/stats");
       if (res.data.success) {
-        setStats(res.data.data);
+        setStats({
+          summary: res.data.data.summary || [],
+          history: res.data.data.history || []
+        });
       }
     } catch (error) {
       console.error("Lỗi fetch tracking social stats:", error);
@@ -44,37 +47,57 @@ const AdminTrackingSocialStats = () => {
         {stats.summary.length === 0 && <p>Chưa có dữ liệu tổng quan.</p>}
       </div>
 
-      {/* Khối thống kê theo ngày (7 ngày gần nhất) */}
-      <h3 style={{ marginBottom: "15px" }}>Lịch sử 7 ngày gần đây</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#4caf50", color: "#fff", textAlign: "left" }}>
-            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Ngày</th>
-            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Nền tảng</th>
-            <th style={{ padding: "12px", border: "1px solid #ddd" }}>Lượt click</th>
-          </tr>
-        </thead>
-        <tbody>
-          {stats.daily.map((item, idx) => (
-            <tr key={idx}>
-              <td style={{ padding: "12px", border: "1px solid #ddd" }}>
-                {new Date(item.date).toLocaleDateString("vi-VN")}
-              </td>
-              <td style={{ padding: "12px", border: "1px solid #ddd", textTransform: "capitalize" }}>
-                {item.platform}
-              </td>
-              <td style={{ padding: "12px", border: "1px solid #ddd" }}>
-                {item.clicks}
-              </td>
+      {/* Khối thống kê lịch sử chi tiết (7 ngày gần nhất) */}
+      <h3 style={{ marginBottom: "15px" }}>Lịch sử click chi tiết (7 ngày gần đây)</h3>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
+          <thead>
+            <tr style={{ background: "#4caf50", color: "#fff", textAlign: "left" }}>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thời gian</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Nền tảng</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Vị trí click</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Địa chỉ IP</th>
             </tr>
-          ))}
-          {stats.daily.length === 0 && (
-            <tr>
-              <td colSpan="3" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>Chưa có dữ liệu lịch sử</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {stats.history.map((item, idx) => {
+              // Format lại thời gian ra chuẩn: HH:mm:ss DD/MM/YYYY
+              const dateObj = new Date(item.created_at);
+              const formattedTime = dateObj.toLocaleTimeString("vi-VN", { 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+              });
+              const formattedDate = dateObj.toLocaleDateString("vi-VN");
+
+              return (
+                <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                  <td style={{ padding: "12px", border: "1px solid #ddd" }}>
+                    <b>{formattedTime}</b> - {formattedDate}
+                  </td>
+                  <td style={{ padding: "12px", border: "1px solid #ddd", textTransform: "capitalize" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      {item.platform === 'facebook' ? <FaFacebook color="#1877F2" /> : <FaTiktok color="#000" />} 
+                      {item.platform}
+                    </span>
+                  </td>
+                  <td style={{ padding: "12px", border: "1px solid #ddd" }}>
+                    {item.location}
+                  </td>
+                  <td style={{ padding: "12px", border: "1px solid #ddd", color: "#666" }}>
+                    {item.ip_address || "N/A"}
+                  </td>
+                </tr>
+              );
+            })}
+            {stats.history.length === 0 && (
+              <tr>
+                <td colSpan="4" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
+                  Chưa có dữ liệu lịch sử
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

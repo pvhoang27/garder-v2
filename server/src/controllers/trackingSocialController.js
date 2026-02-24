@@ -26,20 +26,19 @@ exports.getStats = async (req, res) => {
             GROUP BY platform, location
         `);
 
-        // Thống kê 7 ngày gần nhất
-        const [dailyRows] = await db.execute(`
-            SELECT DATE(created_at) as date, platform, COUNT(*) as clicks
+        // [SỬA ĐỔI] Lấy danh sách lịch sử CHI TIẾT từng lượt click trong 7 ngày gần nhất
+        const [historyRows] = await db.execute(`
+            SELECT id, platform, location, ip_address, created_at
             FROM tracking_social_logs
-            WHERE created_at >= DATE(NOW() - INTERVAL 7 DAY)
-            GROUP BY DATE(created_at), platform
-            ORDER BY date DESC
+            WHERE created_at >= NOW() - INTERVAL 7 DAY
+            ORDER BY created_at DESC
         `);
 
         res.status(200).json({
             success: true,
             data: {
                 summary: summaryRows,
-                daily: dailyRows
+                history: historyRows // Đổi tên trả về thành history cho hợp nghĩa
             }
         });
     } catch (error) {
