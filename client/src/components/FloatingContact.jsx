@@ -30,7 +30,7 @@ const FloatingContact = () => {
         className="contact-btn zalo-btn"
       >
         <span className="contact-icon">
-            <FaCommentDots size={24} /> 
+            <SiZalo size={24} /> 
         </span>
         <span className="contact-tooltip">Chat Zalo</span>
       </a>
