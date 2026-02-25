@@ -84,14 +84,6 @@ const AdminMenuConfig = ({ menuConfig, setMenuConfig, handleSaveMenuConfig }) =>
               onChange={(e) => handleMenuChange(index, "label", e.target.value)}
             />
             
-            <input
-              type="text"
-              style={{ ...inputStyle, flex: 1 }}
-              placeholder="Đường dẫn (VD: /categories)"
-              value={item.path}
-              onChange={(e) => handleMenuChange(index, "path", e.target.value)}
-            />
-            
             <div style={{ display: "flex", gap: "5px" }}>
               <button type="button" onClick={() => moveMenuItem(index, -1)} disabled={index === 0}
                 style={{ padding: "8px", cursor: index === 0 ? "not-allowed" : "pointer", background: "white", border: "1px solid #ddd", borderRadius: "4px", color: index === 0 ? "#ccc" : "#333" }}>
