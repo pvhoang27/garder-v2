@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const cookieParser = require('cookie-parser'); // [MỚI]
+const cookieParser = require('cookie-parser');
 
 // Load env vars
 dotenv.config();
@@ -11,7 +11,6 @@ dotenv.config();
 const app = express();
 
 // Middleware
-// [SỬA] Cấu hình CORS chặt chẽ để dùng được Cookie, bổ sung thêm https://localhost:5173
 app.use(cors({
     origin: [
         'http://localhost:5173', 
@@ -23,7 +22,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(cookieParser()); // [MỚI] Middleware đọc cookie
+app.use(cookieParser());
 
 // Cấu hình phục vụ file tĩnh (ảnh upload)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -42,15 +41,12 @@ app.use('/api/layout', require('./src/routes/layoutRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes')); 
 app.use('/api/comments', require('./src/routes/commentRoutes'));
 app.use('/api/notifications', require('./src/routes/notificationRoutes'));
-
-// [MỚI] Route thống kê Dashboard chung (cũ)
 app.use('/api/dashboard', require('./src/routes/dashboardRoutes')); 
 
-// [MỚI - TRACKING] Route cho tính năng đo lượt truy cập
+// Các Route Tracking
 app.use('/api/tracking', require('./src/routes/trackingRoutes'));
-
-// [MỚI - TRACKING SOCIAL] Route đo click facebook/tiktok
 app.use('/api/tracking-social', require('./src/routes/trackingSocialRoutes'));
+app.use('/api/tracking-popup', require('./src/routes/trackingPopupRoutes')); // <--- [MỚI] THÊM Ở ĐÂY
 
 // Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000
 const PORT = process.env.PORT || 3000;

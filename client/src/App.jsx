@@ -159,6 +159,15 @@ const AppContent = ({
               </AdminRoute>
             }
           />
+          {/* [MỚI] Thêm Route tracking popup */}
+          <Route
+            path="/admin/tracking-popup"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="trackingPopup" />
+              </AdminRoute>
+            }
+          />
           <Route
             path="/admin/plants"
             element={

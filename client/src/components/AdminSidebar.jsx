@@ -13,6 +13,7 @@ import {
   FaChartPie,
   FaChartLine, 
   FaShareAlt, // <--- [MỚI] Icon cho Tracking Social
+  FaBullhorn, // <--- [MỚI] Icon cho Tracking Popup
 } from "react-icons/fa";
 import axiosClient from "../api/axiosClient"; 
 
@@ -50,6 +51,7 @@ const AdminSidebar = ({
       dashboard: "/admin",
       tracking: "/admin/tracking",
       trackingSocial: "/admin/tracking-social", // [MỚI] Map route 
+      trackingPopup: "/admin/tracking-popup", // [MỚI] Map route Popup
       plants: "/admin/plants",
       categories: "/admin/categories",
       news: "/admin/news",
@@ -171,12 +173,20 @@ const AdminSidebar = ({
           label="Tracking lượt xem"
         />
 
-        {/* --- [MỚI] MỤC TRACKING SOCIAL --- */}
+        {/* --- [MỚI] MỤC TRACKING MXH --- */}
         <MenuButton
           active={activeTab === "trackingSocial"}
           onClick={() => handleMenuClick("trackingSocial")}
           icon={<FaShareAlt />}
           label="Tracking MXH"
+        />
+
+        {/* --- [MỚI] MỤC TRACKING POPUP --- */}
+        <MenuButton
+          active={activeTab === "trackingPopup"}
+          onClick={() => handleMenuClick("trackingPopup")}
+          icon={<FaBullhorn />}
+          label="Tracking Popup"
         />
 
         <MenuButton

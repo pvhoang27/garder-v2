@@ -8,7 +8,10 @@ import AdminNewsManager from "../components/AdminNewsManager";
 import AdminCommentManager from "../components/AdminCommentManager";
 import AdminStats from "../components/AdminStats";
 import AdminTrackingStats from "../components/AdminTrackingStats"; 
-import AdminTrackingSocialStats from "../components/AdminTrackingSocialStats"; // [MỚI]
+import AdminTrackingSocialStats from "../components/AdminTrackingSocialStats"; 
+
+// [MỚI] Import component Tracking Popup
+import AdminTrackingPopupStats from "../components/AdminTrackingPopupStats"; 
 
 const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const location = useLocation();
@@ -26,8 +29,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
         return { title: "Tổng Quan", breadcrumb: "Admin / Thống kê" };
       case "tracking":
         return { title: "Tracking Lượt Xem", breadcrumb: "Admin / Tracking" }; 
-      case "trackingSocial": // [MỚI]
+      case "trackingSocial": 
         return { title: "Tracking Mạng Xã Hội", breadcrumb: "Admin / Tracking MXH" };
+      case "trackingPopup": // [MỚI] Thêm case cho tracking Popup
+        return { title: "Tracking Tương tác Popup", breadcrumb: "Admin / Tracking Popup" };
       case "plants":
         return { title: "Quản Lý Cây Cảnh", breadcrumb: "Admin / Cây cảnh" };
       case "categories":
@@ -58,7 +63,11 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
     >
       {activeTab === "dashboard" && <AdminStats />}
       {activeTab === "tracking" && <AdminTrackingStats />}
-      {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} {/* [MỚI] */}
+      {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} 
+      
+      {/* [MỚI] Render component Tracking Popup khi click vào menu tương ứng */}
+      {activeTab === "trackingPopup" && <AdminTrackingPopupStats />} 
+
       {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
       {activeTab === "categories" && (
         <AdminCategoryManager isMobile={isMobile} />

@@ -7,12 +7,15 @@ const PopupBanner = () => {
   const [popups, setPopups] = useState([]);
 
   useEffect(() => {
-    // FIX: Sửa endpoint thành /popups (số nhiều) để khớp với Server
+    // Gọi API để ghi nhận lượt truy cập web (Cũ)
+    axiosClient
+      .post("/tracking/visit")
+      .catch((err) => console.warn("Lỗi tracking truy cập:", err));
+
     axiosClient
       .get("/popups")
       .then((res) => {
         if (res.data && Array.isArray(res.data)) {
-          // Lọc các popup đã bị đóng trong session
           const activePopups = res.data.filter(
             (p) => !sessionStorage.getItem(`popup_closed_${p.id}`),
           );
@@ -67,7 +70,18 @@ const PopupBanner = () => {
 const SinglePopup = ({ popup, onClose }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  // Parse list media
+  // [MỚI] Track View (Lượt xem) khi popup xuất hiện
+  useEffect(() => {
+    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'view' })
+      .catch(err => console.warn('Lỗi tracking view popup:', err));
+  }, [popup.id]);
+
+  // [MỚI] Track Click (Lượt nhấn vào link)
+  const handleLinkClick = () => {
+    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'click' })
+      .catch(err => console.warn('Lỗi tracking click popup:', err));
+  };
+
   let mediaList = [];
   try {
     mediaList = JSON.parse(popup.media_urls || "[]");
@@ -82,7 +96,6 @@ const SinglePopup = ({ popup, onClose }) => {
       (prev) => (prev - 1 + mediaList.length) % mediaList.length,
     );
 
-  // Auto slide
   useEffect(() => {
     if (mediaList.length > 1) {
       const timer = setInterval(nextSlide, 5000);
@@ -93,7 +106,6 @@ const SinglePopup = ({ popup, onClose }) => {
   const currentMedia = mediaList[currentMediaIndex];
   const isVideo = currentMedia && currentMedia.match(/\.(mp4|webm)$/i);
 
-  // Hàm xử lý url ảnh (từ localhost hoặc link ngoài)
   const getMediaUrl = (path) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
@@ -132,7 +144,6 @@ const SinglePopup = ({ popup, onClose }) => {
         <FaTimes />
       </button>
 
-      {/* Media Slider */}
       {mediaList.length > 0 && (
         <div className="media-container" style={{ minHeight: "200px" }}>
           {isVideo ? (
@@ -191,6 +202,9 @@ const SinglePopup = ({ popup, onClose }) => {
         {popup.link_url && (
           <a
             href={popup.link_url}
+            onClick={handleLinkClick} // <--- Đã thêm hàm gắn sự kiện Click
+            target="_blank"
+            rel="noreferrer"
             style={{
               display: "inline-block",
               background: "#2e7d32",
