@@ -70,16 +70,29 @@ const PopupBanner = () => {
 const SinglePopup = ({ popup, onClose }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  // [MỚI] Track View (Lượt xem) khi popup xuất hiện
+  // [MỚI] Track View (Hiển thị) -> Lưu sessionStorage để chỉ bắn API 1 LẦN DUY NHẤT 1 PHIÊN
   useEffect(() => {
-    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'view' })
-      .catch(err => console.warn('Lỗi tracking view popup:', err));
+    const viewedKey = `popup_viewed_${popup.id}`;
+    if (!sessionStorage.getItem(viewedKey)) {
+      axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'view' })
+        .then(() => {
+          sessionStorage.setItem(viewedKey, 'true'); // Đánh dấu là đã tính lượt xem
+        })
+        .catch(err => console.warn('Lỗi tracking view popup:', err));
+    }
   }, [popup.id]);
 
-  // [MỚI] Track Click (Lượt nhấn vào link)
+  // [MỚI] Track Click (Nhấn Xem chi tiết)
   const handleLinkClick = () => {
     axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'click' })
       .catch(err => console.warn('Lỗi tracking click popup:', err));
+  };
+
+  // [MỚI] Track Close (Nhấn Tắt popup)
+  const handleCloseBtnClick = () => {
+    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'close' })
+      .catch(err => console.warn('Lỗi tracking close popup:', err));
+    onClose();
   };
 
   let mediaList = [];
@@ -123,7 +136,7 @@ const SinglePopup = ({ popup, onClose }) => {
       }}
     >
       <button
-        onClick={onClose}
+        onClick={handleCloseBtnClick} // Gắn hàm tracking bấm nút X
         style={{
           position: "absolute",
           top: "10px",
@@ -202,7 +215,7 @@ const SinglePopup = ({ popup, onClose }) => {
         {popup.link_url && (
           <a
             href={popup.link_url}
-            onClick={handleLinkClick} // <--- Đã thêm hàm gắn sự kiện Click
+            onClick={handleLinkClick} // Gắn hàm tracking nhấn Xem chi tiết
             target="_blank"
             rel="noreferrer"
             style={{

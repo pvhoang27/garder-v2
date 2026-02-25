@@ -17,7 +17,6 @@ const AdminTrackingPopupStats = () => {
 
   const fetchStats = async () => {
     try {
-      // API này sẽ lấy dữ liệu thống kê từ Server (Bạn cần đảm bảo Server đã có Route này)
       const res = await axiosClient.get("/tracking-popup/stats");
       if (res.data && res.data.success) {
         setStats({
@@ -47,7 +46,7 @@ const AdminTrackingPopupStats = () => {
       <div style={{ display: "flex", gap: "20px", marginBottom: "30px", flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: "200px", padding: "20px", background: "#f5f5f5", borderRadius: "8px", borderLeft: "5px solid #2196F3" }}>
           <h3 style={{ display: "flex", alignItems: "center", gap: "10px", margin: "0 0 10px 0" }}>
-            <FaEye color="#2196F3" /> Tổng Lượt Xem
+            <FaEye color="#2196F3" /> Tổng Lượt Hiển Thị
           </h3>
           <p style={{ margin: "10px 0 0 0", fontSize: "24px", fontWeight: "bold", color: "#333" }}>
             {stats.summary.views || 0} <span style={{fontSize: "14px", fontWeight: "normal"}}>lượt</span>
@@ -55,7 +54,7 @@ const AdminTrackingPopupStats = () => {
         </div>
         <div style={{ flex: 1, minWidth: "200px", padding: "20px", background: "#f5f5f5", borderRadius: "8px", borderLeft: "5px solid #FF9800" }}>
           <h3 style={{ display: "flex", alignItems: "center", gap: "10px", margin: "0 0 10px 0" }}>
-            <FaMousePointer color="#FF9800" /> Tổng Lượt Click
+            <FaMousePointer color="#FF9800" /> Tổng Lượt Bấm "Xem Chi Tiết"
           </h3>
           <p style={{ margin: "10px 0 0 0", fontSize: "24px", fontWeight: "bold", color: "#333" }}>
             {stats.summary.clicks || 0} <span style={{fontSize: "14px", fontWeight: "normal"}}>lượt</span>
@@ -83,6 +82,17 @@ const AdminTrackingPopupStats = () => {
               });
               const formattedDate = dateObj.toLocaleDateString("vi-VN");
 
+              // [SỬA ĐỔI] Text rõ ràng hơn cho các loại hành động
+              let actionText = "Hiển thị (Xuất hiện)";
+              let actionColor = "#2196F3"; // Xanh dương
+              if (item.action === "click") {
+                 actionText = "Nhấn 'Xem Chi Tiết'";
+                 actionColor = "#FF9800"; // Cam
+              } else if (item.action === "close") {
+                 actionText = "Tắt Popup (Bấm X)";
+                 actionColor = "#F44336"; // Đỏ
+              }
+
               return (
                 <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
                   <td style={{ padding: "12px", border: "1px solid #ddd" }}>
@@ -93,8 +103,8 @@ const AdminTrackingPopupStats = () => {
                       <FaBullhorn color="#FF5722" /> {item.popup_title || `Popup ID: ${item.popup_id}`}
                     </span>
                   </td>
-                  <td style={{ padding: "12px", border: "1px solid #ddd", fontWeight: "bold", color: item.action === "click" ? "#FF9800" : "#2196F3" }}>
-                    {item.action === "click" ? "Click (Nhấn)" : "View (Xem)"}
+                  <td style={{ padding: "12px", border: "1px solid #ddd", fontWeight: "bold", color: actionColor }}>
+                    {actionText}
                   </td>
                   <td style={{ padding: "12px", border: "1px solid #ddd", color: "#666" }}>
                     {item.ip_address || "N/A"}
