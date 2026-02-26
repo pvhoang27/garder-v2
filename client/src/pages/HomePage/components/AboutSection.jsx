@@ -1,27 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { FaHeart, FaFacebook, FaTiktok } from "react-icons/fa";
 import axiosClient from "../../../api/axiosClient";
+import "../AboutSection.css";
 
 const AboutSection = () => {
   const [data, setData] = useState({
     title: "Đam mê tạo nên những tác phẩm sống động",
-    description1: "Cây cảnh Xuân Thục được thành lập với niềm đam mê cây cảnh từ nhiều thế hệ trong gia đình...",
+    description1:
+      "Cây cảnh Xuân Thục được thành lập với niềm đam mê cây cảnh từ nhiều thế hệ trong gia đình...",
     description2: "Chúng tôi tin rằng cây cảnh không chỉ là vật trang trí...",
     stat1Number: "15+",
     stat1Text: "Năm kinh nghiệm",
     stat2Number: "100%",
     stat2Text: "Tâm huyết",
-    image1: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80",
-    image2: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80",
-    image3: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80"
+    image1:
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80",
+    image2:
+      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80",
+    image3:
+      "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80",
   });
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await axiosClient.get('/layout/about');
+        const res = await axiosClient.get("/layout/about");
         if (res.data) {
-          setData(prev => ({ ...prev, ...res.data }));
+          setData((prev) => ({ ...prev, ...res.data }));
         }
       } catch (error) {
         console.error("Lỗi tải About config:", error);
@@ -35,7 +40,7 @@ const AboutSection = () => {
     try {
       await axiosClient.post("/tracking-social/click", {
         platform,
-        location: "about"
+        location: "about",
       });
     } catch (error) {
       console.warn("Lỗi log tracking social:", error);
@@ -51,21 +56,21 @@ const AboutSection = () => {
               <img
                 src={data.image1}
                 alt="Garden 1"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
             <div className="about-img-2">
               <img
                 src={data.image2}
                 alt="Garden 2"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
             <div className="about-img-3">
               <img
                 src={data.image3}
                 alt="Garden 3"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
           </div>
@@ -74,9 +79,7 @@ const AboutSection = () => {
             <div className="badge">
               <FaHeart /> Về chúng tôi
             </div>
-            <h2 className="section-title">
-              {data.title}
-            </h2>
+            <h2 className="section-title">{data.title}</h2>
             <p
               className="text-gray"
               style={{ lineHeight: 1.8, marginBottom: "20px" }}
@@ -104,9 +107,7 @@ const AboutSection = () => {
                   borderRadius: "12px",
                 }}
               >
-                <h4
-                  style={{ fontSize: "1.5rem", margin: 0, color: "#3f6212" }}
-                >
+                <h4 style={{ fontSize: "1.5rem", margin: 0, color: "#3f6212" }}>
                   {data.stat1Number}
                 </h4>
                 <span style={{ fontSize: "0.9rem", color: "#5c6c49" }}>
@@ -120,9 +121,7 @@ const AboutSection = () => {
                   borderRadius: "12px",
                 }}
               >
-                <h4
-                  style={{ fontSize: "1.5rem", margin: 0, color: "#3f6212" }}
-                >
+                <h4 style={{ fontSize: "1.5rem", margin: 0, color: "#3f6212" }}>
                   {data.stat2Number}
                 </h4>
                 <span style={{ fontSize: "0.9rem", color: "#5c6c49" }}>
@@ -137,7 +136,7 @@ const AboutSection = () => {
                 href="https://fb.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => handleSocialClick('facebook')}
+                onClick={() => handleSocialClick("facebook")}
                 className="btn btn-outline"
                 style={{
                   display: "flex",
@@ -153,7 +152,7 @@ const AboutSection = () => {
                 href="https://tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => handleSocialClick('tiktok')}
+                onClick={() => handleSocialClick("tiktok")}
                 className="btn btn-outline"
                 style={{
                   display: "flex",

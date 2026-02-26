@@ -14,12 +14,14 @@ import HeroSection from "./components/HeroSection";
 import SearchResults from "./components/SearchResults";
 import TrendingSection from "./components/TrendingSection";
 import FeaturedSection from "./components/FeaturedSection";
-import RecentlyViewedSection from "./components/RecentlyViewedSection"; 
+import RecentlyViewedSection from "./components/RecentlyViewedSection";
 import AboutSection from "./components/AboutSection";
 import CtaSection from "./components/CtaSection";
 
 // Styles
 import "./HomePage.css";
+import "./CategorySection.css";
+import "./HomePage.responsive.css";
 
 const HomePage = () => {
   const { t } = useTranslation();

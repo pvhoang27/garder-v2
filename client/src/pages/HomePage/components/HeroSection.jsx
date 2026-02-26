@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaLeaf, FaSearch, FaArrowRight } from "react-icons/fa";
 import axiosClient from "../../../api/axiosClient";
+import "../HeroSection.css";
 
 const HeroSection = ({
   t,
@@ -17,8 +18,9 @@ const HeroSection = ({
     titlePrefix: "Khám phá vẻ đẹp",
     titleHighlight: "thiên nhiên",
     titleSuffix: "qua từng tác phẩm",
-    description: "Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một tác phẩm được chăm sóc với tình yêu và sự tận tâm.",
-    imageUrl: "/hero-bonsai.jpg"
+    description:
+      "Chào mừng đến với Cây cảnh Xuân Thục - nơi lưu giữ và trưng bày bộ sưu tập cây cảnh nghệ thuật độc đáo. Mỗi cây là một câu chuyện, một tác phẩm được chăm sóc với tình yêu và sự tận tâm.",
+    imageUrl: "/hero-bonsai.jpg",
   });
 
   // Gọi API lấy cấu hình khi component mount
@@ -48,13 +50,12 @@ const HeroSection = ({
           </div>
 
           <h1>
-            {config.titlePrefix} <span className="text-primary">{config.titleHighlight}</span>{" "}
+            {config.titlePrefix}{" "}
+            <span className="text-primary">{config.titleHighlight}</span>{" "}
             {config.titleSuffix}
           </h1>
 
-          <p>
-            {config.description}
-          </p>
+          <p>{config.description}</p>
 
           {/* Search Box */}
           <div className="hero-search-box">

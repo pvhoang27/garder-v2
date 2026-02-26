@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaComment } from "react-icons/fa";
 import { API_URL } from "../../../config";
+import "../PlantCard.css";
 
 const PlantCard = ({
   plant,

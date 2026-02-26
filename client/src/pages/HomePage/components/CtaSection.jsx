@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
+import "../CtaSection.css";
 
 const CtaSection = () => {
   return (
