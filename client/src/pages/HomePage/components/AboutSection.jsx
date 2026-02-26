@@ -131,7 +131,15 @@ const AboutSection = () => {
             </div>
 
             {/* Social Media Buttons */}
-            <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
+            <div
+              className="about-social-btns"
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                gap: "15px",
+                flexWrap: "wrap",
+              }}
+            >
               <a
                 href="https://fb.com"
                 target="_blank"
