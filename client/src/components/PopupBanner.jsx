@@ -70,18 +70,6 @@ const PopupBanner = () => {
 const SinglePopup = ({ popup, onClose }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  // [MỚI] Track View (Hiển thị) -> Lưu sessionStorage để chỉ bắn API 1 LẦN DUY NHẤT 1 PHIÊN
-  useEffect(() => {
-    const viewedKey = `popup_viewed_${popup.id}`;
-    if (!sessionStorage.getItem(viewedKey)) {
-      axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'view' })
-        .then(() => {
-          sessionStorage.setItem(viewedKey, 'true'); // Đánh dấu là đã tính lượt xem
-        })
-        .catch(err => console.warn('Lỗi tracking view popup:', err));
-    }
-  }, [popup.id]);
-
   // [MỚI] Track Click (Nhấn Xem chi tiết)
   const handleLinkClick = () => {
     axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'click' })
