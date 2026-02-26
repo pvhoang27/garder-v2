@@ -6,12 +6,15 @@ exports.logInteraction = async (req, res) => {
         const { popup_id, action, device_type } = req.body;
         const ip_address = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         
+        // Lấy thêm chuỗi User Agent từ header của request
+        const user_agent = req.headers['user-agent'] || 'Unknown';
+        
         if (!popup_id) {
             return res.status(400).json({ success: false, message: "Thiếu popup_id" });
         }
 
-        const sql = "INSERT INTO popup_interactions (popup_id, action, device_type, ip_address) VALUES (?, ?, ?, ?)";
-        await db.query(sql, [popup_id, action || 'view', device_type || 'desktop', ip_address]);
+        const sql = "INSERT INTO popup_interactions (popup_id, action, device_type, user_agent, ip_address) VALUES (?, ?, ?, ?, ?)";
+        await db.query(sql, [popup_id, action || 'view', device_type || 'desktop', user_agent, ip_address]);
 
         res.status(200).json({ success: true, message: "Logged interaction successfully" });
     } catch (error) {

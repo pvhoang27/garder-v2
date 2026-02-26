@@ -10,3 +10,6 @@ CREATE TABLE IF NOT EXISTS popup_interactions (
 
 ALTER TABLE popup_interactions 
 ADD COLUMN device_type VARCHAR(50) DEFAULT 'desktop' AFTER action;
+
+ALTER TABLE popup_interactions 
+ADD COLUMN user_agent TEXT AFTER device_type;
