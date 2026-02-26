@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaLeaf,
@@ -11,11 +12,13 @@ import {
   FaNewspaper,
   FaComments,
   FaChartPie,
-  FaChartLine, 
-  FaShareAlt, // <--- [MỚI] Icon cho Tracking Social
-  FaBullhorn, // <--- [MỚI] Icon cho Tracking Popup
+  FaChartLine,
+  FaShareAlt,
+  FaBullhorn,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
-import axiosClient from "../api/axiosClient"; 
+import axiosClient from "../api/axiosClient";
 
 const AdminSidebar = ({
   activeTab,
@@ -25,6 +28,11 @@ const AdminSidebar = ({
   setIsOpen,
 }) => {
   const navigate = useNavigate();
+  
+  // State quản lý việc đóng/mở menu Tracking
+  const [isTrackingMenuOpen, setIsTrackingMenuOpen] = useState(
+    activeTab === "tracking" || activeTab === "trackingSocial" || activeTab === "trackingPopup"
+  );
 
   const handleLogout = async () => {
     if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
@@ -50,8 +58,8 @@ const AdminSidebar = ({
     const routes = {
       dashboard: "/admin",
       tracking: "/admin/tracking",
-      trackingSocial: "/admin/tracking-social", // [MỚI] Map route 
-      trackingPopup: "/admin/tracking-popup", // [MỚI] Map route Popup
+      trackingSocial: "/admin/tracking-social", 
+      trackingPopup: "/admin/tracking-popup", 
       plants: "/admin/plants",
       categories: "/admin/categories",
       news: "/admin/news",
@@ -110,6 +118,30 @@ const AdminSidebar = ({
     fontSize: "15px",
   };
 
+  // Nút nhấn cho menu con (submenu) có thụt lề
+  const SubMenuButton = ({ active, onClick, icon, label }) => (
+    <button
+      onClick={onClick}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "12px 20px 12px 40px", // Thụt lề vào trong cho menu con
+        background: active ? "#2e7d32" : "transparent",
+        color: active ? "white" : "#ccc",
+        border: "none",
+        textAlign: "left",
+        fontSize: "14px",
+        cursor: "pointer",
+        transition: "0.2s",
+        borderLeft: active ? "4px solid #4caf50" : "4px solid transparent",
+      }}
+    >
+      {icon} {label}
+    </button>
+  );
+
   return (
     <div style={sidebarStyle}>
       {/* --- HEADER SIDEBAR --- */}
@@ -166,28 +198,56 @@ const AdminSidebar = ({
           label="Thống kê chung"
         />
 
-        <MenuButton
-          active={activeTab === "tracking"}
-          onClick={() => handleMenuClick("tracking")}
-          icon={<FaChartLine />}
-          label="Tracking lượt xem"
-        />
+        {/* --- [GOM NHÓM] MỤC TRACKING --- */}
+        <div>
+          <button
+            onClick={() => setIsTrackingMenuOpen(!isTrackingMenuOpen)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "15px 20px",
+              background: "transparent",
+              color: "#ccc",
+              border: "none",
+              fontSize: "15px",
+              cursor: "pointer",
+              transition: "0.2s",
+              borderLeft: "4px solid transparent",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <FaChartLine /> Nhóm Tracking
+            </div>
+            {isTrackingMenuOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+          </button>
 
-        {/* --- [MỚI] MỤC TRACKING MXH --- */}
-        <MenuButton
-          active={activeTab === "trackingSocial"}
-          onClick={() => handleMenuClick("trackingSocial")}
-          icon={<FaShareAlt />}
-          label="Tracking MXH"
-        />
-
-        {/* --- [MỚI] MỤC TRACKING POPUP --- */}
-        <MenuButton
-          active={activeTab === "trackingPopup"}
-          onClick={() => handleMenuClick("trackingPopup")}
-          icon={<FaBullhorn />}
-          label="Tracking Popup"
-        />
+          {/* Các mục Tracking con sẽ hiển thị khi được toggle */}
+          {isTrackingMenuOpen && (
+            <div style={{ background: "#222" }}>
+              <SubMenuButton
+                active={activeTab === "tracking"}
+                onClick={() => handleMenuClick("tracking")}
+                icon={<FaChartLine />}
+                label="Lượt xem trang"
+              />
+              <SubMenuButton
+                active={activeTab === "trackingSocial"}
+                onClick={() => handleMenuClick("trackingSocial")}
+                icon={<FaShareAlt />}
+                label="Tracking MXH"
+              />
+              <SubMenuButton
+                active={activeTab === "trackingPopup"}
+                onClick={() => handleMenuClick("trackingPopup")}
+                icon={<FaBullhorn />}
+                label="Tracking Popup"
+              />
+            </div>
+          )}
+        </div>
+        {/* --- KẾT THÚC NHÓM TRACKING --- */}
 
         <MenuButton
           active={activeTab === "plants"}
