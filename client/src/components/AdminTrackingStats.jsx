@@ -5,6 +5,7 @@ import {
   FaCalendarDay,
   FaClock,
   FaDesktop,
+  FaMobileAlt,
   FaChartLine,
   FaFilter,
 } from "react-icons/fa";
@@ -56,6 +57,17 @@ const AdminTrackingStats = () => {
     setStartDate("");
     setEndDate("");
     fetchStats();
+  };
+
+  // Hàm helper để phân tích User Agent và trả về loại thiết bị
+  const getDeviceType = (userAgent) => {
+    if (!userAgent) return "Unknown";
+    const ua = userAgent.toLowerCase();
+    // Regex kiểm tra các từ khóa phổ biến của thiết bị di động/tablet
+    if (/(android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile)/i.test(ua)) {
+      return "Mobile";
+    }
+    return "Desktop";
   };
 
   if (loading) {
@@ -161,40 +173,52 @@ const AdminTrackingStats = () => {
               </thead>
               <tbody>
                 {stats.recentLogs && stats.recentLogs.length > 0 ? (
-                  stats.recentLogs.map((log) => (
-                    <tr key={log.id}>
-                      <td className="tracking-table-id">#{log.id}</td>
-                      <td className="tracking-table-time">
-                        {log.visit_time
-                          ? new Date(log.visit_time).toLocaleString("vi-VN", {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              second: "2-digit",
-                              hour12: false,
-                            })
-                          : "N/A"}
-                      </td>
-                      <td>
-                        <span className="tracking-table-ip">
-                          {log.ip_address}
-                        </span>
-                      </td>
-                      <td>
-                        <div
-                          className="tracking-table-agent"
-                          title={log.user_agent}
-                        >
-                          <FaDesktop />
-                          <span className="tracking-agent-text">
-                            {log.user_agent}
+                  stats.recentLogs.map((log) => {
+                    const deviceType = getDeviceType(log.user_agent);
+                    return (
+                      <tr key={log.id}>
+                        <td className="tracking-table-id">#{log.id}</td>
+                        <td className="tracking-table-time">
+                          {log.visit_time
+                            ? new Date(log.visit_time).toLocaleString("vi-VN", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                hour12: false,
+                              })
+                            : "N/A"}
+                        </td>
+                        <td>
+                          <span className="tracking-table-ip">
+                            {log.ip_address}
                           </span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td>
+                          <div
+                            className="tracking-table-agent"
+                            title={log.user_agent}
+                          >
+                            {/* Hiển thị Icon tùy thuộc vào loại thiết bị */}
+                            {deviceType === "Mobile" ? (
+                              <FaMobileAlt style={{ minWidth: '16px' }} />
+                            ) : (
+                              <FaDesktop style={{ minWidth: '16px' }} />
+                            )}
+                            <span className="tracking-agent-text">
+                              {/* Hiển thị rõ tên thiết bị kèm chuỗi gốc */}
+                              <strong style={{ color: deviceType === "Mobile" ? "#e67e22" : "#2980b9" }}>
+                                [{deviceType}]
+                              </strong>{" "}
+                              {log.user_agent}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="4" className="tracking-table-empty">
