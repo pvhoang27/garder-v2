@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaBullhorn, FaMousePointer, FaEye } from "react-icons/fa";
+import { FaBullhorn, FaMousePointer, FaEye, FaDesktop, FaMobileAlt } from "react-icons/fa";
 import Pagination from "./Pagination"; 
 
 const AdminTrackingPopupStats = () => {
@@ -65,12 +65,13 @@ const AdminTrackingPopupStats = () => {
       {/* Khối thống kê lịch sử chi tiết */}
       <h3 style={{ marginBottom: "15px" }}>Lịch sử tương tác chi tiết</h3>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "800px" }}>
           <thead>
             <tr style={{ background: "#4caf50", color: "#fff", textAlign: "left" }}>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thời gian</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Tên Popup</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Hành động</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thiết bị</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Địa chỉ IP</th>
             </tr>
           </thead>
@@ -82,7 +83,6 @@ const AdminTrackingPopupStats = () => {
               });
               const formattedDate = dateObj.toLocaleDateString("vi-VN");
 
-              // [SỬA ĐỔI] Text rõ ràng hơn cho các loại hành động
               let actionText = "Hiển thị (Xuất hiện)";
               let actionColor = "#2196F3"; // Xanh dương
               if (item.action === "click") {
@@ -106,6 +106,17 @@ const AdminTrackingPopupStats = () => {
                   <td style={{ padding: "12px", border: "1px solid #ddd", fontWeight: "bold", color: actionColor }}>
                     {actionText}
                   </td>
+                  <td style={{ padding: "12px", border: "1px solid #ddd" }}>
+                    {item.device_type === "mobile" ? (
+                      <span style={{ display: "flex", alignItems: "center", gap: "8px", color: "#555" }}>
+                        <FaMobileAlt color="#2196F3" size={16} /> Mobile
+                      </span>
+                    ) : (
+                      <span style={{ display: "flex", alignItems: "center", gap: "8px", color: "#555" }}>
+                        <FaDesktop color="#4CAF50" size={16} /> Desktop
+                      </span>
+                    )}
+                  </td>
                   <td style={{ padding: "12px", border: "1px solid #ddd", color: "#666" }}>
                     {item.ip_address || "N/A"}
                   </td>
@@ -114,7 +125,7 @@ const AdminTrackingPopupStats = () => {
             })}
             {currentHistory.length === 0 && (
               <tr>
-                <td colSpan="4" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
+                <td colSpan="5" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
                   Chưa có dữ liệu lịch sử
                 </td>
               </tr>

@@ -3,6 +3,11 @@ import axiosClient from "../api/axiosClient";
 import { FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { API_URL } from "../config";
 
+// Hàm kiểm tra thiết bị di động hay máy tính
+const getDeviceType = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+};
+
 const PopupBanner = () => {
   const [popups, setPopups] = useState([]);
 
@@ -87,18 +92,18 @@ const PopupBanner = () => {
 const SinglePopup = ({ popup, onClose }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  // [MỚI] Track Click (Nhấn Xem chi tiết)
+  // [MỚI] Track Click (Nhấn Xem chi tiết) - Thêm device_type
   const handleLinkClick = () => {
-    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'click' })
+    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'click', device_type: getDeviceType() })
       .catch(err => console.warn('Lỗi tracking click popup:', err));
   };
 
-  // [MỚI] Track Close (Nhấn Tắt popup)
+  // [MỚI] Track Close (Nhấn Tắt popup) - Thêm device_type
   const handleCloseBtnClick = (e) => {
     e.preventDefault(); // Ngăn hành vi mặc định
     e.stopPropagation(); // Ngăn sự kiện nổi bọt gây lỗi 2 lần click
     
-    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'close' })
+    axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'close', device_type: getDeviceType() })
       .catch(err => console.warn('Lỗi tracking close popup:', err));
     onClose();
   };
