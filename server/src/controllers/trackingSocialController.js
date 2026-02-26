@@ -26,9 +26,9 @@ exports.getStats = async (req, res) => {
             GROUP BY platform, location
         `);
 
-        // [SỬA ĐỔI] Lấy danh sách lịch sử CHI TIẾT từng lượt click trong 7 ngày gần nhất
+        // [SỬA ĐỔI] Lấy danh sách lịch sử CHI TIẾT từng lượt click trong 7 ngày gần nhất (THÊM user_agent)
         const [historyRows] = await db.execute(`
-            SELECT id, platform, location, ip_address, created_at
+            SELECT id, platform, location, ip_address, user_agent, created_at
             FROM tracking_social_logs
             WHERE created_at >= NOW() - INTERVAL 7 DAY
             ORDER BY created_at DESC

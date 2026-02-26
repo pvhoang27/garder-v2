@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaFacebook, FaTiktok } from "react-icons/fa";
+import { FaFacebook, FaTiktok, FaDesktop, FaMobileAlt } from "react-icons/fa";
 import Pagination from "./Pagination"; // [MỚI] Import component phân trang có sẵn của bạn
 
 const AdminTrackingSocialStats = () => {
@@ -29,6 +29,17 @@ const AdminTrackingSocialStats = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Hàm helper để phân tích User Agent và trả về loại thiết bị
+  const getDeviceType = (userAgent) => {
+    if (!userAgent) return "Unknown";
+    const ua = userAgent.toLowerCase();
+    // Regex kiểm tra các từ khóa phổ biến của thiết bị di động/tablet
+    if (/(android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile)/i.test(ua)) {
+      return "Mobile";
+    }
+    return "Desktop";
   };
 
   if (loading) return <div>Đang tải dữ liệu...</div>;
@@ -60,13 +71,14 @@ const AdminTrackingSocialStats = () => {
       {/* Khối thống kê lịch sử chi tiết (7 ngày gần nhất) */}
       <h3 style={{ marginBottom: "15px" }}>Lịch sử click chi tiết (7 ngày gần đây)</h3>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
           <thead>
             <tr style={{ background: "#4caf50", color: "#fff", textAlign: "left" }}>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thời gian</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Nền tảng</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Vị trí click</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Địa chỉ IP</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thiết bị</th>
             </tr>
           </thead>
           <tbody>
@@ -77,6 +89,8 @@ const AdminTrackingSocialStats = () => {
                 hour: '2-digit', minute: '2-digit', second: '2-digit' 
               });
               const formattedDate = dateObj.toLocaleDateString("vi-VN");
+              
+              const deviceType = getDeviceType(item.user_agent);
 
               return (
                 <tr key={idx} style={{ background: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
@@ -95,12 +109,29 @@ const AdminTrackingSocialStats = () => {
                   <td style={{ padding: "12px", border: "1px solid #ddd", color: "#666" }}>
                     {item.ip_address || "N/A"}
                   </td>
+                  <td style={{ padding: "12px", border: "1px solid #ddd" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }} title={item.user_agent}>
+                      {deviceType === "Mobile" ? (
+                        <FaMobileAlt style={{ minWidth: '16px', marginTop: '3px' }} />
+                      ) : (
+                        <FaDesktop style={{ minWidth: '16px', marginTop: '3px' }} />
+                      )}
+                      <span>
+                        <strong style={{ color: deviceType === "Mobile" ? "#e67e22" : "#2980b9" }}>
+                          [{deviceType}]
+                        </strong>{" "}
+                        <span style={{ fontSize: "13px", color: "#555", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {item.user_agent}
+                        </span>
+                      </span>
+                    </div>
+                  </td>
                 </tr>
               );
             })}
             {currentHistory.length === 0 && (
               <tr>
-                <td colSpan="4" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
+                <td colSpan="5" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
                   Chưa có dữ liệu lịch sử
                 </td>
               </tr>
