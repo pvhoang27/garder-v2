@@ -4,12 +4,29 @@
   grid-template-columns: 1fr 1fr;
   gap: 60px;
   align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.about-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.about-content .section-title {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .about-images {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .about-img-1 {
