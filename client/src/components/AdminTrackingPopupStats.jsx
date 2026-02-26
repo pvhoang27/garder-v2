@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
-import { FaBullhorn, FaMousePointer, FaEye } from "react-icons/fa";
+import { FaBullhorn, FaMousePointer } from "react-icons/fa";
 import Pagination from "./Pagination"; 
 
 const AdminTrackingPopupStats = () => {
@@ -44,14 +44,6 @@ const AdminTrackingPopupStats = () => {
       
       {/* Khối thống kê tổng quan */}
       <div style={{ display: "flex", gap: "20px", marginBottom: "30px", flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: "200px", padding: "20px", background: "#f5f5f5", borderRadius: "8px", borderLeft: "5px solid #2196F3" }}>
-          <h3 style={{ display: "flex", alignItems: "center", gap: "10px", margin: "0 0 10px 0" }}>
-            <FaEye color="#2196F3" /> Tổng Lượt Hiển Thị
-          </h3>
-          <p style={{ margin: "10px 0 0 0", fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            {stats.summary.views || 0} <span style={{fontSize: "14px", fontWeight: "normal"}}>lượt</span>
-          </p>
-        </div>
         <div style={{ flex: 1, minWidth: "200px", padding: "20px", background: "#f5f5f5", borderRadius: "8px", borderLeft: "5px solid #FF9800" }}>
           <h3 style={{ display: "flex", alignItems: "center", gap: "10px", margin: "0 0 10px 0" }}>
             <FaMousePointer color="#FF9800" /> Tổng Lượt Bấm "Xem Chi Tiết"
