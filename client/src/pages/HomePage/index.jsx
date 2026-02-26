@@ -7,8 +7,6 @@ import { UPLOADS_URL } from "../../config";
 
 // Components chức năng chung
 import BackgroundEffect from "../../components/BackgroundEffect";
-import FloatingContact from "../../components/FloatingContact";
-import PopupBanner from "../../components/PopupBanner";
 import DynamicSection from "../../components/DynamicSection";
 
 // Sub-components mới tách
@@ -16,7 +14,7 @@ import HeroSection from "./components/HeroSection";
 import SearchResults from "./components/SearchResults";
 import TrendingSection from "./components/TrendingSection";
 import FeaturedSection from "./components/FeaturedSection";
-import RecentlyViewedSection from "./components/RecentlyViewedSection"; // <--- IMPORT MỚI
+import RecentlyViewedSection from "./components/RecentlyViewedSection"; 
 import AboutSection from "./components/AboutSection";
 import CtaSection from "./components/CtaSection";
 
@@ -195,8 +193,7 @@ const HomePage = () => {
     <div className="home-page-container">
       {/* CÁC TÍNH NĂNG NỔI */}
       <BackgroundEffect effectType={globalEffect} />
-      <PopupBanner />
-      <FloatingContact />
+      {/* ĐÃ XÓA MÃ GỌI COMPONENT <PopupBanner /> VÀ <FloatingContact /> BỊ TRÙNG Ở ĐÂY VÌ ĐÃ ĐƯỢC GỌI Ở APP.JSX RỒI */}
 
       {/* HERO SECTION */}
       <HeroSection

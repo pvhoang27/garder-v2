@@ -7,6 +7,9 @@ const PopupBanner = () => {
   const [popups, setPopups] = useState([]);
 
   useEffect(() => {
+    let isMounted = true;
+    let timer = null;
+
     // Gọi API để ghi nhận lượt truy cập web (Cũ)
     axiosClient
       .post("/tracking/visit")
@@ -15,16 +18,30 @@ const PopupBanner = () => {
     axiosClient
       .get("/popups")
       .then((res) => {
-        if (res.data && Array.isArray(res.data)) {
+        if (isMounted && res.data && Array.isArray(res.data)) {
           const activePopups = res.data.filter(
             (p) => !sessionStorage.getItem(`popup_closed_${p.id}`),
           );
           if (activePopups.length > 0) {
-            setTimeout(() => setPopups(activePopups), 1000);
+            timer = setTimeout(() => {
+              if (isMounted) {
+                // Kiểm tra lại sessionStorage một lần nữa để tránh dính lỗi StrictMode của React
+                const currentActive = activePopups.filter(
+                  (p) => !sessionStorage.getItem(`popup_closed_${p.id}`)
+                );
+                setPopups(currentActive);
+              }
+            }, 1000);
           }
         }
       })
       .catch((err) => console.error("Lỗi tải popup:", err));
+
+    // Cleanup function để hủy timeout nếu component bị unmount
+    return () => {
+      isMounted = false;
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   const handleClose = (id) => {
@@ -77,7 +94,10 @@ const SinglePopup = ({ popup, onClose }) => {
   };
 
   // [MỚI] Track Close (Nhấn Tắt popup)
-  const handleCloseBtnClick = () => {
+  const handleCloseBtnClick = (e) => {
+    e.preventDefault(); // Ngăn hành vi mặc định
+    e.stopPropagation(); // Ngăn sự kiện nổi bọt gây lỗi 2 lần click
+    
     axiosClient.post('/tracking-popup/log', { popup_id: popup.id, action: 'close' })
       .catch(err => console.warn('Lỗi tracking close popup:', err));
     onClose();
@@ -124,6 +144,7 @@ const SinglePopup = ({ popup, onClose }) => {
       }}
     >
       <button
+        type="button"
         onClick={handleCloseBtnClick} // Gắn hàm tracking bấm nút X
         style={{
           position: "absolute",
@@ -167,8 +188,10 @@ const SinglePopup = ({ popup, onClose }) => {
           {mediaList.length > 1 && (
             <>
               <button
+                type="button"
                 className="media-nav-btn media-prev"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   prevSlide();
                 }}
@@ -176,8 +199,10 @@ const SinglePopup = ({ popup, onClose }) => {
                 <FaChevronLeft />
               </button>
               <button
+                type="button"
                 className="media-nav-btn media-next"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   nextSlide();
                 }}
