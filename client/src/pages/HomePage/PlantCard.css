@@ -3,6 +3,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Link bọc card phải là block để tôn trọng chiều rộng grid cell */
+.plant-grid > a {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .plant-item-card {
@@ -17,6 +27,8 @@
   flex-direction: column;
   position: relative;
   z-index: 1; /* Mặc định */
+  min-width: 0; /* Cho phép co lại trong grid */
+  max-width: 100%;
 }
 
 /* Khi hover, đưa card lên lớp cao nhất để Tooltip đè lên các card khác */

@@ -57,9 +57,23 @@
     text-align: center;
     gap: 20px;
   }
+
+  /* Trending filter buttons responsive */
+  .trending-filter-btns {
+    flex-wrap: wrap !important;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+  }
+  .trending-filter-btn {
+    padding: 7px 16px !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap;
+  }
+
   .plant-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
   .plant-img-wrapper {
     height: 220px;
@@ -175,15 +189,26 @@
     font-size: 0.95rem;
   }
 
+  /* Trending filter buttons - smaller screens */
+  .trending-filter-btns {
+    padding: 4px !important;
+    gap: 6px !important;
+  }
+  .trending-filter-btn {
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    gap: 4px !important;
+  }
+
   .plant-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
   .plant-img-wrapper {
-    height: 200px;
+    height: 220px;
   }
   .plant-content {
-    padding: 16px;
+    padding: 14px;
   }
   .plant-title {
     font-size: 1rem;
@@ -252,14 +277,28 @@
     font-size: 0.9rem;
   }
 
+  /* Trending filter buttons - nhỏ nhất */
+  .trending-filter-btns {
+    flex-direction: column !important;
+    border-radius: 16px !important;
+    width: 100%;
+  }
+  .trending-filter-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 8px 14px !important;
+    font-size: 0.85rem !important;
+    border-radius: 12px !important;
+  }
+
   /* Plant cards - FIX ẢNH BỊ MẤT */
   .plant-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 16px;
   }
 
   .plant-img-wrapper {
-    height: 220px;
+    height: 200px;
   }
 
   .plant-content {
@@ -280,6 +319,58 @@
 
   .plant-title-wrapper:hover::after {
     max-width: 200px;
+    font-size: 0.85rem;
+  }
+}
+
+/* === Responsive cho màn hình rất nhỏ (< 360px) === */
+@media (max-width: 360px) {
+  .plant-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .plant-img-wrapper {
+    height: 180px;
+  }
+
+  .plant-content {
+    padding: 12px;
+  }
+
+  .plant-title {
+    font-size: 0.9rem;
+  }
+
+  .plant-category {
+    font-size: 0.65rem;
+    margin-bottom: 4px;
+  }
+
+  .plant-price {
+    font-size: 0.9rem;
+  }
+
+  .trending-filter-btns {
+    flex-direction: column !important;
+    border-radius: 14px !important;
+    width: 100%;
+    padding: 4px !important;
+  }
+
+  .trending-filter-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 7px 12px !important;
+    font-size: 0.8rem !important;
+    border-radius: 10px !important;
+  }
+
+  .section-title {
+    font-size: 1.35rem;
+  }
+
+  .section-desc {
     font-size: 0.85rem;
   }
 }

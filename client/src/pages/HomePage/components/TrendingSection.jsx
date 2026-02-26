@@ -28,6 +28,7 @@ const TrendingSection = ({
 
           {/* Bộ lọc Views/Comments */}
           <div
+            className="trending-filter-btns"
             style={{
               display: "flex",
               gap: "10px",
@@ -38,6 +39,7 @@ const TrendingSection = ({
             }}
           >
             <button
+              className="trending-filter-btn"
               onClick={() => setTrendingFilter("views")}
               style={{
                 border: "none",
@@ -57,6 +59,7 @@ const TrendingSection = ({
               <FaEye /> Xem nhiều nhất
             </button>
             <button
+              className="trending-filter-btn"
               onClick={() => setTrendingFilter("comments")}
               style={{
                 border: "none",
