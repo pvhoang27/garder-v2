@@ -6,3 +6,7 @@ CREATE TABLE IF NOT EXISTS popup_interactions (
     interaction_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (popup_id) REFERENCES popup_config(id) ON DELETE CASCADE
 );
+
+
+ALTER TABLE popup_interactions 
+ADD COLUMN device_type VARCHAR(50) DEFAULT 'desktop' AFTER action;
