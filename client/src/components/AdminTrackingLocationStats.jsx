@@ -16,10 +16,16 @@ const AddressCell = ({ latitude, longitude }) => {
         
         if (isMounted) {
           if (data && data.display_name) {
-            // Lấy chuỗi địa chỉ đầy đủ (bao gồm tên địa danh, số nhà, đường, phường, quận, tỉnh)
             let detailedAddress = data.display_name;
             
-            // Cắt bỏ chữ ", Việt Nam" hoặc ", Vietnam" ở cuối cùng cho bảng hiển thị gọn hơn
+            // 1. Loại bỏ mã bưu chính (postcode) ví dụ: 10161, 100000 nếu có trong kết quả
+            if (data.address && data.address.postcode) {
+              // Tìm và thay thế đoạn phẩy + mã bưu chính thành chuỗi rỗng
+              const postCodeRegex = new RegExp(`,\\s*${data.address.postcode}`, 'g');
+              detailedAddress = detailedAddress.replace(postCodeRegex, '');
+            }
+            
+            // 2. Cắt bỏ chữ ", Việt Nam" hoặc ", Vietnam" ở cuối cùng
             detailedAddress = detailedAddress.replace(/,\s*Việt Nam$/i, '').replace(/,\s*Vietnam$/i, '');
             
             setAddress(detailedAddress);
@@ -136,13 +142,14 @@ const AdminTrackingLocationStats = () => {
                       </div>
                     </td>
                     <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
+                      {/* Đã fix lại link URL bản đồ chuẩn của Google */}
                       <a 
-                        href={`https://www.google.com/maps?q=$${loc.latitude},${loc.longitude}`}
+                        href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
                         target="_blank" 
                         rel="noreferrer"
                         style={{ color: "#2196f3", textDecoration: "none", fontWeight: "bold" }}
                       >
-                        Map
+                        Xem Map
                       </a>
                     </td>
                   </tr>
