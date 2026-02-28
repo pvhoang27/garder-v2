@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 
-// Component con để tự động dịch Tọa độ -> Địa chỉ
+// Component con để tự động dịch Tọa độ -> Địa chỉ chi tiết
 const AddressCell = ({ latitude, longitude }) => {
   const [address, setAddress] = useState("Đang tải...");
 
@@ -10,28 +10,25 @@ const AddressCell = ({ latitude, longitude }) => {
     
     const fetchAddress = async () => {
       try {
-        // Sử dụng OpenStreetMap API (Miễn phí) để lấy địa chỉ tiếng Việt
+        // Gọi API OpenStreetMap lấy dữ liệu dạng tiếng Việt
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=vi`);
         const data = await res.json();
         
         if (isMounted) {
-          if (data && data.address) {
-            // Lấy các thông tin cấp bậc địa lý
-            const { city, state, town, village, suburb, county, city_district, quarter } = data.address;
+          if (data && data.display_name) {
+            // Lấy chuỗi địa chỉ đầy đủ (bao gồm tên địa danh, số nhà, đường, phường, quận, tỉnh)
+            let detailedAddress = data.display_name;
             
-            const phuong = quarter || suburb || village || town || "";
-            const quan = county || city_district || "";
-            const tinh = city || state || "";
+            // Cắt bỏ chữ ", Việt Nam" hoặc ", Vietnam" ở cuối cùng cho bảng hiển thị gọn hơn
+            detailedAddress = detailedAddress.replace(/,\s*Việt Nam$/i, '').replace(/,\s*Vietnam$/i, '');
             
-            // Lọc các giá trị rỗng và ghép lại thành chuỗi
-            const fullAddress = [phuong, quan, tinh].filter(Boolean).join(", ");
-            setAddress(fullAddress || "Chưa xác định rõ");
+            setAddress(detailedAddress);
           } else {
-            setAddress("Không tìm thấy");
+            setAddress("Không tìm thấy địa chỉ");
           }
         }
       } catch (error) {
-        if (isMounted) setAddress("Lỗi kết nối");
+        if (isMounted) setAddress("Lỗi kết nối API");
       }
     };
 
@@ -46,7 +43,7 @@ const AddressCell = ({ latitude, longitude }) => {
     };
   }, [latitude, longitude]);
 
-  return <span style={{ fontSize: "13px", color: "#333", fontWeight: "500" }}>{address}</span>;
+  return <span style={{ fontSize: "13px", color: "#333", fontWeight: "500", lineHeight: "1.5", display: "block" }}>{address}</span>;
 };
 
 
@@ -69,7 +66,7 @@ const AdminTrackingLocationStats = () => {
     }
   };
 
-  // Hàm phân tích User Agent thành thông tin thiết bị, OS và trình duyệt dễ đọc
+  // Hàm phân tích User Agent thành thông tin thiết bị, OS và trình duyệt
   const getDeviceInfo = (ua) => {
     if (!ua) return "Không xác định";
     
@@ -102,25 +99,25 @@ const AdminTrackingLocationStats = () => {
         <p>Đang tải dữ liệu...</p>
       ) : (
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "1000px" }}>
             <thead>
               <tr style={{ background: "#4caf50", color: "#fff", textAlign: "left" }}>
-                <th style={{ padding: "12px", border: "1px solid #ddd" }}>ID</th>
-                <th style={{ padding: "12px", border: "1px solid #ddd" }}>Khu vực (Phường, Tỉnh)</th>
-                <th style={{ padding: "12px", border: "1px solid #ddd" }}>Tọa độ (Lat, Lng)</th>
-                <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thời gian</th>
-                <th style={{ padding: "12px", border: "1px solid #ddd" }}>Thiết bị</th>
-                <th style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>Bản đồ</th>
+                <th style={{ padding: "12px", border: "1px solid #ddd", width: "5%" }}>ID</th>
+                <th style={{ padding: "12px", border: "1px solid #ddd", width: "30%" }}>Địa chỉ chi tiết</th>
+                <th style={{ padding: "12px", border: "1px solid #ddd", width: "15%" }}>Tọa độ (Lat, Lng)</th>
+                <th style={{ padding: "12px", border: "1px solid #ddd", width: "15%" }}>Thời gian</th>
+                <th style={{ padding: "12px", border: "1px solid #ddd", width: "25%" }}>Thiết bị</th>
+                <th style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center", width: "10%" }}>Bản đồ</th>
               </tr>
             </thead>
             <tbody>
               {locations.length > 0 ? (
                 locations.map((loc) => (
                   <tr key={loc.id} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: "12px", border: "1px solid #ddd" }}>{loc.id}</td>
+                    <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>{loc.id}</td>
                     
-                    {/* Cột hiển thị Khu Vực (MỚI) */}
-                    <td style={{ padding: "12px", border: "1px solid #ddd", minWidth: "200px" }}>
+                    {/* Cột hiển thị Địa Chỉ Chi Tiết */}
+                    <td style={{ padding: "12px", border: "1px solid #ddd" }}>
                       <AddressCell latitude={loc.latitude} longitude={loc.longitude} />
                     </td>
 
