@@ -20,6 +20,34 @@ const AdminTrackingLocationStats = () => {
     }
   };
 
+  // Hàm phân tích User Agent thành thông tin thiết bị, OS và trình duyệt dễ đọc
+  const getDeviceInfo = (ua) => {
+    if (!ua) return "Không xác định";
+    
+    // 1. Xác định thiết bị
+    let device = "Desktop";
+    if (/mobile/i.test(ua)) device = "Mobile";
+    if (/tablet|ipad/i.test(ua)) device = "Tablet";
+
+    // 2. Xác định Hệ điều hành (OS)
+    let os = "Khác";
+    if (/windows/i.test(ua)) os = "Windows";
+    else if (/mac/i.test(ua)) os = "MacOS";
+    else if (/linux/i.test(ua)) os = "Linux";
+    else if (/android/i.test(ua)) os = "Android";
+    else if (/iphone|ipad|ipod/i.test(ua)) os = "iOS";
+
+    // 3. Xác định Trình duyệt
+    let browser = "Khác";
+    if (/edg/i.test(ua)) browser = "Edge";
+    else if (/chrome|crios/i.test(ua)) browser = "Chrome";
+    else if (/firefox|fxios/i.test(ua)) browser = "Firefox";
+    else if (/safari/i.test(ua)) browser = "Safari";
+    else if (/opera|opr/i.test(ua)) browser = "Opera";
+
+    return `${device} - ${os} (${browser})`;
+  };
+
   return (
     <div style={{ padding: "20px", background: "#fff", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
       <h2 style={{ marginBottom: "20px", color: "#333" }}>Danh sách Vị trí Khách hàng</h2>
@@ -49,8 +77,15 @@ const AdminTrackingLocationStats = () => {
                     <td style={{ padding: "12px", border: "1px solid #ddd" }}>
                       {new Date(loc.created_at).toLocaleString('vi-VN')}
                     </td>
-                    <td style={{ padding: "12px", border: "1px solid #ddd", fontSize: "13px", color: "#555" }}>
-                      {loc.user_agent}
+                    <td style={{ padding: "12px", border: "1px solid #ddd" }}>
+                      {/* Hiển thị tên thiết bị đã được parse gọn gàng */}
+                      <div style={{ fontWeight: "bold", color: "#333", fontSize: "14px" }}>
+                        {getDeviceInfo(loc.user_agent)}
+                      </div>
+                      {/* Hiển thị chuỗi UA gốc nhỏ ở dưới phòng trường hợp cần xem chi tiết */}
+                      <div style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>
+                        {loc.user_agent}
+                      </div>
                     </td>
                     <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
                       <a 
