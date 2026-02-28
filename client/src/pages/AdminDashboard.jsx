@@ -9,20 +9,19 @@ import AdminCommentManager from "../components/AdminCommentManager";
 import AdminStats from "../components/AdminStats";
 import AdminTrackingStats from "../components/AdminTrackingStats"; 
 import AdminTrackingSocialStats from "../components/AdminTrackingSocialStats"; 
-
-// [MỚI] Import component Tracking Popup
 import AdminTrackingPopupStats from "../components/AdminTrackingPopupStats"; 
+
+// [MỚI] Import component xem vị trí
+import AdminTrackingLocationStats from "../components/AdminTrackingLocationStats"; 
 
 const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  // Đồng bộ activeTab với initialTab khi prop thay đổi
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
 
-  // --- HELPER: Lấy tiêu đề ---
   const getPageInfo = () => {
     switch (activeTab) {
       case "dashboard":
@@ -31,8 +30,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
         return { title: "Tracking Lượt Xem", breadcrumb: "Admin / Tracking" }; 
       case "trackingSocial": 
         return { title: "Tracking Mạng Xã Hội", breadcrumb: "Admin / Tracking MXH" };
-      case "trackingPopup": // [MỚI] Thêm case cho tracking Popup
+      case "trackingPopup": 
         return { title: "Tracking Tương tác Popup", breadcrumb: "Admin / Tracking Popup" };
+      case "trackingLocation": // [MỚI] Thêm case cho tracking Vị trí
+        return { title: "Tracking Vị Trí", breadcrumb: "Admin / Tracking Vị Trí" };
       case "plants":
         return { title: "Quản Lý Cây Cảnh", breadcrumb: "Admin / Cây cảnh" };
       case "categories":
@@ -64,9 +65,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
       {activeTab === "dashboard" && <AdminStats />}
       {activeTab === "tracking" && <AdminTrackingStats />}
       {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} 
-      
-      {/* [MỚI] Render component Tracking Popup khi click vào menu tương ứng */}
       {activeTab === "trackingPopup" && <AdminTrackingPopupStats />} 
+      
+      {/* [MỚI] Hiển thị component vị trí */}
+      {activeTab === "trackingLocation" && <AdminTrackingLocationStats />} 
 
       {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
       {activeTab === "categories" && (

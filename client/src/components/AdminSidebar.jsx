@@ -15,6 +15,7 @@ import {
   FaChartLine,
   FaShareAlt,
   FaBullhorn,
+  FaMapMarkerAlt,
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
@@ -29,20 +30,17 @@ const AdminSidebar = ({
 }) => {
   const navigate = useNavigate();
   
-  // State quản lý việc đóng/mở menu Tracking
   const [isTrackingMenuOpen, setIsTrackingMenuOpen] = useState(
-    activeTab === "tracking" || activeTab === "trackingSocial" || activeTab === "trackingPopup"
+    activeTab === "tracking" || activeTab === "trackingSocial" || activeTab === "trackingPopup" || activeTab === "trackingLocation"
   );
 
   const handleLogout = async () => {
     if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
       try {
-        // Gọi API logout để xóa cookie
         await axiosClient.post("/auth/logout");
       } catch (error) {
         console.warn("Logout error:", error);
       } finally {
-        // Xóa localStorage và chuyển về login
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
@@ -54,12 +52,12 @@ const AdminSidebar = ({
     setActiveTab(tab);
     if (isMobile) setIsOpen(false);
 
-    // Navigate đến URL tương ứng
     const routes = {
       dashboard: "/admin",
       tracking: "/admin/tracking",
       trackingSocial: "/admin/tracking-social", 
       trackingPopup: "/admin/tracking-popup", 
+      trackingLocation: "/admin/tracking-location", // <--- [MỚI]
       plants: "/admin/plants",
       categories: "/admin/categories",
       news: "/admin/news",
@@ -118,7 +116,6 @@ const AdminSidebar = ({
     fontSize: "15px",
   };
 
-  // Nút nhấn cho menu con (submenu) có thụt lề
   const SubMenuButton = ({ active, onClick, icon, label }) => (
     <button
       onClick={onClick}
@@ -127,7 +124,7 @@ const AdminSidebar = ({
         display: "flex",
         alignItems: "center",
         gap: "10px",
-        padding: "12px 20px 12px 40px", // Thụt lề vào trong cho menu con
+        padding: "12px 20px 12px 40px",
         background: active ? "#2e7d32" : "transparent",
         color: active ? "white" : "#ccc",
         border: "none",
@@ -144,7 +141,6 @@ const AdminSidebar = ({
 
   return (
     <div style={sidebarStyle}>
-      {/* --- HEADER SIDEBAR --- */}
       <div
         style={{
           padding: "20px",
@@ -189,7 +185,6 @@ const AdminSidebar = ({
         )}
       </div>
 
-      {/* --- MENU SCROLLABLE --- */}
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
         <MenuButton
           active={activeTab === "dashboard"}
@@ -198,7 +193,6 @@ const AdminSidebar = ({
           label="Thống kê chung"
         />
 
-        {/* --- [GOM NHÓM] MỤC TRACKING --- */}
         <div>
           <button
             onClick={() => setIsTrackingMenuOpen(!isTrackingMenuOpen)}
@@ -223,7 +217,6 @@ const AdminSidebar = ({
             {isTrackingMenuOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
           </button>
 
-          {/* Các mục Tracking con sẽ hiển thị khi được toggle */}
           {isTrackingMenuOpen && (
             <div style={{ background: "#222" }}>
               <SubMenuButton
@@ -244,10 +237,16 @@ const AdminSidebar = ({
                 icon={<FaBullhorn />}
                 label="Tracking Popup"
               />
+              {/* [MỚI] */}
+              <SubMenuButton
+                active={activeTab === "trackingLocation"}
+                onClick={() => handleMenuClick("trackingLocation")}
+                icon={<FaMapMarkerAlt />}
+                label="Tracking Vị trí"
+              />
             </div>
           )}
         </div>
-        {/* --- KẾT THÚC NHÓM TRACKING --- */}
 
         <MenuButton
           active={activeTab === "plants"}
@@ -267,14 +266,12 @@ const AdminSidebar = ({
           icon={<FaNewspaper />}
           label="Quản lý Tin tức"
         />
-
         <MenuButton
           active={activeTab === "comments"}
           onClick={() => handleMenuClick("comments")}
           icon={<FaComments />}
           label="Quản lý Bình luận"
         />
-
         <MenuButton
           active={activeTab === "users"}
           onClick={() => handleMenuClick("users")}

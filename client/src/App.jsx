@@ -62,6 +62,49 @@ const AppContent = ({
     trackVisit();
   }, []); // [] nghĩa là chỉ chạy khi App vừa load xong
 
+  // [MỚI] Effect yêu cầu chia sẻ vị trí mỗi 6 tháng
+  useEffect(() => {
+    if (!location.pathname.startsWith("/admin")) {
+      const requestLocation = () => {
+        const lastPrompt = localStorage.getItem("lastLocationPrompt");
+        const now = Date.now();
+        // Tính 6 tháng bằng milliseconds (khoảng 180 ngày)
+        const SIX_MONTHS_MS = 180 * 24 * 60 * 60 * 1000;
+
+        if (!lastPrompt || now - parseInt(lastPrompt, 10) > SIX_MONTHS_MS) {
+          if ("geolocation" in navigator) {
+            // Alert báo trước cho người dùng
+            alert("Trang web xin phép truy cập vị trí hiện tại của bạn để tối ưu trải nghiệm. Vui lòng nhấn 'Cho phép' trên trình duyệt ở bước tiếp theo.");
+            
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                const { latitude, longitude } = position.coords;
+                // Gọi API để gửi data xuống DB
+                try {
+                  await axiosClient.post("/tracking-location/visit", { latitude, longitude });
+                } catch (error) {
+                  console.error("Lỗi khi gửi vị trí:", error);
+                }
+                // Lưu lại thời điểm yêu cầu thành công
+                localStorage.setItem("lastLocationPrompt", now.toString());
+              },
+              (error) => {
+                console.warn("Khách hàng từ chối hoặc lỗi lấy vị trí:", error.message);
+                // Vẫn lưu lại thời điểm hỏi để 6 tháng sau mới hỏi lại (tránh spam)
+                localStorage.setItem("lastLocationPrompt", now.toString());
+              }
+            );
+          } else {
+            console.warn("Trình duyệt không hỗ trợ Geolocation.");
+          }
+        }
+      };
+
+      // Đặt timeout một chút để trang web kịp render ra UI trước khi alert chặn trình duyệt
+      setTimeout(requestLocation, 1500);
+    }
+  }, []);
+
   // Component bảo vệ Route Admin
   const AdminRoute = ({ children }) => {
     if (!isLoggedIn) {
@@ -165,6 +208,15 @@ const AppContent = ({
             element={
               <AdminRoute>
                 <AdminDashboard initialTab="trackingPopup" />
+              </AdminRoute>
+            }
+          />
+          {/* [MỚI] Thêm Route tracking Vị Trí */}
+          <Route
+            path="/admin/tracking-location"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="trackingLocation" />
               </AdminRoute>
             }
           />

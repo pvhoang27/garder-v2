@@ -46,7 +46,8 @@ app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
 // Các Route Tracking
 app.use('/api/tracking', require('./src/routes/trackingRoutes'));
 app.use('/api/tracking-social', require('./src/routes/trackingSocialRoutes'));
-app.use('/api/tracking-popup', require('./src/routes/trackingPopupRoutes')); // <--- [MỚI] THÊM Ở ĐÂY
+app.use('/api/tracking-popup', require('./src/routes/trackingPopupRoutes'));
+app.use('/api/tracking-location', require('./src/routes/trackingLocationRoutes')); // <--- [MỚI]
 
 // Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000
 const PORT = process.env.PORT || 3000;
