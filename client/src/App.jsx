@@ -44,9 +44,6 @@ const AppContent = ({
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // [MỚI] State quản lý việc hiển thị Custom Popup xin vị trí
-  const [showLocationPopup, setShowLocationPopup] = useState(false);
-
   // Effect để tracking lượt truy cập
   useEffect(() => {
     const trackVisit = async () => {
@@ -62,7 +59,7 @@ const AppContent = ({
     trackVisit();
   }, []); 
 
-  // Effect yêu cầu chia sẻ vị trí mỗi 6 tháng
+  // Effect yêu cầu chia sẻ vị trí mỗi 6 tháng (Gọi thẳng Native Popup của trình duyệt)
   useEffect(() => {
     if (!location.pathname.startsWith("/admin")) {
       const requestLocation = () => {
@@ -73,50 +70,35 @@ const AppContent = ({
         // Nếu chưa từng hỏi HOẶC đã trôi qua hơn 6 tháng
         if (!lastPrompt || now - parseInt(lastPrompt, 10) > SIX_MONTHS_MS) {
           if ("geolocation" in navigator) {
-            // Thay vì dùng alert() xấu xí, ta mở Hộp thoại UI Custom
-            setShowLocationPopup(true);
+            // Yêu cầu trình duyệt cấp quyền vị trí thực sự (sẽ hiện popup mặc định ở góc trái Chrome)
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                const { latitude, longitude } = position.coords;
+                // Gọi API để gửi data xuống DB
+                try {
+                  await axiosClient.post("/tracking-location/visit", { latitude, longitude });
+                } catch (error) {
+                  console.error("Lỗi khi gửi vị trí:", error);
+                }
+                // Lưu mốc thời gian đã xử lý
+                localStorage.setItem("lastLocationPrompt", Date.now().toString());
+              },
+              (error) => {
+                console.warn("Khách hàng từ chối trên trình duyệt hoặc lỗi:", error.message);
+                // Dù từ chối cũng lưu lại để 6 tháng sau mới làm phiền lại
+                localStorage.setItem("lastLocationPrompt", Date.now().toString());
+              }
+            );
           } else {
             console.warn("Trình duyệt không hỗ trợ Geolocation.");
           }
         }
       };
 
-      // Đợi trang load xong khoảng 1.5s thì mới hiện popup cho mượt
+      // Đợi trang load xong khoảng 1.5s thì mới gọi để tránh giật lag lúc mới vào trang
       setTimeout(requestLocation, 1500);
     }
   }, []);
-
-  // [MỚI] Hàm xử lý khi khách hàng bấm "Đồng ý"
-  const handleAcceptLocation = () => {
-    setShowLocationPopup(false); // Ẩn popup
-    
-    // Yêu cầu trình duyệt cấp quyền vị trí thực sự
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        // Gọi API để gửi data xuống DB
-        try {
-          await axiosClient.post("/tracking-location/visit", { latitude, longitude });
-        } catch (error) {
-          console.error("Lỗi khi gửi vị trí:", error);
-        }
-        // Lưu mốc thời gian đã đồng ý
-        localStorage.setItem("lastLocationPrompt", Date.now().toString());
-      },
-      (error) => {
-        console.warn("Khách hàng từ chối trên trình duyệt hoặc lỗi:", error.message);
-        // Dù từ chối cũng lưu lại để 6 tháng sau mới làm phiền lại
-        localStorage.setItem("lastLocationPrompt", Date.now().toString());
-      }
-    );
-  };
-
-  // [MỚI] Hàm xử lý khi khách hàng bấm "Bỏ qua"
-  const handleDeclineLocation = () => {
-    setShowLocationPopup(false); // Ẩn popup
-    // Lưu mốc thời gian để 6 tháng sau mới hỏi lại (tránh spam khó chịu)
-    localStorage.setItem("lastLocationPrompt", Date.now().toString());
-  };
 
   // Component bảo vệ Route Admin
   const AdminRoute = ({ children }) => {
@@ -306,72 +288,6 @@ const AppContent = ({
       </div>
 
       {!isAdminRoute && <Footer />}
-
-      {/* [MỚI] GIAO DIỆN CUSTOM POPUP XIN QUYỀN VỊ TRÍ */}
-      {showLocationPopup && (
-        <div style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.6)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 9999,
-          padding: "20px"
-        }}>
-          <div style={{
-            backgroundColor: "#fff",
-            padding: "30px",
-            borderRadius: "12px",
-            maxWidth: "400px",
-            width: "100%",
-            textAlign: "center",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-            animation: "fadeIn 0.3s ease"
-          }}>
-            <div style={{ fontSize: "40px", marginBottom: "15px" }}>📍</div>
-            <h3 style={{ margin: "0 0 10px 0", color: "#333", fontSize: "20px" }}>Chia sẻ vị trí</h3>
-            <p style={{ margin: "0 0 25px 0", color: "#666", fontSize: "15px", lineHeight: "1.5" }}>
-              Để chúng tôi có thể gợi ý những loại cây cảnh phù hợp nhất với khí hậu khu vực của bạn, trang web xin phép truy cập vị trí hiện tại. Bạn có đồng ý không?
-            </p>
-            <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
-              <button 
-                onClick={handleDeclineLocation}
-                style={{
-                  padding: "10px 20px",
-                  border: "1px solid #ddd",
-                  backgroundColor: "#f5f5f5",
-                  color: "#555",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  flex: 1,
-                  transition: "0.2s"
-                }}
-              >
-                Bỏ qua
-              </button>
-              <button 
-                onClick={handleAcceptLocation}
-                style={{
-                  padding: "10px 20px",
-                  border: "none",
-                  backgroundColor: "#4caf50",
-                  color: "#fff",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  flex: 1,
-                  boxShadow: "0 2px 5px rgba(76, 175, 80, 0.3)",
-                  transition: "0.2s"
-                }}
-              >
-                Đồng ý
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
