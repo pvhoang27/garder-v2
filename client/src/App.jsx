@@ -44,66 +44,79 @@ const AppContent = ({
   // Kiểm tra xem có đang ở trang admin không (bắt đầu bằng /admin)
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // [MỚI] Effect để tracking lượt truy cập
-  // Chạy 1 lần khi người dùng vào web (Reload trang sẽ tính là 1 lượt mới)
+  // [MỚI] State quản lý việc hiển thị Custom Popup xin vị trí
+  const [showLocationPopup, setShowLocationPopup] = useState(false);
+
+  // Effect để tracking lượt truy cập
   useEffect(() => {
     const trackVisit = async () => {
-      // Không track nếu đang ở trang admin để số liệu chính xác hơn (tùy chọn)
       if (!location.pathname.startsWith("/admin")) {
         try {
           await axiosClient.post("/tracking/visit");
           console.log("Visit logged");
         } catch (error) {
-          // Lỗi tracking không nên làm phiền người dùng, chỉ log warning nhẹ
           console.warn("Tracking skipped:", error.message);
         }
       }
     };
     trackVisit();
-  }, []); // [] nghĩa là chỉ chạy khi App vừa load xong
+  }, []); 
 
-  // [MỚI] Effect yêu cầu chia sẻ vị trí mỗi 6 tháng
+  // Effect yêu cầu chia sẻ vị trí mỗi 6 tháng
   useEffect(() => {
     if (!location.pathname.startsWith("/admin")) {
       const requestLocation = () => {
         const lastPrompt = localStorage.getItem("lastLocationPrompt");
         const now = Date.now();
-        // Tính 6 tháng bằng milliseconds (khoảng 180 ngày)
         const SIX_MONTHS_MS = 180 * 24 * 60 * 60 * 1000;
 
+        // Nếu chưa từng hỏi HOẶC đã trôi qua hơn 6 tháng
         if (!lastPrompt || now - parseInt(lastPrompt, 10) > SIX_MONTHS_MS) {
           if ("geolocation" in navigator) {
-            // Alert báo trước cho người dùng
-            alert("Trang web xin phép truy cập vị trí hiện tại của bạn để tối ưu trải nghiệm. Vui lòng nhấn 'Cho phép' trên trình duyệt ở bước tiếp theo.");
-            
-            navigator.geolocation.getCurrentPosition(
-              async (position) => {
-                const { latitude, longitude } = position.coords;
-                // Gọi API để gửi data xuống DB
-                try {
-                  await axiosClient.post("/tracking-location/visit", { latitude, longitude });
-                } catch (error) {
-                  console.error("Lỗi khi gửi vị trí:", error);
-                }
-                // Lưu lại thời điểm yêu cầu thành công
-                localStorage.setItem("lastLocationPrompt", now.toString());
-              },
-              (error) => {
-                console.warn("Khách hàng từ chối hoặc lỗi lấy vị trí:", error.message);
-                // Vẫn lưu lại thời điểm hỏi để 6 tháng sau mới hỏi lại (tránh spam)
-                localStorage.setItem("lastLocationPrompt", now.toString());
-              }
-            );
+            // Thay vì dùng alert() xấu xí, ta mở Hộp thoại UI Custom
+            setShowLocationPopup(true);
           } else {
             console.warn("Trình duyệt không hỗ trợ Geolocation.");
           }
         }
       };
 
-      // Đặt timeout một chút để trang web kịp render ra UI trước khi alert chặn trình duyệt
+      // Đợi trang load xong khoảng 1.5s thì mới hiện popup cho mượt
       setTimeout(requestLocation, 1500);
     }
   }, []);
+
+  // [MỚI] Hàm xử lý khi khách hàng bấm "Đồng ý"
+  const handleAcceptLocation = () => {
+    setShowLocationPopup(false); // Ẩn popup
+    
+    // Yêu cầu trình duyệt cấp quyền vị trí thực sự
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        // Gọi API để gửi data xuống DB
+        try {
+          await axiosClient.post("/tracking-location/visit", { latitude, longitude });
+        } catch (error) {
+          console.error("Lỗi khi gửi vị trí:", error);
+        }
+        // Lưu mốc thời gian đã đồng ý
+        localStorage.setItem("lastLocationPrompt", Date.now().toString());
+      },
+      (error) => {
+        console.warn("Khách hàng từ chối trên trình duyệt hoặc lỗi:", error.message);
+        // Dù từ chối cũng lưu lại để 6 tháng sau mới làm phiền lại
+        localStorage.setItem("lastLocationPrompt", Date.now().toString());
+      }
+    );
+  };
+
+  // [MỚI] Hàm xử lý khi khách hàng bấm "Bỏ qua"
+  const handleDeclineLocation = () => {
+    setShowLocationPopup(false); // Ẩn popup
+    // Lưu mốc thời gian để 6 tháng sau mới hỏi lại (tránh spam khó chịu)
+    localStorage.setItem("lastLocationPrompt", Date.now().toString());
+  };
 
   // Component bảo vệ Route Admin
   const AdminRoute = ({ children }) => {
@@ -193,7 +206,6 @@ const AppContent = ({
               </AdminRoute>
             }
           />
-          {/* [MỚI] Thêm Route tracking social */}
           <Route
             path="/admin/tracking-social"
             element={
@@ -202,7 +214,6 @@ const AppContent = ({
               </AdminRoute>
             }
           />
-          {/* [MỚI] Thêm Route tracking popup */}
           <Route
             path="/admin/tracking-popup"
             element={
@@ -211,7 +222,6 @@ const AppContent = ({
               </AdminRoute>
             }
           />
-          {/* [MỚI] Thêm Route tracking Vị Trí */}
           <Route
             path="/admin/tracking-location"
             element={
@@ -296,6 +306,72 @@ const AppContent = ({
       </div>
 
       {!isAdminRoute && <Footer />}
+
+      {/* [MỚI] GIAO DIỆN CUSTOM POPUP XIN QUYỀN VỊ TRÍ */}
+      {showLocationPopup && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.6)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          padding: "20px"
+        }}>
+          <div style={{
+            backgroundColor: "#fff",
+            padding: "30px",
+            borderRadius: "12px",
+            maxWidth: "400px",
+            width: "100%",
+            textAlign: "center",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+            animation: "fadeIn 0.3s ease"
+          }}>
+            <div style={{ fontSize: "40px", marginBottom: "15px" }}>📍</div>
+            <h3 style={{ margin: "0 0 10px 0", color: "#333", fontSize: "20px" }}>Chia sẻ vị trí</h3>
+            <p style={{ margin: "0 0 25px 0", color: "#666", fontSize: "15px", lineHeight: "1.5" }}>
+              Để chúng tôi có thể gợi ý những loại cây cảnh phù hợp nhất với khí hậu khu vực của bạn, trang web xin phép truy cập vị trí hiện tại. Bạn có đồng ý không?
+            </p>
+            <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+              <button 
+                onClick={handleDeclineLocation}
+                style={{
+                  padding: "10px 20px",
+                  border: "1px solid #ddd",
+                  backgroundColor: "#f5f5f5",
+                  color: "#555",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  flex: 1,
+                  transition: "0.2s"
+                }}
+              >
+                Bỏ qua
+              </button>
+              <button 
+                onClick={handleAcceptLocation}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  backgroundColor: "#4caf50",
+                  color: "#fff",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  flex: 1,
+                  boxShadow: "0 2px 5px rgba(76, 175, 80, 0.3)",
+                  transition: "0.2s"
+                }}
+              >
+                Đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
@@ -303,34 +379,28 @@ const AppContent = ({
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
-  const [isAuthChecking, setIsAuthChecking] = useState(true); // [MỚI] Loading state
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
-    // [SỬA] Gọi API verify để kiểm tra auth từ cookie
     const verifyAuth = async () => {
       try {
         const res = await axiosClient.get("/auth/verify");
 
         if (res.data.isAuthenticated) {
-          // Token hợp lệ, user đã đăng nhập
           setIsLoggedIn(true);
           setUserRole(res.data.user.role);
-
-          // Cập nhật localStorage để giữ thông tin user
           localStorage.setItem("user", JSON.stringify(res.data.user));
         } else {
-          // Không authenticated, xóa localStorage
           localStorage.removeItem("user");
           setIsLoggedIn(false);
           setUserRole(null);
         }
       } catch (error) {
-        // Token không hợp lệ hoặc hết hạn, xóa localStorage
         localStorage.removeItem("user");
         setIsLoggedIn(false);
         setUserRole(null);
       } finally {
-        setIsAuthChecking(false); // Kết thúc loading
+        setIsAuthChecking(false);
       }
     };
 
@@ -344,12 +414,10 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      // Gọi API logout để xóa cookie
       await axiosClient.post("/auth/logout");
     } catch (error) {
       console.warn("Logout error:", error);
     } finally {
-      // Xóa localStorage và reset state
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       setIsLoggedIn(false);
@@ -357,7 +425,6 @@ function App() {
     }
   };
 
-  // [MỚI] Hiển thị loading khi đang kiểm tra auth
   if (isAuthChecking) {
     return (
       <div
