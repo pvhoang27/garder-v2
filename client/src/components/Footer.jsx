@@ -92,18 +92,26 @@ const Footer = () => {
             <ul className="footer-links-list">
               <li className="footer-contact-item">
                 <FaPhoneAlt className="footer-icon" />
-                <span>0912 947 777</span>
+                <a href="tel:0912947777" style={{ color: "inherit", textDecoration: "none" }}>
+                  0912 947 777
+                </a>
               </li>
               <li className="footer-contact-item">
                 <FaEnvelope className="footer-icon" />
-                <span>vuxuanthang2908@gmail.com</span>
+                <a href="mailto:vuxuanthang2908@gmail.com" style={{ color: "inherit", textDecoration: "none" }}>
+                  vuxuanthang2908@gmail.com
+                </a>
               </li>
               <li className="footer-contact-item">
                 <FaMapMarkerAlt className="footer-icon" />
-                <span>
-                  Hoa lan cây cảnh Nam Định - Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại
-                  An, Vụ Bản, Nam Định
-                </span>
+                <a 
+                  href="https://www.google.com/maps/search/?api=1&query=Hoa+lan+cây+cảnh+Nam+Định+-+Km+5.5+Quốc+Lộ+38+B,+Đại+Đề,+Đại+An,+Vụ+Bản,+Nam+Định" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ color: "inherit", textDecoration: "none" }}
+                >
+                  Hoa lan cây cảnh Nam Định - Km 5.5 Quốc Lộ 38 B, Đại Đề, Đại An, Vụ Bản, Nam Định
+                </a>
               </li>
             </ul>
           </div>
