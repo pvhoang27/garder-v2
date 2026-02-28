@@ -54,7 +54,7 @@ const AdminTrackingLocationStats = () => {
                     </td>
                     <td style={{ padding: "12px", border: "1px solid #ddd", textAlign: "center" }}>
                       <a 
-                        href={`https://www.google.com/maps?q=$${loc.latitude},${loc.longitude}`}
+                        href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
                         target="_blank" 
                         rel="noreferrer"
                         style={{ color: "#2196f3", textDecoration: "none", fontWeight: "bold" }}
