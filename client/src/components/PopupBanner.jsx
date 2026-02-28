@@ -71,10 +71,33 @@ const PopupBanner = () => {
         .popup-pos-bottom-center { bottom: 20px; left: 50%; transform: translateX(-50%); }
         
         .media-container { position: relative; width: 100%; height: 100%; flex: 1; background: #000; display:flex; align-items:center; justify-content:center;}
-        .media-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 50%; transition: 0.2s; }
+        .media-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 50%; transition: 0.2s; z-index: 5; }
         .media-nav-btn:hover { background: rgba(0,0,0,0.8); }
         .media-prev { left: 10px; }
         .media-next { right: 10px; }
+
+        /* Style cho nút xem chi tiết đè lên ảnh */
+        .popup-action-overlay {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #2e7d32;
+          color: white;
+          padding: 8px 25px;
+          border-radius: 25px;
+          text-decoration: none;
+          font-weight: bold;
+          z-index: 6;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+          transition: all 0.3s ease;
+          white-space: nowrap;
+        }
+        .popup-action-overlay:hover {
+          background: #1b5e20;
+          transform: translateX(-50%) scale(1.05);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
       `}</style>
 
       {popups.map((popup) => (
@@ -216,40 +239,23 @@ const SinglePopup = ({ popup, onClose }) => {
               </button>
             </>
           )}
+
+          {/* Nút Xem Chi Tiết được chuyển vào đây để đè lên ảnh/video */}
+          {popup.link_url && (
+            <a
+              href={popup.link_url}
+              onClick={handleLinkClick}
+              target="_blank"
+              rel="noreferrer"
+              className="popup-action-overlay"
+            >
+              Xem Chi Tiết
+            </a>
+          )}
         </div>
       )}
 
-      <div
-        style={{ padding: "15px", textAlign: "center", background: "white" }}
-      >
-        {popup.title && (
-          <h4 style={{ color: "#2e7d32", marginBottom: "8px" }}>
-            {popup.title}
-          </h4>
-        )}
-        <p style={{ color: "#555", marginBottom: "12px", fontSize: "0.9rem" }}>
-          {popup.content}
-        </p>
-        {popup.link_url && (
-          <a
-            href={popup.link_url}
-            onClick={handleLinkClick} // Gắn hàm tracking nhấn Xem chi tiết
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-block",
-              background: "#2e7d32",
-              color: "white",
-              padding: "8px 20px",
-              borderRadius: "20px",
-              textDecoration: "none",
-              fontWeight: "bold",
-            }}
-          >
-            Xem Chi Tiết
-          </a>
-        )}
-      </div>
+      {/* Đã loại bỏ phần tiêu đề và nội dung text phía dưới */}
     </div>
   );
 };
