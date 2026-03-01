@@ -11,8 +11,9 @@ import AdminTrackingStats from "../components/AdminTrackingStats";
 import AdminTrackingSocialStats from "../components/AdminTrackingSocialStats"; 
 import AdminTrackingPopupStats from "../components/AdminTrackingPopupStats"; 
 
-// [MỚI] Import component xem vị trí
+// [MỚI] Import component xem vị trí & tìm kiếm
 import AdminTrackingLocationStats from "../components/AdminTrackingLocationStats"; 
+import AdminTrackingSearchStats from "../components/AdminTrackingSearchStats";
 
 const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const location = useLocation();
@@ -32,8 +33,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
         return { title: "Tracking Mạng Xã Hội", breadcrumb: "Admin / Tracking MXH" };
       case "trackingPopup": 
         return { title: "Tracking Tương tác Popup", breadcrumb: "Admin / Tracking Popup" };
-      case "trackingLocation": // [MỚI] Thêm case cho tracking Vị trí
+      case "trackingLocation": 
         return { title: "Tracking Vị Trí", breadcrumb: "Admin / Tracking Vị Trí" };
+      case "trackingSearch": // [MỚI] Thêm case cho tracking Tìm kiếm
+        return { title: "Tracking Tìm Kiếm", breadcrumb: "Admin / Tracking Tìm Kiếm" };
       case "plants":
         return { title: "Quản Lý Cây Cảnh", breadcrumb: "Admin / Cây cảnh" };
       case "categories":
@@ -67,8 +70,9 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
       {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} 
       {activeTab === "trackingPopup" && <AdminTrackingPopupStats />} 
       
-      {/* [MỚI] Hiển thị component vị trí */}
+      {/* Hiển thị component vị trí & tìm kiếm */}
       {activeTab === "trackingLocation" && <AdminTrackingLocationStats />} 
+      {activeTab === "trackingSearch" && <AdminTrackingSearchStats />} 
 
       {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
       {activeTab === "categories" && (

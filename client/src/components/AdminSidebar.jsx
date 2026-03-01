@@ -18,7 +18,8 @@ import {
   FaMapMarkerAlt,
   FaChevronDown,
   FaChevronUp,
-} from "react-icons/fa";
+  FaSearch,
+} from "react-icons/fa"; // [MỚI] Thêm FaSearch
 import axiosClient from "../api/axiosClient";
 
 const AdminSidebar = ({
@@ -31,7 +32,11 @@ const AdminSidebar = ({
   const navigate = useNavigate();
   
   const [isTrackingMenuOpen, setIsTrackingMenuOpen] = useState(
-    activeTab === "tracking" || activeTab === "trackingSocial" || activeTab === "trackingPopup" || activeTab === "trackingLocation"
+    activeTab === "tracking" || 
+    activeTab === "trackingSocial" || 
+    activeTab === "trackingPopup" || 
+    activeTab === "trackingLocation" ||
+    activeTab === "trackingSearch" // [MỚI]
   );
 
   const handleLogout = async () => {
@@ -57,7 +62,8 @@ const AdminSidebar = ({
       tracking: "/admin/tracking",
       trackingSocial: "/admin/tracking-social", 
       trackingPopup: "/admin/tracking-popup", 
-      trackingLocation: "/admin/tracking-location", // <--- [MỚI]
+      trackingLocation: "/admin/tracking-location", 
+      trackingSearch: "/admin/tracking-search", // [MỚI]
       plants: "/admin/plants",
       categories: "/admin/categories",
       news: "/admin/news",
@@ -237,12 +243,18 @@ const AdminSidebar = ({
                 icon={<FaBullhorn />}
                 label="Tracking Popup"
               />
-              {/* [MỚI] */}
               <SubMenuButton
                 active={activeTab === "trackingLocation"}
                 onClick={() => handleMenuClick("trackingLocation")}
                 icon={<FaMapMarkerAlt />}
                 label="Tracking Vị trí"
+              />
+              {/* [MỚI] */}
+              <SubMenuButton
+                active={activeTab === "trackingSearch"}
+                onClick={() => handleMenuClick("trackingSearch")}
+                icon={<FaSearch />}
+                label="Tracking Tìm Kiếm"
               />
             </div>
           )}

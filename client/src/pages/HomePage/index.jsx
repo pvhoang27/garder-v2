@@ -129,6 +129,11 @@ const HomePage = () => {
   }, [searchParams]);
 
   const handleSearch = () => {
+    // [MỚI] Gửi tracking từ khóa tìm kiếm
+    if (searchTerm.trim() !== "") {
+      axiosClient.post("/tracking-search/log", { keyword: searchTerm }).catch(err => console.warn("Lỗi tracking tìm kiếm:", err));
+    }
+
     if (selectedCategory) {
       setSearchParams({ category_id: selectedCategory, q: searchTerm });
     } else if (searchTerm) {
