@@ -31,6 +31,7 @@ const HomePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [allPlants, setAllPlants] = useState([]);
+  const [allNews, setAllNews] = useState([]); // State mới cho tin tức
 
   // --- STATE CHO SECTION TRENDING (XU HƯỚNG) ---
   const [trendingPlants, setTrendingPlants] = useState([]);
@@ -97,6 +98,9 @@ const HomePage = () => {
     if (storedRecent) {
       setRecentPlants(JSON.parse(storedRecent));
     }
+
+    // 7. Lấy danh sách tin tức để phục vụ tìm kiếm
+    axiosClient.get("/news").then((res) => setAllNews(res.data)).catch(err => console.error("Lỗi lấy tin tức", err));
   }, [layoutIdParam]);
 
   // 6. Effect riêng cho phần Trending
@@ -168,6 +172,17 @@ const HomePage = () => {
     return matchesKeyword && matchesCategory && matchesFeatured;
   });
 
+  // Lọc tin tức theo từ khóa
+  const filteredNews = allNews.filter((news) => {
+    if (!searchTerm) return false; // Chỉ hiển thị kết quả tin tức khi có nhập từ khóa tìm kiếm
+    if (selectedCategory) return false; // Nếu đang chọn một danh mục cụ thể (của cây), thì không hiển thị tin tức
+
+    return (
+      news.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      news.summary?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
   const featuredPlants = allPlants
     .filter((p) => p.is_featured == 1 || p.is_featured === true)
     .slice(0, 4);
@@ -212,6 +227,7 @@ const HomePage = () => {
       {isSearching ? (
         <SearchResults
           filteredPlants={filteredPlants}
+          filteredNews={filteredNews}
           loading={loading}
           t={t}
           getResultTitle={getResultTitle}
