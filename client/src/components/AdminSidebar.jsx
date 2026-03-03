@@ -32,6 +32,13 @@ const AdminSidebar = ({
 }) => {
   const navigate = useNavigate();
   
+  // State cho dropdown menu "Thống kê"
+  const [isStatsMenuOpen, setIsStatsMenuOpen] = useState(
+    activeTab === "dashboard" || 
+    activeTab === "trackingOverview"
+  );
+
+  // State cho dropdown menu "Chi tiết Tracking"
   const [isTrackingMenuOpen, setIsTrackingMenuOpen] = useState(
     activeTab === "tracking" || 
     activeTab === "trackingSocial" || 
@@ -198,21 +205,51 @@ const AdminSidebar = ({
       </div>
 
       <nav style={{ flex: 1, padding: "20px 0", overflowY: "auto" }}>
-        <MenuButton
-          active={activeTab === "dashboard"}
-          onClick={() => handleMenuClick("dashboard")}
-          icon={<FaChartPie />}
-          label="Thống kê chung"
-        />
+        
+        {/* Nhóm Menu "Thống kê" có Dropdown */}
+        <div>
+          <button
+            onClick={() => setIsStatsMenuOpen(!isStatsMenuOpen)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "15px 20px",
+              background: "transparent",
+              color: "#ccc",
+              border: "none",
+              fontSize: "15px",
+              cursor: "pointer",
+              transition: "0.2s",
+              borderLeft: "4px solid transparent",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <FaChartPie /> Thống kê
+            </div>
+            {isStatsMenuOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+          </button>
 
-        {/* [MỚI] Tổng quan Tracking đứng cùng với Thống kê chung */}
-        <MenuButton
-          active={activeTab === "trackingOverview"}
-          onClick={() => handleMenuClick("trackingOverview")}
-          icon={<FaChartLine />}
-          label="Tổng quan Tracking"
-        />
+          {isStatsMenuOpen && (
+            <div style={{ background: "#222" }}>
+              <SubMenuButton
+                active={activeTab === "dashboard"}
+                onClick={() => handleMenuClick("dashboard")}
+                icon={<FaChartPie />}
+                label="Thống kê chung"
+              />
+              <SubMenuButton
+                active={activeTab === "trackingOverview"}
+                onClick={() => handleMenuClick("trackingOverview")}
+                icon={<FaChartLine />}
+                label="Tổng quan Tracking"
+              />
+            </div>
+          )}
+        </div>
 
+        {/* Nhóm Menu "Chi tiết Tracking" có Dropdown */}
         <div>
           <button
             onClick={() => setIsTrackingMenuOpen(!isTrackingMenuOpen)}
