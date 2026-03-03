@@ -17,7 +17,9 @@ app.use(cors({
         'https://localhost:5173', 
         'http://caycanhxuanthuc.com', 
         'https://caycanhxuanthuc.com',
-        'http://103.237.86.60'
+        'http://103.237.86.60',
+        'http://103.237.86.60:5173', // Thêm port dev/preview trên VPS
+        'http://103.237.86.60:3000'  // Đề phòng gọi qua IP kèm port API
     ],
     credentials: true
 }));
