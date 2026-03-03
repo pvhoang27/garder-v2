@@ -58,15 +58,15 @@ const AdminTrackingPlantStats = () => {
       <div className="stats-grid" style={{ gridTemplateColumns: "1fr" }}>
         {/* Bảng 1: Tổng hợp theo từng cây */}
         <div className="stat-card full-width">
-          <h3>Top Cây Được Xem Lâu Nhất</h3>
+          <h3>Top Cây Được Xem Nhiều Thời Gian Nhất</h3>
           <div className="table-responsive">
             <table className="tracking-table">
               <thead>
                 <tr>
                   <th>Tên cây</th>
-                  <th>Số lượt xem</th>
+                  <th>Tổng thời gian xem</th>
                   <th>TB Thời gian xem</th>
-                  <th>Thời gian xem lâu nhất</th>
+                  <th>Thời gian xem lâu nhất (1 phiên)</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,7 +74,7 @@ const AdminTrackingPlantStats = () => {
                   summary.map((item, index) => (
                     <tr key={index}>
                       <td style={{ fontWeight: "bold", color: "#2e7d32" }}>{item.plant_name}</td>
-                      <td>{item.total_views}</td>
+                      <td style={{ fontWeight: "bold", color: "#d32f2f" }}>{formatTime(item.total_duration_seconds)}</td>
                       <td>{formatTime(item.avg_duration_seconds)}</td>
                       <td>{formatTime(item.max_duration_seconds)}</td>
                     </tr>

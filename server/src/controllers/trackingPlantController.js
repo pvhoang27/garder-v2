@@ -28,18 +28,18 @@ const trackingPlantController = {
   // Lấy thống kê cho admin
   getPlantViewStats: async (req, res) => {
     try {
-      // 1. Tổng hợp theo từng cây
+      // 1. Tổng hợp theo từng cây (Bỏ đếm lượt xem, thêm Tổng thời gian)
       const summaryQuery = `
         SELECT 
             p.id as plant_id,
             p.name as plant_name,
-            COUNT(t.id) as total_views,
+            SUM(t.duration_seconds) as total_duration_seconds,
             AVG(t.duration_seconds) as avg_duration_seconds,
             MAX(t.duration_seconds) as max_duration_seconds
         FROM tracking_plant_views t
         JOIN plants p ON t.plant_id = p.id
         GROUP BY p.id, p.name
-        ORDER BY total_views DESC
+        ORDER BY total_duration_seconds DESC
       `;
       const [summaryStats] = await db.query(summaryQuery);
 
