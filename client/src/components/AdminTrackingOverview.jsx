@@ -72,9 +72,9 @@ const AdminTrackingOverview = () => {
 
   return (
     <div className="tracking-overview-container">
-      <h2 className="tracking-overview-title">
+      {/* <h2 className="tracking-overview-title">
         <FaChartPie className="icon-title" /> Dashboard Tracking Tổng Hợp
-      </h2>
+      </h2> */}
 
       {/* --- PHẦN 1: KPI CARDS --- */}
       <div className="tracking-kpi-grid">
