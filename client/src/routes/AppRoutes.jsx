@@ -73,7 +73,16 @@ const AppRoutes = ({ isLoggedIn, userRole, handleLoginSuccess }) => {
         }
       />
       
-      {/* --- [MỚI] Thêm Route cho Tracking Trang chủ --- */}
+      {/* --- [MỚI] Thêm Route cho Tracking Tổng Quan --- */}
+      <Route
+        path="/admin/tracking-overview"
+        element={
+          <AdminRoute isLoggedIn={isLoggedIn} userRole={userRole}>
+            <AdminDashboard initialTab="trackingOverview" />
+          </AdminRoute>
+        }
+      />
+
       <Route
         path="/admin/tracking-homepage"
         element={

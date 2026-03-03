@@ -13,9 +13,10 @@ import AdminTrackingPopupStats from "../components/AdminTrackingPopupStats";
 import AdminTrackingLocationStats from "../components/AdminTrackingLocationStats"; 
 import AdminTrackingSearchStats from "../components/AdminTrackingSearchStats";
 import AdminTrackingPlantStats from "../components/AdminTrackingPlantStats";
-
-// [MỚI] Import component Tracking Homepage
 import AdminTrackingHomepageStats from "../components/AdminTrackingHomepageStats";
+
+// [MỚI] Import component Tracking Tổng quan
+import AdminTrackingOverview from "../components/AdminTrackingOverview";
 
 const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const location = useLocation();
@@ -28,8 +29,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const getPageInfo = () => {
     switch (activeTab) {
       case "dashboard":
-        return { title: "Tổng Quan", breadcrumb: "Admin / Thống kê" };
-      case "trackingHomepage": // [MỚI]
+        return { title: "Tổng Quan", breadcrumb: "Admin / Thống kê chung" };
+      case "trackingOverview": // [MỚI]
+        return { title: "Tổng Quan Tracking", breadcrumb: "Admin / Tổng quan Tracking" };
+      case "trackingHomepage": 
         return { title: "Tracking Trang Chủ", breadcrumb: "Admin / Tracking Trang Chủ" };
       case "tracking":
         return { title: "Tracking Lượt Xem", breadcrumb: "Admin / Tracking" }; 
@@ -73,9 +76,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
     >
       {activeTab === "dashboard" && <AdminStats />}
       
-      {/* [MỚI] Render component Tracking Homepage */}
-      {activeTab === "trackingHomepage" && <AdminTrackingHomepageStats />}
+      {/* [MỚI] Render component Tracking Tổng quan */}
+      {activeTab === "trackingOverview" && <AdminTrackingOverview />}
       
+      {activeTab === "trackingHomepage" && <AdminTrackingHomepageStats />}
       {activeTab === "tracking" && <AdminTrackingStats />}
       {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} 
       {activeTab === "trackingPopup" && <AdminTrackingPopupStats />} 

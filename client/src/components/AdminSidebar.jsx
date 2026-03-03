@@ -39,7 +39,7 @@ const AdminSidebar = ({
     activeTab === "trackingLocation" ||
     activeTab === "trackingSearch" ||
     activeTab === "trackingPlant" ||
-    activeTab === "trackingHomepage" // [MỚI]
+    activeTab === "trackingHomepage"
   );
 
   const handleLogout = async () => {
@@ -62,13 +62,14 @@ const AdminSidebar = ({
 
     const routes = {
       dashboard: "/admin",
+      trackingOverview: "/admin/tracking-overview", // [MỚI] Tổng quan tracking
       tracking: "/admin/tracking",
       trackingSocial: "/admin/tracking-social", 
       trackingPopup: "/admin/tracking-popup", 
       trackingLocation: "/admin/tracking-location", 
       trackingSearch: "/admin/tracking-search", 
       trackingPlant: "/admin/tracking-plant", 
-      trackingHomepage: "/admin/tracking-homepage", // [MỚI]
+      trackingHomepage: "/admin/tracking-homepage", 
       plants: "/admin/plants",
       categories: "/admin/categories",
       news: "/admin/news",
@@ -204,6 +205,14 @@ const AdminSidebar = ({
           label="Thống kê chung"
         />
 
+        {/* [MỚI] Tổng quan Tracking đứng cùng với Thống kê chung */}
+        <MenuButton
+          active={activeTab === "trackingOverview"}
+          onClick={() => handleMenuClick("trackingOverview")}
+          icon={<FaChartLine />}
+          label="Tổng quan Tracking"
+        />
+
         <div>
           <button
             onClick={() => setIsTrackingMenuOpen(!isTrackingMenuOpen)}
@@ -223,14 +232,13 @@ const AdminSidebar = ({
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <FaChartLine /> Nhóm Tracking
+              <FaLayerGroup /> Chi tiết Tracking
             </div>
             {isTrackingMenuOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
           </button>
 
           {isTrackingMenuOpen && (
             <div style={{ background: "#222" }}>
-              {/* [MỚI] Thêm menu tracking trang chủ */}
               <SubMenuButton
                 active={activeTab === "trackingHomepage"}
                 onClick={() => handleMenuClick("trackingHomepage")}
