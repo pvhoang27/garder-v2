@@ -43,6 +43,17 @@ const AdminTrackingPlantStats = () => {
     return timeString;
   };
 
+  // Hàm kiểm tra User-Agent để phân loại Desktop hay Mobile
+  const getDeviceType = (userAgent) => {
+    if (!userAgent) return "Không xác định";
+    const ua = userAgent.toLowerCase();
+    // Nếu chứa các từ khóa phổ biến của điện thoại/tablet
+    if (ua.includes("mobi") || ua.includes("android") || ua.includes("iphone") || ua.includes("ipad")) {
+      return "Mobile";
+    }
+    return "Desktop";
+  };
+
   if (loading) return <div className="tracking-stats-container">Đang tải dữ liệu...</div>;
   if (error) return <div className="tracking-stats-container text-red-500">{error}</div>;
 
@@ -50,9 +61,7 @@ const AdminTrackingPlantStats = () => {
     <div className="tracking-stats-container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2 style={{ margin: 0 }}>Thống Kê Thời Gian Xem Cây</h2>
-        <button onClick={fetchStats} className="btn-refresh">
-          Làm mới
-        </button>
+        {/* Đã bỏ nút "Làm mới" theo yêu cầu */}
       </div>
 
       <div className="stats-grid" style={{ gridTemplateColumns: "1fr" }}>
@@ -106,21 +115,29 @@ const AdminTrackingPlantStats = () => {
               </thead>
               <tbody>
                 {recentLogs.length > 0 ? (
-                  recentLogs.map((log) => (
-                    <tr key={log.id}>
-                      <td>{new Date(log.created_at).toLocaleString('vi-VN')}</td>
-                      <td style={{ fontWeight: "bold" }}>{log.plant_name}</td>
-                      <td>
-                        <div style={{ fontSize: "13px" }}><strong>IP:</strong> {log.ip_address}</div>
-                        <div style={{ fontSize: "11px", color: "#666", maxWidth: "250px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={log.device_info}>
-                          {log.device_info}
-                        </div>
-                      </td>
-                      <td style={{ color: "#d32f2f", fontWeight: "bold" }}>
-                        {formatTime(log.duration_seconds)}
-                      </td>
-                    </tr>
-                  ))
+                  recentLogs.map((log) => {
+                    const deviceType = getDeviceType(log.device_info);
+                    return (
+                      <tr key={log.id}>
+                        <td>{new Date(log.created_at).toLocaleString('vi-VN')}</td>
+                        <td style={{ fontWeight: "bold" }}>{log.plant_name}</td>
+                        <td>
+                          <div style={{ fontSize: "13px" }}><strong>IP:</strong> {log.ip_address}</div>
+                          {/* Hiển thị phân loại Mobile / Desktop */}
+                          <div style={{ fontSize: "12px", marginTop: "4px" }}>
+                            <strong>Loại:</strong> <span style={{ color: deviceType === "Mobile" ? "#1976d2" : "#388e3c", fontWeight: "bold" }}>{deviceType}</span>
+                          </div>
+                          {/* Dòng User-Agent thô làm mờ đi một chút */}
+                          <div style={{ fontSize: "11px", color: "#888", maxWidth: "250px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "2px" }} title={log.device_info}>
+                            {log.device_info}
+                          </div>
+                        </td>
+                        <td style={{ color: "#d32f2f", fontWeight: "bold", fontSize: "15px" }}>
+                          {formatTime(log.duration_seconds)}
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="4" style={{ textAlign: "center" }}>
