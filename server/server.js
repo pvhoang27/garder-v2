@@ -16,7 +16,8 @@ app.use(cors({
         'http://localhost:5173', 
         'https://localhost:5173', 
         'http://caycanhxuanthuc.com', 
-        'https://caycanhxuanthuc.com'
+        'https://caycanhxuanthuc.com',
+        'http://103.237.86.60'
     ],
     credentials: true
 }));
