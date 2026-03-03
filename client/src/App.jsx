@@ -212,12 +212,20 @@ const AppContent = ({
               </AdminRoute>
             }
           />
-          {/* --- [MỚI] --- */}
           <Route
             path="/admin/tracking-search"
             element={
               <AdminRoute>
                 <AdminDashboard initialTab="trackingSearch" />
+              </AdminRoute>
+            }
+          />
+          {/* --- [MỚI] Thêm Route cho Tracking thời gian xem cây --- */}
+          <Route
+            path="/admin/tracking-plant"
+            element={
+              <AdminRoute>
+                <AdminDashboard initialTab="trackingPlant" />
               </AdminRoute>
             }
           />

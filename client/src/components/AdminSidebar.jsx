@@ -19,7 +19,8 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaSearch,
-} from "react-icons/fa"; // [MỚI] Thêm FaSearch
+  FaClock, // [MỚI] Icon đồng hồ cho thời gian xem cây
+} from "react-icons/fa"; 
 import axiosClient from "../api/axiosClient";
 
 const AdminSidebar = ({
@@ -36,7 +37,8 @@ const AdminSidebar = ({
     activeTab === "trackingSocial" || 
     activeTab === "trackingPopup" || 
     activeTab === "trackingLocation" ||
-    activeTab === "trackingSearch" // [MỚI]
+    activeTab === "trackingSearch" ||
+    activeTab === "trackingPlant" // [MỚI]
   );
 
   const handleLogout = async () => {
@@ -63,7 +65,8 @@ const AdminSidebar = ({
       trackingSocial: "/admin/tracking-social", 
       trackingPopup: "/admin/tracking-popup", 
       trackingLocation: "/admin/tracking-location", 
-      trackingSearch: "/admin/tracking-search", // [MỚI]
+      trackingSearch: "/admin/tracking-search", 
+      trackingPlant: "/admin/tracking-plant", // [MỚI]
       plants: "/admin/plants",
       categories: "/admin/categories",
       news: "/admin/news",
@@ -249,12 +252,18 @@ const AdminSidebar = ({
                 icon={<FaMapMarkerAlt />}
                 label="Tracking Vị trí"
               />
-              {/* [MỚI] */}
               <SubMenuButton
                 active={activeTab === "trackingSearch"}
                 onClick={() => handleMenuClick("trackingSearch")}
                 icon={<FaSearch />}
                 label="Tracking Tìm Kiếm"
+              />
+              {/* [MỚI] Thêm menu tracking thời gian xem cây */}
+              <SubMenuButton
+                active={activeTab === "trackingPlant"}
+                onClick={() => handleMenuClick("trackingPlant")}
+                icon={<FaClock />}
+                label="Tracking Xem Cây"
               />
             </div>
           )}

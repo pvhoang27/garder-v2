@@ -10,10 +10,11 @@ import AdminStats from "../components/AdminStats";
 import AdminTrackingStats from "../components/AdminTrackingStats"; 
 import AdminTrackingSocialStats from "../components/AdminTrackingSocialStats"; 
 import AdminTrackingPopupStats from "../components/AdminTrackingPopupStats"; 
-
-// [MỚI] Import component xem vị trí & tìm kiếm
 import AdminTrackingLocationStats from "../components/AdminTrackingLocationStats"; 
 import AdminTrackingSearchStats from "../components/AdminTrackingSearchStats";
+
+// [MỚI] Import component xem thời gian xem cây
+import AdminTrackingPlantStats from "../components/AdminTrackingPlantStats";
 
 const AdminDashboard = ({ initialTab = "dashboard" }) => {
   const location = useLocation();
@@ -35,8 +36,10 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
         return { title: "Tracking Tương tác Popup", breadcrumb: "Admin / Tracking Popup" };
       case "trackingLocation": 
         return { title: "Tracking Vị Trí", breadcrumb: "Admin / Tracking Vị Trí" };
-      case "trackingSearch": // [MỚI] Thêm case cho tracking Tìm kiếm
+      case "trackingSearch": 
         return { title: "Tracking Tìm Kiếm", breadcrumb: "Admin / Tracking Tìm Kiếm" };
+      case "trackingPlant": // [MỚI]
+        return { title: "Tracking Xem Cây", breadcrumb: "Admin / Tracking Xem Cây" };
       case "plants":
         return { title: "Quản Lý Cây Cảnh", breadcrumb: "Admin / Cây cảnh" };
       case "categories":
@@ -69,10 +72,11 @@ const AdminDashboard = ({ initialTab = "dashboard" }) => {
       {activeTab === "tracking" && <AdminTrackingStats />}
       {activeTab === "trackingSocial" && <AdminTrackingSocialStats />} 
       {activeTab === "trackingPopup" && <AdminTrackingPopupStats />} 
-      
-      {/* Hiển thị component vị trí & tìm kiếm */}
       {activeTab === "trackingLocation" && <AdminTrackingLocationStats />} 
       {activeTab === "trackingSearch" && <AdminTrackingSearchStats />} 
+      
+      {/* Hiển thị component thời gian xem cây */}
+      {activeTab === "trackingPlant" && <AdminTrackingPlantStats />} 
 
       {activeTab === "plants" && <AdminPlantManager isMobile={isMobile} />}
       {activeTab === "categories" && (
