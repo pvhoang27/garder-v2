@@ -57,6 +57,11 @@ const HomePage = () => {
   const isFeatured = searchParams.get("is_featured") === "true";
   const layoutIdParam = searchParams.get("layout_id");
 
+  // [MỚI] Tracking truy cập trang chủ (Chạy 1 lần khi load trang)
+  useEffect(() => {
+    axiosClient.post("/tracking-homepage/log").catch(err => console.warn("Lỗi tracking trang chủ:", err));
+  }, []);
+
   useEffect(() => {
     // 1. Lấy Hiệu ứng
     axiosClient.get("/layout/effect").then((res) => {
@@ -129,7 +134,6 @@ const HomePage = () => {
   }, [searchParams]);
 
   const handleSearch = () => {
-    // [MỚI] Gửi tracking từ khóa tìm kiếm
     if (searchTerm.trim() !== "") {
       axiosClient.post("/tracking-search/log", { keyword: searchTerm }).catch(err => console.warn("Lỗi tracking tìm kiếm:", err));
     }
@@ -146,11 +150,9 @@ const HomePage = () => {
   // --- HÀM HELPER LẤY ẢNH DANH MỤC ---
   const getCategoryImageUrl = (imageName) => {
     if (!imageName) {
-      // Ảnh mặc định nếu không có ảnh
       return "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80";
     }
     if (imageName.startsWith("http")) return imageName;
-    // Đường dẫn ảnh từ server (tương tự như AdminCategoryManager)
     return `${UPLOADS_URL}${imageName}`;
   };
 
@@ -177,10 +179,9 @@ const HomePage = () => {
     return matchesKeyword && matchesCategory && matchesFeatured;
   });
 
-  // Lọc tin tức theo từ khóa
   const filteredNews = allNews.filter((news) => {
-    if (!searchTerm) return false; // Chỉ hiển thị kết quả tin tức khi có nhập từ khóa tìm kiếm
-    if (selectedCategory) return false; // Nếu đang chọn một danh mục cụ thể (của cây), thì không hiển thị tin tức
+    if (!searchTerm) return false; 
+    if (selectedCategory) return false; 
 
     return (
       news.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -204,20 +205,13 @@ const HomePage = () => {
     return t("home.search_results");
   };
 
-  // [LOGIC ZIGZAG QUAN TRỌNG]
-  // Featured (luôn là Nền Xanh)
-  // Nếu có Recent (Recent là Nền Trắng) -> Dynamic kế tiếp phải là Nền Xanh (Index Lẻ: 1, 3...)
-  // Nếu KHÔNG có Recent -> Featured (Xanh) -> Dynamic kế tiếp phải là Nền Trắng (Index Chẵn: 0, 2...)
   const hasRecent = recentPlants.length > 0;
   const startDynamicIndex = hasRecent ? 1 : 0;
 
   return (
     <div className="home-page-container">
-      {/* CÁC TÍNH NĂNG NỔI */}
       <BackgroundEffect effectType={globalEffect} />
-      {/* ĐÃ XÓA MÃ GỌI COMPONENT <PopupBanner /> VÀ <FloatingContact /> BỊ TRÙNG Ở ĐÂY VÌ ĐÃ ĐƯỢC GỌI Ở APP.JSX RỒI */}
 
-      {/* HERO SECTION */}
       <HeroSection
         t={t}
         searchTerm={searchTerm}
@@ -228,7 +222,6 @@ const HomePage = () => {
         handleSearch={handleSearch}
       />
 
-      {/* NỘI DUNG CHÍNH (ĐIỀU KIỆN RENDER) */}
       {isSearching ? (
         <SearchResults
           filteredPlants={filteredPlants}
@@ -242,9 +235,7 @@ const HomePage = () => {
           isFeatured={isFeatured}
         />
       ) : (
-        /* --- GIAO DIỆN LANDING PAGE (TRANG CHỦ MẶC ĐỊNH) --- */
         <>
-          {/* CATEGORIES SECTION (Trắng) */}
           <section className="section">
             <div className="container">
               <div className="section-header">
@@ -268,7 +259,6 @@ const HomePage = () => {
                     <div className="category-overlay">
                       <h3 className="category-name">{cat.name}</h3>
                     </div>
-                    {/* Đã sửa lại phần src để lấy ảnh thật */}
                     <img
                       src={getCategoryImageUrl(cat.image)}
                       alt={cat.name}
@@ -292,7 +282,6 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* TRENDING PLANTS (Trắng) */}
           <TrendingSection
             trendingPlants={trendingPlants}
             loadingTrending={loadingTrending}
@@ -301,18 +290,14 @@ const HomePage = () => {
             categories={categories}
           />
 
-          {/* FEATURED PLANTS (Background XANH - Card TRẮNG) */}
           <FeaturedSection
             loading={loading}
             featuredPlants={featuredPlants}
             categories={categories}
           />
 
-          {/* --- SECTION ĐÃ XEM GẦN ĐÂY (Background TRẮNG - Card XANH) --- */}
-          {/* Truyền data vào để component hiển thị, không cần load lại từ localStorage */}
           <RecentlyViewedSection categories={categories} data={recentPlants} />
 
-          {/* DYNAMIC SECTIONS */}
           {layouts.map(
             (layout, index) =>
               layout.is_active && (
@@ -321,16 +306,12 @@ const HomePage = () => {
                   {...layout}
                   paramValue={layout.value || layout.param_value}
                   categories={categories}
-                  // Điều chỉnh index bắt đầu dựa trên việc có Section Recent hay không
                   index={index + startDynamicIndex}
                 />
               ),
           )}
 
-          {/* ABOUT SECTION */}
           <AboutSection />
-
-          {/* CTA SECTION */}
           <CtaSection />
         </>
       )}

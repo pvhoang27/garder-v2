@@ -72,6 +72,17 @@ const AppRoutes = ({ isLoggedIn, userRole, handleLoginSuccess }) => {
           </AdminRoute>
         }
       />
+      
+      {/* --- [MỚI] Thêm Route cho Tracking Trang chủ --- */}
+      <Route
+        path="/admin/tracking-homepage"
+        element={
+          <AdminRoute isLoggedIn={isLoggedIn} userRole={userRole}>
+            <AdminDashboard initialTab="trackingHomepage" />
+          </AdminRoute>
+        }
+      />
+      
       <Route
         path="/admin/tracking"
         element={
@@ -112,7 +123,6 @@ const AppRoutes = ({ isLoggedIn, userRole, handleLoginSuccess }) => {
           </AdminRoute>
         }
       />
-      {/* --- [MỚI] Thêm Route cho Tracking thời gian xem cây --- */}
       <Route
         path="/admin/tracking-plant"
         element={
@@ -121,7 +131,6 @@ const AppRoutes = ({ isLoggedIn, userRole, handleLoginSuccess }) => {
           </AdminRoute>
         }
       />
-      {/* ------------ */}
       <Route
         path="/admin/plants"
         element={

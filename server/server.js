@@ -49,7 +49,8 @@ app.use('/api/tracking-social', require('./src/routes/trackingSocialRoutes'));
 app.use('/api/tracking-popup', require('./src/routes/trackingPopupRoutes'));
 app.use('/api/tracking-location', require('./src/routes/trackingLocationRoutes')); 
 app.use('/api/tracking-search', require('./src/routes/trackingSearchRoutes'));
-app.use('/api/tracking-plant', require('./src/routes/trackingPlantRoutes')); // <--- [MỚI] THÊM ROUTE NÀY
+app.use('/api/tracking-plant', require('./src/routes/trackingPlantRoutes')); 
+app.use('/api/tracking-homepage', require('./src/routes/trackingHomepageRoutes')); // <--- [MỚI] THÊM ROUTE NÀY
 
 // Port: Ưu tiên lấy từ .env, nếu không có thì mặc định là 3000
 const PORT = process.env.PORT || 3000;
