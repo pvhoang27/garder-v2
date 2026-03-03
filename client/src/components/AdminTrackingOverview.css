@@ -7,7 +7,7 @@
   margin-bottom: 25px;
   color: #333;
   display: flex;
-  alignItems: center;
+  align-items: center; /* Sửa lại alignItems thành align-items chuẩn CSS */
   gap: 10px;
   font-size: 22px;
 }
@@ -63,14 +63,19 @@
   opacity: 0.8;
 }
 
+/* Màu Gradient cho các Card */
 .bg-gradient-blue { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
 .bg-gradient-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
 .bg-gradient-orange { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
+.bg-gradient-purple { background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%); }
+.bg-gradient-teal { background: linear-gradient(135deg, #16a085 0%, #2ecc71 100%); }
+.bg-gradient-pink { background: linear-gradient(135deg, #e83e8c 0%, #fd7e14 100%); }
 
 /* --- GRID DETAILS --- */
 .tracking-details-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: 1fr; /* Chỉ còn 1 cột vì đã xoá box Top cây */
+  max-width: 800px; /* Giới hạn độ rộng để box thiết bị không bị kéo quá dài trên màn to */
   gap: 30px;
 }
 
@@ -131,74 +136,6 @@
 
 .mobile-fill { background-color: #e67e22; }
 .desktop-fill { background-color: #2980b9; }
-
-/* --- TOP PLANTS LIST --- */
-.top-plants-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.top-plant-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px dashed #eee;
-  gap: 15px;
-}
-
-.top-plant-item:last-child {
-  border-bottom: none;
-}
-
-.plant-rank {
-  width: 25px;
-  height: 25px;
-  background: #333;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.top-plant-item:nth-child(1) .plant-rank { background: #FFD700; color: #333;}
-.top-plant-item:nth-child(2) .plant-rank { background: #C0C0C0; color: #333;}
-.top-plant-item:nth-child(3) .plant-rank { background: #CD7F32; color: #fff;}
-
-.plant-avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.plant-info {
-  flex: 1;
-}
-
-.plant-name {
-  font-weight: 600;
-  color: #333;
-  font-size: 15px;
-}
-
-.plant-views {
-  text-align: right;
-  color: #2e7d32;
-}
-
-.plant-views strong {
-  font-size: 16px;
-}
-
-.plant-views span {
-  font-size: 12px;
-  color: #888;
-  display: block;
-}
 
 /* Loading */
 .tracking-overview-loading {

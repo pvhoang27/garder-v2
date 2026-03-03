@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { API_URL } from "../config";
 import {
   FaChartPie,
   FaEye,
   FaHome,
   FaMobileAlt,
   FaDesktop,
-  FaSeedling,
-  FaCalendarDay
+  FaCalendarDay,
+  FaSearch,
+  FaWindowRestore,
+  FaShareAlt
 } from "react-icons/fa";
 import "./AdminTrackingOverview.css";
 
@@ -19,26 +20,45 @@ const AdminTrackingOverview = () => {
     todayVisits: 0,
     homepageVisits: 0,
     deviceStats: [],
-    topPlants: [],
+    totalSearches: 0,
+    popupViews: 0,
+    popupClicks: 0,
+    socialClicks: 0
   });
 
   useEffect(() => {
     const fetchOverviewData = async () => {
       setLoading(true);
       try {
-        // Gọi song song các API thống kê hiện có để gộp data chung 1 trang
-        const [trackingRes, homeRes, dashRes] = await Promise.all([
+        // Gọi song song tất cả các API thống kê tracking con
+        const [
+          trackingRes, 
+          homeRes, 
+          searchRes, 
+          popupRes, 
+          socialRes
+        ] = await Promise.all([
           axiosClient.get("/tracking/stats").catch(() => ({ data: { totalVisits: 0, todayVisits: 0 } })),
           axiosClient.get("/tracking-homepage/stats").catch(() => ({ data: { totalVisits: 0, deviceStats: [] } })),
-          axiosClient.get("/dashboard/stats").catch(() => ({ data: { topViews: [] } }))
+          axiosClient.get("/tracking-search/stats").catch(() => ({ data: { totalSearches: 0 } })),
+          axiosClient.get("/tracking-popup/stats").catch(() => ({ data: { data: { summary: { views: 0, clicks: 0 } } } })),
+          axiosClient.get("/tracking-social/stats").catch(() => ({ data: { data: { summary: [] } } }))
         ]);
 
+        // Tính tổng số lượt click social từ mảng summary
+        const socialClicksTotal = socialRes.data?.data?.summary?.reduce(
+          (sum, item) => sum + (item.total_clicks || 0), 0
+        ) || 0;
+
         setData({
-          generalVisits: trackingRes.data.totalVisits || 0,
-          todayVisits: trackingRes.data.todayVisits || 0,
-          homepageVisits: homeRes.data.totalVisits || 0,
-          deviceStats: homeRes.data.deviceStats || [],
-          topPlants: dashRes.data.topViews ? dashRes.data.topViews.slice(0, 5) : [],
+          generalVisits: trackingRes.data?.totalVisits || 0,
+          todayVisits: trackingRes.data?.todayVisits || 0,
+          homepageVisits: homeRes.data?.totalVisits || 0,
+          deviceStats: homeRes.data?.deviceStats || [],
+          totalSearches: searchRes.data?.totalSearches || 0,
+          popupViews: popupRes.data?.data?.summary?.views || 0,
+          popupClicks: popupRes.data?.data?.summary?.clicks || 0,
+          socialClicks: socialClicksTotal
         });
       } catch (error) {
         console.error("Lỗi khi tải tổng quan tracking:", error);
@@ -104,14 +124,41 @@ const AdminTrackingOverview = () => {
           </div>
           <FaHome className="kpi-icon" />
         </div>
+
+        <div className="kpi-card bg-gradient-purple">
+          <div className="kpi-info">
+            <p>Lượt Tìm Kiếm</p>
+            <h3>{data.totalSearches.toLocaleString()}</h3>
+            <span>Tìm kiếm trên web</span>
+          </div>
+          <FaSearch className="kpi-icon" />
+        </div>
+
+        <div className="kpi-card bg-gradient-teal">
+          <div className="kpi-info">
+            <p>Tương Tác Popup</p>
+            <h3>{data.popupViews.toLocaleString()} / {data.popupClicks.toLocaleString()}</h3>
+            <span>Views / Clicks</span>
+          </div>
+          <FaWindowRestore className="kpi-icon" />
+        </div>
+
+        <div className="kpi-card bg-gradient-pink">
+          <div className="kpi-info">
+            <p>Lượt Click Mạng Xã Hội</p>
+            <h3>{data.socialClicks.toLocaleString()}</h3>
+            <span>Social Clicks</span>
+          </div>
+          <FaShareAlt className="kpi-icon" />
+        </div>
       </div>
 
-      {/* --- PHẦN 2: BIỂU ĐỒ CSS & BẢNG XẾP HẠNG --- */}
+      {/* --- PHẦN 2: BIỂU ĐỒ CSS & THIẾT BỊ --- */}
       <div className="tracking-details-grid">
         
         {/* Box Thiết bị */}
         <div className="overview-box">
-          <h3>Tỷ Lệ Thiết Bị Truy Cập</h3>
+          <h3>Tỷ Lệ Thiết Bị Truy Cập Trang Chủ</h3>
           <div className="device-stats-wrapper">
             
             <div className="device-bar-container">
@@ -135,28 +182,6 @@ const AdminTrackingOverview = () => {
             </div>
 
           </div>
-        </div>
-
-        {/* Box Top Cây */}
-        <div className="overview-box">
-          <h3><FaSeedling color="#4caf50" /> Top 5 Cây Xem Nhiều Nhất</h3>
-          <ul className="top-plants-list">
-            {data.topPlants.map((plant, index) => (
-              <li key={plant.id} className="top-plant-item">
-                <div className="plant-rank rank-badge">{index + 1}</div>
-                <img src={`${API_URL}${plant.thumbnail}`} alt={plant.name} className="plant-avatar" />
-                <div className="plant-info">
-                  <span className="plant-name">{plant.name}</span>
-                </div>
-                <div className="plant-views">
-                  <strong>{plant.view_count.toLocaleString()}</strong> <span>lượt xem</span>
-                </div>
-              </li>
-            ))}
-            {data.topPlants.length === 0 && (
-              <li className="empty-text">Chưa có dữ liệu lượt xem cây.</li>
-            )}
-          </ul>
         </div>
 
       </div>
