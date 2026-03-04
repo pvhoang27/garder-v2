@@ -12,12 +12,28 @@ exports.logHomepageVisit = async (req, res) => {
     }
 
     const sql = "INSERT INTO tracking_homepage (ip_address, device_type, user_agent) VALUES (?, ?, ?)";
-    await db.query(sql, [ip_address, device_type, user_agent]);
+    const [result] = await db.query(sql, [ip_address, device_type, user_agent]);
 
-    res.status(200).json({ message: "Homepage visit logged successfully" });
+    // Trả về logId để client biết bản ghi nào cần cập nhật thời gian
+    res.status(200).json({ message: "Homepage visit logged successfully", logId: result.insertId });
   } catch (error) {
     console.error("Error logging homepage visit:", error);
     res.status(200).json({ message: "Error logging but continued" });
+  }
+};
+
+exports.updateHomepageDuration = async (req, res) => {
+  try {
+    const { logId, duration } = req.body;
+    if (!logId || duration === undefined) {
+      return res.status(400).json({ message: "Missing logId or duration" });
+    }
+    const sql = "UPDATE tracking_homepage SET duration = ? WHERE id = ?";
+    await db.query(sql, [duration, logId]);
+    res.status(200).json({ message: "Duration updated successfully" });
+  } catch (error) {
+    console.error("Error updating homepage duration:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -38,12 +54,13 @@ exports.getTrackingHomepageStats = async (req, res) => {
       params = [endDate];
     }
 
-    // 1. Tổng lượt truy cập
+    // 1. Tổng lượt truy cập & Thời gian trung bình
     const [totalRows] = await db.query(
-      `SELECT COUNT(*) as total FROM tracking_homepage ${dateFilter}`,
+      `SELECT COUNT(*) as total, AVG(duration) as avgDuration FROM tracking_homepage ${dateFilter}`,
       params
     );
     const totalVisits = totalRows[0].total;
+    const avgDuration = totalRows[0].avgDuration ? Math.round(totalRows[0].avgDuration) : 0;
 
     // 2. Truy cập hôm nay
     const [todayRows] = await db.query(
@@ -65,6 +82,7 @@ exports.getTrackingHomepageStats = async (req, res) => {
 
     res.json({
       totalVisits,
+      avgDuration,
       todayVisits,
       deviceStats,
       recentLogs,

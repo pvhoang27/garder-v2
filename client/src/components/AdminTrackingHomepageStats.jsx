@@ -12,9 +12,18 @@ import {
 } from "react-icons/fa";
 import "./AdminTrackingStats.css"; 
 
+const formatDuration = (seconds) => {
+  if (!seconds) return "0s";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+};
+
 const AdminTrackingHomepageStats = () => {
   const [stats, setStats] = useState({
     totalVisits: 0,
+    avgDuration: 0,
     todayVisits: 0,
     deviceStats: [],
     recentLogs: [],
@@ -110,6 +119,16 @@ const AdminTrackingHomepageStats = () => {
             </div>
             <div className="tracking-card-icon"><FaCalendarDay /></div>
           </div>
+
+          {/* New Card for Duration */}
+          <div className="tracking-stat-card" style={{ background: "linear-gradient(135deg, #f39c12, #e67e22)", color: "#fff" }}>
+            <div className="tracking-card-content">
+              <p className="tracking-card-label" style={{ color: "#fff" }}>Thời gian ở lại (TB)</p>
+              <h3 className="tracking-card-value">{formatDuration(stats.avgDuration)}</h3>
+              <p className="tracking-card-subtext" style={{ color: "#f1f1f1" }}>Trung bình mỗi lượt</p>
+            </div>
+            <div className="tracking-card-icon"><FaClock /></div>
+          </div>
         </div>
 
         {/* Device Stats */}
@@ -156,7 +175,8 @@ const AdminTrackingHomepageStats = () => {
                   <th>#ID</th>
                   <th>IP Address</th>
                   <th>Loại Thiết Bị</th>
-                  <th>Thời gian</th>
+                  <th>Thời gian ở lại</th>
+                  <th>Lúc truy cập</th>
                   <th>User Agent</th>
                 </tr>
               </thead>
@@ -168,6 +188,11 @@ const AdminTrackingHomepageStats = () => {
                       <td><span className="tracking-table-ip">{log.ip_address}</span></td>
                       <td style={{ fontWeight: "bold", color: log.device_type === "Mobile" ? "#e67e22" : "#2980b9" }}>
                         {log.device_type}
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: "bold", color: "#27ae60" }}>
+                          {formatDuration(log.duration)}
+                        </span>
                       </td>
                       <td className="tracking-table-time">
                         {log.visited_at
@@ -186,7 +211,7 @@ const AdminTrackingHomepageStats = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="tracking-table-empty">Chưa có dữ liệu nào được ghi nhận.</td>
+                    <td colSpan="6" className="tracking-table-empty">Chưa có dữ liệu nào được ghi nhận.</td>
                   </tr>
                 )}
               </tbody>

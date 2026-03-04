@@ -57,9 +57,41 @@ const HomePage = () => {
   const isFeatured = searchParams.get("is_featured") === "true";
   const layoutIdParam = searchParams.get("layout_id");
 
-  // [MỚI] Tracking truy cập trang chủ (Chạy 1 lần khi load trang)
+  // [MỚI] Tracking truy cập trang chủ & Thời gian ở lại
   useEffect(() => {
-    axiosClient.post("/tracking-homepage/log").catch(err => console.warn("Lỗi tracking trang chủ:", err));
+    let logId = null;
+    const startTime = Date.now();
+
+    axiosClient.post("/tracking-homepage/log")
+      .then(res => {
+        if (res.data && res.data.logId) {
+          logId = res.data.logId;
+        }
+      })
+      .catch(err => console.warn("Lỗi tracking trang chủ:", err));
+
+    // Dùng cho việc đóng Tab / Load lại trang
+    const handleBeforeUnload = () => {
+      if (logId) {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        const data = JSON.stringify({ logId, duration });
+        const blob = new Blob([data], { type: "application/json" });
+        // Lấy baseURL hiện tại
+        const baseUrl = axiosClient.defaults.baseURL || "http://localhost:5000/api";
+        navigator.sendBeacon(`${baseUrl}/tracking-homepage/duration`, blob);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // Dùng cho việc chuyển hướng Route trong React (Navigating away)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (logId) {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        axiosClient.post("/tracking-homepage/duration", { logId, duration }).catch(() => {});
+      }
+    };
   }, []);
 
   useEffect(() => {
