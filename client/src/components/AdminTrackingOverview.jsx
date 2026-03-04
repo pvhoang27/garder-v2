@@ -9,16 +9,26 @@ import {
   FaCalendarDay,
   FaSearch,
   FaWindowRestore,
-  FaShareAlt
+  FaShareAlt,
+  FaClock
 } from "react-icons/fa";
 import "./AdminTrackingOverview.css";
+
+// Hàm format thời gian (giây -> phút, giây)
+const formatDuration = (seconds) => {
+  if (!seconds) return "0s";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+};
 
 const AdminTrackingOverview = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     generalVisits: 0,
     todayVisits: 0,
-    homepageVisits: 0,
+    avgDuration: 0, // State mới để lưu thời gian trung bình
     deviceStats: [],
     totalSearches: 0,
     popupViews: 0,
@@ -39,7 +49,7 @@ const AdminTrackingOverview = () => {
           socialRes
         ] = await Promise.all([
           axiosClient.get("/tracking/stats").catch(() => ({ data: { totalVisits: 0, todayVisits: 0 } })),
-          axiosClient.get("/tracking-homepage/stats").catch(() => ({ data: { totalVisits: 0, deviceStats: [] } })),
+          axiosClient.get("/tracking-homepage/stats").catch(() => ({ data: { totalVisits: 0, avgDuration: 0, deviceStats: [] } })),
           axiosClient.get("/tracking-search/stats").catch(() => ({ data: { totalSearches: 0 } })),
           axiosClient.get("/tracking-popup/stats").catch(() => ({ data: { data: { summary: { views: 0, clicks: 0 } } } })),
           axiosClient.get("/tracking-social/stats").catch(() => ({ data: { data: { summary: [] } } }))
@@ -53,7 +63,7 @@ const AdminTrackingOverview = () => {
         setData({
           generalVisits: trackingRes.data?.totalVisits || 0,
           todayVisits: trackingRes.data?.todayVisits || 0,
-          homepageVisits: homeRes.data?.totalVisits || 0,
+          avgDuration: homeRes.data?.avgDuration || 0, // Gán dữ liệu thời gian trung bình
           deviceStats: homeRes.data?.deviceStats || [],
           totalSearches: searchRes.data?.totalSearches || 0,
           popupViews: popupRes.data?.data?.summary?.views || 0,
@@ -116,13 +126,14 @@ const AdminTrackingOverview = () => {
           <FaCalendarDay className="kpi-icon" />
         </div>
 
+        {/* THẺ ĐƯỢC CHỈNH SỬA: Thời gian ở lại trang chủ */}
         <div className="kpi-card bg-gradient-orange">
           <div className="kpi-info">
-            <p>Lượt Vào Trang Chủ</p>
-            <h3>{data.homepageVisits.toLocaleString()}</h3>
-            <span>Homepage Views</span>
+            <p>Thời gian ở lại (TB)</p>
+            <h3>{formatDuration(data.avgDuration)}</h3>
+            <span>Trung bình mỗi lượt</span>
           </div>
-          <FaHome className="kpi-icon" />
+          <FaClock className="kpi-icon" />
         </div>
 
         <div className="kpi-card bg-gradient-purple">
