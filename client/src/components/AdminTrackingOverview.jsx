@@ -148,8 +148,8 @@ const AdminTrackingOverview = () => {
         <div className="kpi-card bg-gradient-teal">
           <div className="kpi-info">
             <p>Tương Tác Popup</p>
-            <h3>{data.popupViews.toLocaleString()} / {data.popupClicks.toLocaleString()}</h3>
-            <span>Views / Clicks</span>
+            <h3>{data.popupClicks.toLocaleString()}</h3>
+            <span>Popup Clicks</span>
           </div>
           <FaWindowRestore className="kpi-icon" />
         </div>
